@@ -1,0 +1,7 @@
+# apps/web — local ignores
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+.env
+.env.local

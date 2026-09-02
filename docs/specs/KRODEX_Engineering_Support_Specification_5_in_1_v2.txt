@@ -1,0 +1,1654 @@
+                       KRODEX
+ENGINEERING SUPPORT SPECIFICATION
+
+                 Five Essential Engineering Documents Combined into One Master Reference
+          API Contract · Event & Automation · Security & Privacy · AI Behavior · QA & Acceptance
+           From-scratch implementation · Real data · Live interconnected behavior · No fake state
+
+                                                 Version 2.0 · September 2026
+
+Document               Primary question                               Must protect
+1. API Contract        How do modules communicate?                    Typed contracts + authorization
+2. Event & Automation  How does the app react to change?              Idempotency + causal state
+3. Security & Privacy  Who can access what?                           Student data + evidence
+4. AI Behavior         How does intelligence operate safely?          Grounding + confirmation
+5. QA / Acceptance     How do we know it really works?                Real browser journeys + failure recovery
+
+This document is a supporting engineering reference for the six core KRODEX documents. It is intentionally implementation-oriented. It
+does not replace the PRD, TRD, App/Web Flow, UI/UX Specification, Implementation Plan or Schema Ready document.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                                            Page 1
+1. How to Use This Master Reference
+
+Section: FOUNDATION
+Treat the five sections as contracts, not suggestions.
+
+Required behavior / contract
+
+ · API Contract defines communication boundaries.
+ · Event specification defines causal behavior and automation.
+ · Security specification defines access and privacy boundaries.
+ · AI specification defines intelligence behavior and safe mutation.
+ · QA specification defines evidence required for acceptance.
+
+Acceptance gate
+
+Any implementation that violates one of these contracts must stop and revise the contract or architecture before proceeding.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                                                          Page 2
+2. System-Wide Truth Model
+
+Section: FOUNDATION
+KRODEX is an interconnected learning system, not independent CRUD pages.
+
+Required behavior / contract
+
+ · Raw evidence is authoritative.
+ · Domain state is authoritative for current lifecycle.
+ · Events connect successful changes.
+ · Analytics are derived from evidence.
+ · Student model is inference with confidence.
+ · AI is advisory and constrained by normal services.
+
+Acceptance gate
+
+No dashboard number may become a substitute for the underlying evidence.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 3
+3. Canonical End-to-End Learning Loop
+
+Section: FOUNDATION
+Define the core loop that every engineer must understand.
+
+Required behavior / contract
+
+ · Plan work  execute  record outcome  generate evidence.
+ · Wrong answer  capture evidence  classify Error  schedule Review.
+ · Review  fresh verification  resolve or recur/reopen.
+ · Tests can draw from Error pools and produce new evidence.
+ · Evidence updates analytics and Student Model; UI reflects derived state.
+
+Acceptance gate
+
+The loop must work even when AI is unavailable.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 4
+4. API Contract Principles
+
+Section: API
+APIs are typed, predictable and boring in the best possible way.
+
+Required behavior / contract
+
+ · Use consistent request/response envelopes.
+ · Validate at the server boundary.
+ · Return meaningful HTTP status codes.
+ · Never trust client ownership identifiers.
+ · Keep domain rules in services.
+ · Use pagination for growing collections.
+
+Acceptance gate
+
+Every endpoint has an owner, input schema, output schema, authorization rule and failure behavior.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                                Page 5
+5. API Resource Map
+
+Section: API
+Organize endpoints around domains.
+
+Required behavior / contract
+
+ · Students/Profile.
+ · Syllabus.
+ · Planner.
+ · Backlog.
+ · Errors/Evidence.
+ · Reviews.
+ · Tests/Attempts/Answers.
+ · Progress/Analytics.
+ · Notifications.
+ · Events/health.
+
+Acceptance gate
+
+Endpoint naming and resource identity remain stable across frontend refactors.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 6
+6. API Envelope & Error Model
+
+Section: API
+Every route should be easy for a frontend to consume.
+
+Required behavior / contract
+
+ · Success returns ok + data.
+ · Failure returns ok=false + typed error information.
+ · Validation errors identify fields.
+ · Authorization errors do not reveal private records.
+ · Unexpected failures have a correlation/reference ID in logs.
+
+Acceptance gate
+
+Do not return different envelope shapes from different domains.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 7
+7. API Authentication & Ownership
+
+Section: API
+Authentication identifies the student; ownership authorizes records.
+
+Required behavior / contract
+
+ · Resolve authenticated identity on the server.
+ · Scope reads by owner.
+ · Validate ownership before returning nested records.
+ · Do not accept studentId as proof of identity.
+ · Service-role access is isolated server-side.
+
+Acceptance gate
+
+Cross-student access must fail in automated tests.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 8
+8. API Mutation Semantics
+
+Section: API
+Mutations are commands, not generic database edits.
+
+Required behavior / contract
+
+ · Complete PlannerTask through a domain command.
+ · Transition Error through lifecycle rules.
+ · Submit Attempt once.
+ · Mark Review outcome through Review service.
+ · Create Test through a validated selection definition.
+
+Acceptance gate
+
+Clients cannot directly set derived analytics, lifecycle history or event side effects.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 9
+9. API Pagination, Filtering & Sorting
+
+Section: API
+Large collections must remain usable.
+
+Required behavior / contract
+
+ · Use explicit limit/cursor or page semantics.
+ · Whitelist sortable/filterable fields.
+ · Return stable ordering.
+ · Expose counts only when useful.
+ · Keep filter semantics consistent.
+
+Acceptance gate
+
+Filters never bypass ownership or authorization.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 10
+10. API Idempotency
+
+Section: API
+Retries must not create duplicate learning facts.
+
+Required behavior / contract
+
+ · Use idempotency keys for commands that can be retried.
+ · Submission keys must collapse duplicate submits.
+ · Event handlers use durable unique identity.
+ · Client retries are safe.
+
+Acceptance gate
+
+Idempotency is enforced at the persistence layer, not only in React state.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 11
+11. API Contract Versioning
+
+Section: API
+Evolve contracts without silently breaking the app.
+
+Required behavior / contract
+
+ · Add optional fields before removing old fields.
+ · Version breaking contracts deliberately.
+ · Keep frontend/backend changes coordinated.
+ · Document migration windows.
+
+Acceptance gate
+
+No route should silently change meaning because a UI was redesigned.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 12
+12. API Observability
+
+Section: API
+Every important request must be diagnosable.
+
+Required behavior / contract
+
+ · Log route/domain operation, latency, status and safe identifiers.
+ · Never log secrets or unnecessary answer/screenshot content.
+ · Correlate request  command  event  projection failures.
+ · Track error rates.
+
+Acceptance gate
+
+An engineer must be able to trace a failed Test submission without reading production user content.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                                 Page 13
+13. Event Architecture
+
+Section: EVENTS
+Events represent meaningful successful state changes.
+
+Required behavior / contract
+
+ · Define a finite event catalog.
+ · Emit after authoritative mutation succeeds.
+ · Include student/source identifiers.
+ · Version payloads.
+ · Persist EventLog.
+
+Acceptance gate
+
+Events never become an alternative uncontrolled domain-command mechanism.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 14
+14. Event Catalog
+
+Section: EVENTS
+Core events connect the application.
+
+Required behavior / contract
+
+ · PLANNER_TASK_COMPLETED / MISSED / PARTIAL.
+ · BACKLOG_CREATED / COMPLETED.
+ · TEST_STARTED / SUBMITTED.
+ · ANSWER_CORRECT / ANSWER_INCORRECT.
+ · ERROR_CREATED / CLASSIFIED / REOPENED / RESOLVED.
+ · REVIEW_DUE / REVIEW_COMPLETED.
+ · SYLLABUS_PROGRESS_RECORDED.
+ · NOTIFICATION_CREATED.
+
+Acceptance gate
+
+Each event maps to a source mutation and downstream consumers.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 15
+15. Event Causality
+
+Section: EVENTS
+Every derived change must have a reason.
+
+Required behavior / contract
+
+ · Source mutation creates event.
+ · Event handler creates evidence/notification/projection.
+ · Projection stores source event identity.
+ · UI can explain what changed.
+
+Acceptance gate
+
+No handler may invent a student activity that did not occur.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 16
+16. Event Idempotency & Deduplication
+
+Section: EVENTS
+Duplicate delivery is expected and harmless.
+
+Required behavior / contract
+
+ · Unique handler + idempotency key.
+ · Per-event recurrence qualifier when legitimate.
+ · Retry-safe handler logic.
+ · No duplicate ProgressEvidence.
+ · No duplicate Notification projection.
+
+Acceptance gate
+
+Test double delivery, process retry and simultaneous delivery.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 17
+17. Event Failure & Retry
+
+Section: EVENTS
+Failures must be visible and recoverable.
+
+Required behavior / contract
+
+ · Persist handler failure state.
+ · Retry only failed work.
+ · Use exponential backoff where appropriate.
+ · Dead-letter/failed-event view for persistent failures.
+ · Never silently discard learning events.
+
+Acceptance gate
+
+Core app remains usable if a non-critical projection temporarily fails.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 18
+18. Automation Scheduler
+
+Section: EVENTS
+Scheduled work is deterministic and timezone-aware.
+
+Required behavior / contract
+
+ · Planner reminders use student timezone.
+ · Review due jobs use explicit windows.
+ · Daily analytics recompute has defined cutoff.
+ · Automation is idempotent.
+
+Acceptance gate
+
+Never create duplicate reminders after scheduler restart.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 19
+19. Planner  Backlog Automation
+
+Section: EVENTS
+Missed work becomes recoverable work.
+
+Required behavior / contract
+
+ · Missed task remains in history.
+ · Recovery item is created/linked.
+ · Carry count increases when appropriate.
+ · Repeated carry generates warning/pressure evidence.
+ · Completing recovery closes the loop.
+
+Acceptance gate
+
+Backlog pressure affects analytics through evidence, never through arbitrary UI math.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 20
+20. Test  Error Automation
+
+Section: EVENTS
+Wrong answers feed the Error workflow.
+
+Required behavior / contract
+
+ · Incorrect answer creates evidence.
+ · Capture pipeline associates question context.
+ · Classification can be suggested.
+ · Error record is created or recurrence incremented.
+ · Review can be scheduled.
+
+Acceptance gate
+
+No manual duplicate entry should be required for information already available.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 21
+21. Error  Review  Retest Automation
+
+Section: EVENTS
+The Error Book is an improvement engine.
+
+Required behavior / contract
+
+ · Due Reviews enter a queue.
+ · Review uses fresh verification.
+ · Incorrect keeps/reopens the Error.
+ · Correct qualifying outcome resolves it.
+ · Resolved Errors can be selected into future custom Tests.
+
+Acceptance gate
+
+Lifecycle transitions are explicit and auditable.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 22
+22. Progress Update Automation
+
+Section: EVENTS
+Progress responds to meaningful evidence.
+
+Required behavior / contract
+
+ · Planner outcomes affect execution dimension.
+ · Test outcomes affect accuracy/improvement.
+ · Error recurrence affects error-health dimension.
+ · Review completion affects recovery/review dimension.
+ · Syllabus practice affects coverage/depth.
+
+Acceptance gate
+
+Do not animate a metric until the corresponding evidence exists.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 23
+23. Notification Automation
+
+Section: EVENTS
+Notifications are action-oriented projections.
+
+Required behavior / contract
+
+ · Upcoming task reminder.
+ · Due Review reminder.
+ · Missed-task recovery warning.
+ · Error reopened notification.
+ · Important analytics recommendation when justified.
+
+Acceptance gate
+
+Group repetitive events and respect notification preferences.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 24
+24. Live Update Strategy
+
+Section: EVENTS
+Live UI is an evidence-to-view pipeline.
+
+Required behavior / contract
+
+ · Mutation succeeds.
+ · Event is emitted.
+ · Derived projection/evidence updates.
+ · Query cache is invalidated/revalidated.
+ · UI transitions to the new state.
+ · Optional last-updated indicator confirms freshness.
+
+Acceptance gate
+
+WebSocket/SSE is optional; correctness must not depend on a continuous connection.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 25
+25. Security Model
+
+Section: SECURITY
+Security protects identity, learning records and private evidence.
+
+Required behavior / contract
+
+ · Server-side authentication.
+ · Per-resource ownership.
+ · Least privilege.
+ · Private asset access control.
+ · Audit sensitive operations.
+ · Rate limits for abuse-prone endpoints.
+
+Acceptance gate
+
+Security decisions must exist independently of UI hiding.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 26
+26. Threat Model
+
+Section: SECURITY
+Think about realistic failure and abuse paths.
+
+Required behavior / contract
+
+ · Forged student IDs.
+ · Cross-student record access.
+ · Private screenshot URL sharing.
+ · Malicious upload.
+ · AI prompt injection from stored content.
+ · Duplicate submission.
+ · Event replay.
+ · Leaked service credentials.
+
+Acceptance gate
+
+Every listed threat has a mitigation and test scenario.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 27
+27. Database & Row Ownership
+
+Section: SECURITY
+Ownership is enforced at multiple layers.
+
+Required behavior / contract
+
+ · Application service checks.
+ · Database relationships/row policies where supported.
+ · Queries scoped to authenticated student.
+ · Cross-student fixtures in tests.
+
+Acceptance gate
+
+Defense in depth: one missing check must not expose another student's data.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 28
+28. Screenshot / Evidence Privacy
+
+Section: SECURITY
+Question screenshots can contain sensitive learning context.
+
+Required behavior / contract
+
+ · Private storage.
+ · Short-lived authorized access.
+ · No public bucket assumption.
+ · Validate file type/size.
+ · Avoid exposing object keys unnecessarily.
+ · Retention policy.
+
+Acceptance gate
+
+An Error record can exist even if an image asset temporarily fails.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 29
+29. Secrets & Environment
+
+Section: SECURITY
+Credentials are never part of client code.
+
+Required behavior / contract
+
+ · Public variables only contain public-safe configuration.
+ · Service-role keys remain server-only.
+ · Production secrets come from deployment environment.
+ · Secret scans run in CI.
+
+Acceptance gate
+
+Build logs must not reveal secret values.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 30
+30. Input & File Security
+
+Section: SECURITY
+Every input is hostile until validated.
+
+Required behavior / contract
+
+ · Validate lengths, enums, ranges and IDs.
+ · Normalize safe filenames/asset keys.
+ · Reject unsupported MIME types.
+ · Limit upload size.
+ · Avoid executable content.
+
+Acceptance gate
+
+Validation exists at UI, API/service and storage boundaries as appropriate.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 31
+31. AI Security Boundary
+
+Section: SECURITY
+AI must not become an authorization bypass.
+
+Required behavior / contract
+
+ · Retrieve only authorized student evidence.
+ · Treat retrieved content as untrusted context.
+ · Never allow AI output to directly execute database mutation.
+ · Require structured proposal + confirmation.
+
+Acceptance gate
+
+Prompt injection inside a captured question or note cannot grant new permissions.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 32
+32. Privacy & Retention
+
+Section: SECURITY
+Keep only what the product needs.
+
+Required behavior / contract
+
+ · Define evidence retention.
+ · Allow account-level deletion where legally/product-wise required.
+ · Delete private assets according to policy.
+ · Keep aggregate analytics only when appropriate and explainable.
+
+Acceptance gate
+
+Deletion policy must distinguish raw evidence, derived state and audit requirements.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 33
+33. AI Role in KRODEX
+
+Section: AI
+AI enhances understanding; deterministic systems remain authoritative.
+
+Required behavior / contract
+
+ · Classify likely mistake category.
+ · Explain trends using evidence.
+ · Suggest next actions.
+ · Generate practice recommendations.
+ · Help summarize the student's own data.
+
+Acceptance gate
+
+AI never invents scores, records or events.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 34
+34. Student Onboarding for AI
+
+Section: AI
+AI starts with no behavioral knowledge.
+
+Required behavior / contract
+
+ · Ask language preference.
+ · Ask exam/goal context.
+ · Explain what data is tracked.
+ · Collect planning/review preferences.
+ · Establish baseline only from explicit answers and observed activity.
+
+Acceptance gate
+
+Never claim a student behavior pattern before enough evidence exists.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 35
+35. AI Evidence Context
+
+Section: AI
+Every AI insight has a scoped evidence window.
+
+Required behavior / contract
+
+ · Selected date range.
+ · Relevant Errors/Reviews/Attempts/Planner outcomes.
+ · Student-model patterns + confidence.
+ · Syllabus context.
+ · Evidence count.
+
+Acceptance gate
+
+AI responses should be grounded in retrievable source records.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 36
+36. AI Classification of Mistakes
+
+Section: AI
+Classification is a suggestion, not an unquestionable verdict.
+
+Required behavior / contract
+
+ · Candidate categories: conceptual, silly/careless, calculation, interpretation, recall, time-management, strategy, unknown.
+ · Show confidence.
+ · Allow student correction.
+ · Store final student-confirmed classification.
+
+Acceptance gate
+
+Student correction is authoritative for the classification record; AI suggestion remains provenance.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                                                           Page 37
+37. AI Progress Explanation
+
+Section: AI
+AI explains why progress changed.
+
+Required behavior / contract
+
+ · Identify contributing dimensions.
+ · Compare relevant periods.
+ · Mention workload/backlog pressure.
+ · Mention recurring Errors.
+ · Separate observation from recommendation.
+
+Acceptance gate
+
+Never say 'your progress fell because you are distracted' without evidence; use evidence-backed language.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                                       Page 38
+38. AI Recommendations
+
+Section: AI
+Recommendations are actionable and bounded.
+
+Required behavior / contract
+
+ · Prioritize a small number of actions.
+ · Tie each action to evidence.
+ · Prefer recovery actions when backlog is high.
+ · Prefer review when recurring Errors are due.
+ · Avoid overwhelming daily lists.
+
+Acceptance gate
+
+Recommendations do not create tasks automatically without normal planner confirmation.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 39
+39. AI Action Proposals
+
+Section: AI
+AI may propose changes but cannot bypass the app.
+
+Required behavior / contract
+
+ · Proposal identifies target records.
+ · Show expected consequence.
+ · Student confirms.
+ · Domain service validates.
+ · Events update downstream state.
+
+Acceptance gate
+
+AI output is never executed as raw SQL or arbitrary API commands.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 40
+40. AI Failure Modes
+
+Section: AI
+The core product survives AI failure.
+
+Required behavior / contract
+
+ · Provider unavailable.
+ · Timeout.
+ · Malformed response.
+ · Low confidence.
+ · Insufficient evidence.
+ · Contradictory evidence.
+ · Quota/rate limit.
+
+Acceptance gate
+
+Fallback is a truthful deterministic UI, not fabricated AI content.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 41
+41. AI Evaluation
+
+Section: AI
+Evaluate AI against product-specific cases.
+
+Required behavior / contract
+
+ · Mistake classification accuracy.
+ · Grounding/citation correctness.
+ · Hallucination resistance.
+ · Action safety.
+ · Behavioral explanation quality.
+ · Multilingual clarity where supported.
+
+Acceptance gate
+
+AI acceptance is based on golden test cases, not subjective demo quality alone.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 42
+42. QA Philosophy
+
+Section: QA
+KRODEX is accepted by behavior, not screenshots alone.
+
+Required behavior / contract
+
+ · Test real workflows.
+ · Test state transitions.
+ · Test failure recovery.
+ · Test data truth.
+ · Test responsive/accessibility behavior.
+ · Test cross-module convergence.
+
+Acceptance gate
+
+HTTP 200 alone never constitutes acceptance.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 43
+43. Unit & Domain Tests
+
+Section: QA
+Test deterministic logic deeply.
+
+Required behavior / contract
+
+ · Validators.
+ · Lifecycle transition matrix.
+ · Score calculations.
+ · Date-window calculations.
+ · Idempotency keys.
+ · Selection algorithms.
+ · Student-model inference.
+
+Acceptance gate
+
+Edge cases are first-class tests.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 44
+44. Repository & Persistence Tests
+
+Section: QA
+Prove durable integrity.
+
+Required behavior / contract
+
+ · Foreign keys.
+ · Ownership.
+ · Unique constraints.
+ · Append-only evidence.
+ · Migration behavior.
+ · Transaction semantics.
+ · Delete/archive behavior.
+
+Acceptance gate
+
+Tests use isolated databases and deterministic fixtures.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 45
+45. Service & API Tests
+
+Section: QA
+Prove business behavior at boundaries.
+
+Required behavior / contract
+
+ · Authorization.
+ · Validation.
+ · Successful mutations.
+ · Invalid transitions.
+ · Duplicate commands.
+ · Error envelopes.
+ · Pagination/filtering.
+
+Acceptance gate
+
+Every API domain has both happy and failure tests.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 46
+46. Frontend Integration Tests
+
+Section: QA
+Prove UI state follows backend state.
+
+Required behavior / contract
+
+ · Loading.
+ · Empty.
+ · Partial failure.
+ · Mutation success.
+ · Mutation failure.
+ · Cache invalidation.
+ · Deep links.
+ · Realistic data.
+
+Acceptance gate
+
+No test should pass by mocking the exact result it claims to verify.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 47
+47. Browser Acceptance -- Core Loop
+
+Section: QA
+The most important browser scenario.
+
+Required behavior / contract
+
+ · Plan a task.
+ · Complete it.
+ · Verify Planner state.
+ · Verify evidence/analytics update.
+ · Create/attempt Test.
+ · Answer incorrectly.
+ · Verify Error evidence.
+ · Review and resolve.
+
+Acceptance gate
+
+Refresh between major steps and confirm persistence.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 48
+48. Browser Acceptance -- Error Capture
+
+Section: QA
+Validate the signature feature.
+
+Required behavior / contract
+
+ · Wrong question is captured.
+ · Question snapshot is attached.
+ · Student is asked for mistake type/remark when needed.
+ · Error appears in bank.
+ · Filters work.
+ · Review changes lifecycle.
+ · Retest incorrect reopens/repeats.
+
+Acceptance gate
+
+Acceptance must use the actual capture path, not a seeded database record only.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 49
+49. Browser Acceptance -- Custom Test
+
+Section: QA
+Verify Error-derived testing.
+
+Required behavior / contract
+
+ · Select source Errors.
+ · Choose exact count.
+ · Preview pool.
+ · Create Test.
+ · Attempt it.
+ · Incorrect returns to Error workflow.
+ · Correct qualifying answer goes to reviewed/resolved path.
+
+Acceptance gate
+
+Question pool composition is verified, not assumed from the title.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 50
+50. Browser Acceptance -- Planner/Backlog
+
+Section: QA
+Verify workload feedback.
+
+Required behavior / contract
+
+ · Schedule multiple tasks.
+ · Complete subset.
+ · Leave tasks missed.
+ · Observe backlog recovery.
+ · Complete backlog.
+ · Observe progress/analytics change.
+
+Acceptance gate
+
+History remains intact and metrics reflect actual completion ratios.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 51
+51. Browser Acceptance -- Progress & Insights
+
+Section: QA
+Verify live analytical truth.
+
+Required behavior / contract
+
+ · Change underlying activity.
+ · Refresh or wait for projection.
+ · Observe daily progress.
+ · Open detailed analytics.
+ · Drill into source evidence.
+ · Verify trend direction.
+
+Acceptance gate
+
+Every displayed metric must be explainable from underlying records.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 52
+52. Browser Acceptance -- Notifications
+
+Section: QA
+Verify meaningful alerts.
+
+Required behavior / contract
+
+ · Create upcoming task/review.
+ · Trigger due/missed conditions.
+ · Notification appears once.
+ · Open source record.
+ · Mark read.
+ · Verify no duplicate projection.
+
+Acceptance gate
+
+Notification state and source state remain distinct.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 53
+53. Failure & Recovery Matrix
+
+Section: QA
+Real apps fail; KRODEX must recover.
+
+Required behavior / contract
+
+ · Network failure during Answer save.
+ · Duplicate Test submit.
+ · Event handler retry.
+ · Image processing failure.
+ · AI timeout.
+ · Expired session.
+ · Database unavailable.
+ · Partial projection failure.
+
+Acceptance gate
+
+Each failure has visible UI behavior, safe retry path and preserved authoritative state where possible.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                                     Page 54
+54. Accessibility Acceptance
+
+Section: QA
+Premium design must remain accessible.
+
+Required behavior / contract
+
+ · Keyboard navigation.
+ · Focus visibility.
+ · Labels for icon-only controls.
+ · Contrast.
+ · Reduced motion.
+ · Touch target sizing.
+ · Screen-reader semantics for status changes.
+
+Acceptance gate
+
+Accessibility checks run on critical workflows, not just the landing page.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 55
+55. Responsive Acceptance
+
+Section: QA
+Verify information architecture at every viewport.
+
+Required behavior / contract
+
+ · Desktop dashboard.
+ · Tablet planner.
+ · Mobile Error capture/review.
+ · Mobile Test Attempt.
+ · Mobile notification action.
+ · Landscape edge cases.
+
+Acceptance gate
+
+Do not accept a responsive page merely because it has no horizontal scrollbar.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 56
+56. Performance Acceptance
+
+Section: QA
+Measure the flows students actually use.
+
+Required behavior / contract
+
+ · Initial route load.
+ · Dashboard data query.
+ · Test question transition.
+ · Answer autosave.
+ · Error snapshot load.
+ · Analytics chart render.
+ · Search/filter response.
+
+Acceptance gate
+
+Set practical budgets and measure production-like data sizes.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 57
+57. Security Acceptance
+
+Section: QA
+Security tests are release blockers.
+
+Required behavior / contract
+
+ · Cross-student access denied.
+ · Private snapshot protected.
+ · Service key absent from client bundle.
+ · Invalid upload rejected.
+ · AI cannot mutate without confirmation.
+ · Rate-limit behavior verified.
+
+Acceptance gate
+
+Any unauthorized data exposure blocks release.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 58
+58. Release Acceptance Gate
+
+Section: QA
+All five supporting specifications converge at release.
+
+Required behavior / contract
+
+ · API contracts stable.
+ · Event chains verified.
+ · Security controls verified.
+ · AI safety cases pass or AI remains disabled.
+ · Critical E2E journeys green.
+ · Known limitations documented.
+
+Acceptance gate
+
+Release only when deterministic core learning loop works independently of AI.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 59
+59. Traceability Matrix
+
+Section: FOUNDATION
+Every major requirement maps to implementation and verification.
+
+Required behavior / contract
+
+ · PRD requirement  domain entity/service.
+ · Service mutation  event.
+ · Event  evidence/notification.
+ · Evidence  analytics dimension.
+ · Analytics  UI visualization.
+ · AI recommendation  source evidence.
+ · UI action  API command.
+ · API command  acceptance test.
+
+Acceptance gate
+
+If a requirement has no testable trace, it is not implementation-ready.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 60
+60. Definition of Production Ready
+
+Section: FOUNDATION
+Production readiness is a system property.
+
+Required behavior / contract
+
+ · Real authentication and authorization.
+ · Real persistent database.
+ · No test-mode bypass in production.
+ · No fake metrics.
+ · No placeholder AI claims.
+ · Automations are idempotent.
+ · Private evidence is protected.
+ · Monitoring and rollback exist.
+
+Acceptance gate
+
+Deployment is not approved because the build passes alone.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 61
+61. Final Engineering Rules
+
+Section: FOUNDATION
+These rules prevent the exact failure mode of a pretty but hollow app.
+
+Required behavior / contract
+
+ · Never build a UI that simulates backend state.
+ · Never store a dashboard percentage as the only progress truth.
+ · Never let AI bypass domain services.
+ · Never silently swallow event failures.
+ · Never call a page complete because it returns HTTP 200.
+ · Never erase historical learning evidence to make metrics look better.
+ · Always connect user actions to durable records and downstream consequences.
+
+Acceptance gate
+
+These are non-negotiable engineering principles for KRODEX.
+
+Implementation evidence
+
+ · Relevant source code is traceable to this requirement.
+ · Automated tests cover the normal path and at least one meaningful failure path.
+ · The resulting UI reflects real server state rather than a local simulation.
+ · Logs/events/evidence provide enough provenance to debug the behavior.
+ · Documentation is updated if the implementation intentionally deviates from the contract.
+
+KRODEX · Engineering Support Specification · 5 Documents in 1 · v2.0                         Page 62
+

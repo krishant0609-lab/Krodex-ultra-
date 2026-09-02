@@ -1,0 +1,230 @@
+/**
+ * KRODEX web — test detail editorial styles.
+ *
+ * Phase 7.6 visual layer. The test detail page is editorial: a
+ * quiet header with breadcrumbs, then a questions section with
+ * its own loading / empty / error / populated states.
+ *
+ * The "Start attempt" button is the only strong action on the
+ * page; it is anchored to the page header (passed as `actions`).
+ *
+ * All cosmetic values resolve to design tokens. No raw colors,
+ * no hardcoded spacing.
+ */
+
+.testHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-2);
+  padding-bottom: var(--kd-space-6);
+  border-bottom: 1px solid var(--kd-color-border-subtle);
+}
+
+.testBreadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--kd-space-2);
+  flex-wrap: wrap;
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-text-tertiary);
+  margin: 0;
+}
+
+.testBreadcrumbsLink {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--kd-motion-duration-base)
+    var(--kd-motion-ease-standard);
+}
+
+.testBreadcrumbsLink:hover {
+  color: var(--kd-color-text-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.testBreadcrumbsLink:focus-visible {
+  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
+  outline-offset: var(--kd-focus-ring-offset);
+  border-radius: var(--kd-radius-sm);
+}
+
+.testBreadcrumbsSep {
+  color: var(--kd-color-text-tertiary);
+}
+
+.testBreadcrumbsCurrent {
+  color: var(--kd-color-text-secondary);
+  font-weight: var(--kd-type-body-m-weight);
+}
+
+.testEyebrow {
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  font-weight: var(--kd-type-caption-weight);
+  letter-spacing: var(--kd-type-caption-tracking);
+  text-transform: uppercase;
+  color: var(--kd-color-text-tertiary);
+  margin: 0;
+}
+
+.testTitle {
+  font-size: var(--kd-type-display-s-size);
+  line-height: var(--kd-type-display-s-leading);
+  font-weight: var(--kd-type-display-s-weight);
+  letter-spacing: var(--kd-type-display-s-tracking);
+  color: var(--kd-color-text-primary);
+  margin: 0;
+}
+
+.testSubtitle {
+  font-size: var(--kd-type-body-m-size);
+  line-height: var(--kd-type-body-m-leading);
+  color: var(--kd-color-text-secondary);
+  margin: 0;
+  max-width: 64ch;
+}
+
+.testMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--kd-space-2);
+  flex-wrap: wrap;
+}
+
+.testContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-5);
+}
+
+.sectionHeading {
+  font-size: var(--kd-type-heading-s-size);
+  line-height: var(--kd-type-heading-s-leading);
+  font-weight: var(--kd-type-heading-s-weight);
+  color: var(--kd-color-text-primary);
+  margin: 0;
+}
+
+.stateBand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-2);
+  padding: var(--kd-space-4);
+  background: var(--kd-color-surface-sunken);
+  border: 1px dashed var(--kd-color-border-default);
+  border-radius: var(--kd-radius-md);
+}
+
+.stateBandTitle {
+  font-size: var(--kd-type-body-s-size);
+  font-weight: var(--kd-type-heading-s-weight);
+  color: var(--kd-color-text-primary);
+  margin: 0;
+}
+
+.stateBandBody {
+  font-size: var(--kd-type-body-s-size);
+  line-height: var(--kd-type-body-s-leading);
+  color: var(--kd-color-text-secondary);
+  margin: 0;
+}
+
+.skeletonLine {
+  height: var(--kd-type-body-m-size);
+  background: var(--kd-color-surface-sunken);
+  border-radius: var(--kd-radius-sm);
+  animation: testDetailPulse var(--kd-motion-duration-slow)
+    var(--kd-motion-ease-standard) infinite alternate;
+}
+
+.skeletonLineShort {
+  width: 60%;
+}
+
+@keyframes testDetailPulse {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonLine {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+
+.questionsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.questionsRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--kd-space-3);
+  align-items: center;
+  padding: var(--kd-space-3) 0;
+  border-bottom: 1px solid var(--kd-color-border-subtle);
+}
+
+.questionsRow:last-child {
+  border-bottom: 0;
+}
+
+.questionsTitle {
+  font-size: var(--kd-type-body-m-size);
+  line-height: var(--kd-type-body-m-leading);
+  color: var(--kd-color-text-primary);
+  font-weight: var(--kd-type-body-m-weight);
+}
+
+.questionsCode {
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-text-tertiary);
+}
+
+.startButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kd-space-2);
+  padding: var(--kd-space-3) var(--kd-space-5);
+  background: var(--kd-color-accent-primary);
+  color: var(--kd-color-on-accent-primary);
+  border: 0;
+  border-radius: var(--kd-radius-md);
+  font-size: var(--kd-type-body-m-size);
+  font-weight: var(--kd-type-body-m-weight);
+  cursor: pointer;
+  transition: background var(--kd-motion-duration-base)
+    var(--kd-motion-ease-standard);
+}
+
+.startButton:hover:not(:disabled) {
+  background: var(--kd-color-accent-primary-hover);
+}
+
+.startButton:focus-visible {
+  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
+  outline-offset: var(--kd-focus-ring-offset);
+}
+
+.startButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .startButton,
+  .testBreadcrumbsLink {
+    transition: none;
+  }
+}

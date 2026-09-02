@@ -1,0 +1,1601 @@
+             KRODEX
+
+                 TECHNICAL REQUIREMENTS DOCUMENT
+
+                 From-Scratch Learning Intelligence Platform
+Architecture · Data · APIs · Events · Security · Reliability · Deployment
+
+                           Version 2.0 · September 2026
+
+Document             Role                                       Dependency
+PRD                  Product requirements and behavior          Source of truth for what
+TRD                  Technical architecture and contracts       This document
+App/Web Flow         Route/state transition specification       Uses TRD APIs/events
+UI/UX                Interaction and visual specification       Consumes route/data
+                                                                states
+Implementation Plan  Build sequence and QA                      Executes architecture
+Schema Ready         Database contracts                         Implements domain
+                                                                model
+
+Architecture stance: KRODEX is a real stateful application. The client is not the source of truth, UI cards are not domain
+objects, and AI is not allowed to become the authority for learning state.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                              Page 1
+1. Technical Vision and Architecture Principles
+
+Translate the PRD into a coherent system whose most important property is trustworthy state propagation.
+
+Primary architecture
+
+Use a modular web application with a typed client, typed server/API layer, relational database, object storage for evidence
+snapshots, background job processing for asynchronous analysis, and an event/outbox mechanism for cross-module
+projections.
+
+Core principles
+
+ · Server-authoritative domain state.
+ · Transactional writes for high-risk learning events.
+ · Idempotent commands for retries.
+ · Immutable evidence and outcome history.
+ · Explicit domain events for downstream projections.
+ · AI isolated behind provider-neutral interfaces.
+ · Read models optimized for dashboards without replacing source records.
+ · Stable IDs and deep links for every durable entity.
+
+Architectural boundary
+
+  The browser can request, render and optimistically reflect safe UI state, but it cannot decide whether an Error is
+  resolved, whether a Review is qualifying, or whether a submitted Attempt is final. Those decisions belong to
+  server-side domain services.
+
+Greenfield rule
+
+Do not inherit assumptions from the deleted prototype. The implementation starts from the requirements in the PRD and
+establishes contracts before screen-level coding.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                               Page 2
+2. Recommended Technology Stack
+
+The exact vendor choices can change, but the interfaces and responsibilities below should remain stable.
+
+Reference stack
+
+Layer            Recommended baseline                           Responsibility
+
+Web              React + TypeScript + Vite/Next-style routing   Routes, forms, state, accessibility
+
+UI               Component system + CSS variables               Consistent visual/interaction primitives
+
+API              TypeScript server framework                    Commands, queries, authorization
+
+Database         PostgreSQL                                     Durable relational domain state
+
+ORM              Prisma/Drizzle-equivalent                      Typed persistence and migrations
+
+Object storage   S3-compatible storage                          Evidence snapshots/media
+
+Jobs             Redis-backed queue or DB-backed worker         Analysis, notifications, scheduled work
+
+Auth             Session/OIDC-compatible layer                  Identity and session security
+
+Observability    Structured logs + metrics + traces             Failure diagnosis
+
+Testing          Unit + integration + Playwright-style E2E      Behavior and state validation
+
+Why relational
+
+The product contains many explicit relationships: syllabus hierarchy, questions, attempts, answers, errors, evidence, reviews,
+outcomes and tasks. Referential integrity and transactions are more important than document-model convenience.
+
+Provider abstraction
+
+AI, object storage and email/push providers must be behind interfaces. Domain services should not import a specific provider
+directly.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                            Page 3
+3. System Context and Runtime Topology
+
+Describe what talks to what, and where authority lives.
+
+Runtime components
+
+Component               Reads                                   Writes                         Notes
+                                                                                               Never authoritative
+Browser                 API/read models                         Commands                       Authorization boundary
+                                                                                               Business rules
+API                     DB + object metadata                    DB + outbox                    Retryable
+                                                                                               System of record
+Domain services         Transactional records                   Domain records/events          Private by default
+                                                                                               Non-authoritative
+Worker                  Jobs/events                             Derived records/notifications  Idempotent
+
+PostgreSQL              All durable state                       All transactional state
+
+Object storage          Evidence references                     Snapshot objects
+
+AI adapter              Minimal evidence payload                Analysis result
+
+Notification projector  Domain events                           Notifications
+
+Request path
+
+Browser  API route  authentication/authorization  validation  domain command/query  repository  transaction 
+outbox  response. Background consumers process outbox events after the authoritative transaction commits.
+
+Read path
+
+Dashboard and Insights may use read models or aggregate queries. The source of truth remains normalized domain state;
+derived projections must be rebuildable.
+
+Failure boundary
+
+  If the AI service, notification service, analytics projector or object-storage upload fails, the core learning transaction
+  must either complete with a recoverable evidence status or fail safely without corrupting the attempt/error lifecycle.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                         Page 4
+4. Repository and Domain Module Boundaries
+
+Keep business rules close to their domain instead of scattering them across route handlers.
+
+Modules
+
+Module         Owns                                             Must not own
+
+Identity       Account/session authorization context            Learning rules
+
+Syllabus       SyllabusNode hierarchy                           Question scoring
+
+QuestionBank   Questions + provenance                           Review lifecycle
+
+Tests          Test definitions                                 Final answer mutation after submission
+
+Attempts       Attempt + answers + submission                   UI state
+
+Errors         Error + evidence + lifecycle                     Generic notifications
+
+Reviews        Review + outcome + scheduling                    Syllabus hierarchy
+
+Planner        Task + schedule/recovery                         Error resolution
+
+Insights       Metrics/read models                              Raw evidence mutation
+
+Notifications  Notification records                             Source-domain transitions
+
+Assistant      AI orchestration/proposals                       Direct uncontrolled mutation
+
+Settings       Profile/preferences                              Observed performance facts
+
+Dependency direction
+
+UI depends on API contracts. API routes depend on application services. Application services depend on domain rules and
+repositories. Domain modules may publish events but should not import UI code or specific route handlers.
+
+Shared primitives
+
+ · ID generation.
+ · Clock abstraction for deterministic tests.
+ · Transaction abstraction.
+ · Authorization policy checks.
+ · Pagination/filter primitives.
+ · Domain error taxonomy.
+ · Event envelope format.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                           Page 5
+5. API Style and Contract Standards
+
+Define predictable APIs before implementing individual pages.
+
+Command/query split
+
+Use mutation endpoints for commands and read endpoints for queries. A command returns the resulting entity/version or
+operation status; a query never mutates learning state.
+
+Endpoint conventions
+
+Area                  Examples                                          Notes
+
+Syllabus              GET /syllabus/tree; POST /syllabus/nodes          Hierarchy operations
+
+Tests                 GET /tests; POST /tests; GET /tests/:id           Definitions
+
+Attempts              POST /tests/:id/attempts; PATCH                   Draft + execution
+                      /attempts/:id/answers
+
+Submission            POST /attempts/:id/submit                         Idempotent
+
+Errors                GET /errors; GET /errors/:id                      Evidence lifecycle
+
+Reviews               POST /errors/:id/reviews; POST                    Outcome command
+                      /reviews/:id/outcome
+
+Planner               GET /planner; POST /tasks                         Scheduling
+
+Insights              GET /insights/*                                   Read-only analytics
+
+Notifications         GET /notifications; POST /notifications/:id/read  Inbox
+
+Assistant             POST /assistant/queries; POST                     AI boundary
+                      /assistant/proposals/:id/confirm
+
+Response envelope
+
+Use consistent success/error metadata, request ID, pagination metadata and entity version where relevant. Validation errors
+identify field and rule.
+
+HTTP semantics
+
+ · GET is safe.
+ · POST creates or executes commands.
+ · PATCH updates permitted mutable fields.
+ · DELETE is restricted and generally replaced by archive for historical learning objects.
+ · 409 represents concurrency/idempotency conflicts where appropriate.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                         Page 6
+6. Authentication, Authorization and Account Isolation
+
+Security is a server-side architectural property.
+
+Identity model
+
+Every request resolves an authenticated account context. All protected records carry or inherit account ownership. Anonymous
+access is limited to explicitly public resources, if any.
+
+Authorization layers
+
+· Route-level authentication.
+
+· Resource ownership checks.
+
+· Action-level policy checks.
+
+· Mutation-specific authorization.
+
+· Object-storage authorization through signed/private access paths.
+
+Object authorization
+
+For /errors/:id, for example, the service must load the error within the authenticated account scope before returning or mutating
+it. Never fetch by ID alone and then check ownership in the browser.
+
+Session security
+
+Control                                                         Requirement
+
+Cookies                                                         HttpOnly, Secure in production, appropriate SameSite
+
+CSRF                                                            Protect cookie-authenticated mutations
+
+Secrets                                                         Environment/secret manager, never source-controlled
+
+Rate limiting                                                   Auth, AI and expensive endpoints
+
+Audit                                                           Record sensitive state changes
+
+Logging                                                         Never log private answer/evidence payloads by default
+
+Tenant isolation
+
+  A database query that omits account scope is a defect. Prefer repository methods that require accountId as a
+  parameter so accidental cross-account queries become difficult to write.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                         Page 7
+7. Database Architecture and Transaction Boundaries
+
+The database must preserve the exact learning history described by the PRD.
+
+Transactional units
+
+Transaction                                                     Atomic responsibilities
+
+Submit Attempt                                                  Lock/check attempt  finalize  score  create eligible evidence  enqueue
+                                                                downstream events
+
+Complete Review                                                 Validate review  persist outcome  update lifecycle  schedule next review
+                                                                 emit events
+
+Create Test                                                     Persist definition  questions/provenance links  ready state
+
+Archive Syllabus                                                Validate references  mark archived  emit event
+
+Complete Task                                                   Validate status  record completion  emit event
+
+Isolation
+
+Use database transactions for state transitions that must not partially apply. Row-level locking or optimistic version checks
+should prevent concurrent completion from producing contradictory lifecycle states.
+
+Idempotency
+
+High-risk commands accept an idempotency key or derive a stable command identity. A retried submission must return the
+original result instead of creating a second Attempt or duplicate ErrorEvidence.
+
+Outbox
+
+Write domain events to an outbox table in the same transaction as the source mutation. A worker publishes/processes the
+outbox after commit.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                                 Page 8
+8. Domain Event Architecture                                    Purpose
+                                                                Unique event identity
+Events connect modules without making them tightly coupled.     Stable semantic name
+                                                                Authoritative event time
+Event envelope                                                  Security scope
+                                                                User/system actor
+ Field                                                          Source domain object type
+ eventId                                                        Source object ID
+ eventType                                                      Ordering/version
+ occurredAt                                                     Minimal event data
+ accountId                                                      Evolution control
+ actorId
+ aggregateType
+ aggregateId
+ aggregateVersion
+ payload
+ schemaVersion
+
+Core events
+
+ · attempt.submitted
+ · attempt.analyzed
+ · error.recorded
+ · error.classified
+ · review.scheduled
+ · review.started
+ · review.outcome_recorded
+ · error.resolved
+ · error.reopened
+ · task.completed
+ · task.missed
+ · syllabus.node_archived
+ · notification.created
+
+Event rule
+
+  Events describe facts that already happened. Do not publish speculative commands as though they were facts. A
+  recommendation is a proposal; an error resolution is a domain fact.
+
+Replay
+
+Consumers should be idempotent and, where feasible, rebuildable from event history plus source tables. This supports
+repairing dashboards/notifications without rewriting learning history.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                        Page 9
+9. Automatic Error Capture Pipeline
+
+Specify the P0 feature at service level, not just UI level.
+
+Pipeline
+
+Stage                                                           Technical responsibility
+
+1. Submit                                                       Finalize Attempt exactly once
+
+2. Score                                                        Evaluate answers using authoritative answer data
+
+3. Identify                                                     Select incorrect eligible questions
+
+4. Snapshot                                                     Create/store in-app question snapshot or mark unavailable
+
+5. Link                                                         Create ErrorEvidence with source IDs
+
+6. Group                                                        Match evidence to existing error pattern when policy supports it
+
+7. Classify                                                     Run optional AI/system suggestion
+
+8. Schedule                                                     Create review according to policy
+
+9. Emit                                                         Publish resulting domain events
+
+10. Project                                                     Update notifications/dashboard/insights
+
+Atomicity decision
+
+The Attempt submission itself must not depend on successful AI classification. The submission and basic evidence record are
+P0. Classification can be asynchronous while preserving a 'classification pending' state.
+
+Screenshot implementation
+
+The recommended v1 implementation captures a deterministic in-app representation of the question/result region rather than
+arbitrary device-wide screenshots. Store the resulting object privately and keep a metadata record in PostgreSQL.
+
+Failure matrix
+
+Failure                                                         Required outcome
+
+Snapshot fails                                                  ErrorEvidence exists with unavailable status
+
+AI fails                                                        Error remains usable; classification pending/unknown
+
+Notification fails                                              Learning state remains committed; retry notification
+
+Worker crashes                                                  Outbox/job retries without duplicates
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                                    Page 10
+10. Evidence Object Storage Design
+
+Separate large binary evidence from relational metadata.
+
+Storage model
+
+PostgreSQL stores Evidence and EvidenceAsset metadata. Object storage stores the binary snapshot. The database never
+needs to contain image bytes.
+
+Asset metadata
+
+Field                                                           Purpose
+
+assetId                                                         Stable asset identity
+
+evidenceId                                                      Parent evidence
+
+storageKey                                                      Private object key
+
+mimeType                                                        Validated content type
+
+byteSize                                                        Upload validation
+
+checksum                                                        Integrity/deduplication
+
+createdAt                                                       Audit
+
+status                                                          Pending/Available/Failed/Deleted
+
+Access
+
+Do not expose permanent public URLs. Generate short-lived authorized access URLs or stream through an
+authorization-aware endpoint.
+
+Retention
+
+Retention policy must be explicit. Archiving an Error should not accidentally orphan its evidence. Deletion, if eventually
+supported, must define whether evidence is deleted, tombstoned or retained for audit.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                              Page 11
+11. Error Domain Model and Lifecycle Engine
+
+Implement the Error state machine as a domain service.
+
+State model
+
+State        Allowed next states                                Trigger
+
+OPEN         IN_REVIEW, ARCHIVED                                Review started / archive
+
+IN_REVIEW    OPEN, RESOLVED                                     Incorrect / qualifying correct
+
+RESOLVED     REOPENED, ARCHIVED                                 Later recurrence / archive
+
+REOPENED     IN_REVIEW, ARCHIVED                                Review started / archive
+
+ARCHIVED     --                                                 Terminal for active workflow
+
+Transition service
+
+A single ErrorLifecycleService should validate current state, required evidence, actor, policy and event source before changing
+state. Controllers must never directly set status strings.
+
+Concurrency
+
+Use optimistic versioning or row locks around transitions. If two review submissions race, only one qualifying transition may win;
+the other receives a safe conflict/retry response.
+
+History
+
+Every transition creates a lifecycle history record with fromState, toState, reason, actor, source event and timestamp.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                  Page 12
+12. Review Scheduling Engine
+
+Reviews are derived correction work with explicit scheduling semantics.
+
+Scheduling inputs
+
+· Error state.
+
+· Last review outcome.
+
+· Review count.
+
+· Prior success/failure.
+
+· Recurrence evidence.
+
+· Student preferences.
+
+· Configured review policy.
+
+Policy interface
+
+Implement a ReviewPolicy interface rather than embedding intervals in UI code. Example: nextDue(error, outcome, history,
+policyConfig) returns a schedule decision with reason.
+
+Schedule decision
+
+Output                                                          Meaning
+
+dueAt                                                           Next due timestamp
+
+reasonCode                                                      Machine-readable reason
+
+reasonText                                                      Explainable UI text
+
+confidence                                                      Optional policy confidence
+
+requiresConfirmation                                            Whether user must confirm
+
+Important distinction
+
+  A schedule is not proof of mastery. Review completion and qualifying outcomes are the evidence used by the
+  lifecycle engine; calendar presence is only planned work.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                Page 13
+13. Review Outcome and Resolution Rules
+
+Make resolution deterministic and testable.
+
+Outcome processing
+
+ReviewOutcomeService validates that the Review is active, belongs to the Error, has not already been completed, and contains
+a valid result. It then records the immutable outcome and asks ErrorLifecycleService for the next state.
+
+Outcome rules
+
+Outcome                                                         Lifecycle effect
+
+Incorrect                                                       Error remains/returns OPEN; new evidence attached
+
+Correct + uncertain                                             Record success signal; do not auto-resolve unless policy explicitly allows
+
+Correct + confident                                             Advance policy; may resolve
+
+Skipped                                                         No learning success; schedule according to policy
+
+Technical failure                                               Do not alter learning lifecycle
+
+Reopen
+
+A later incorrect eligible answer against a resolved Error creates recurrence evidence and transitions it to REOPENED. Prior
+resolution history remains untouched.
+
+Idempotency
+
+Completing the same Review twice with the same command ID returns the original outcome. A different conflicting outcome
+against an already-completed review is rejected.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                                              Page 14
+14. Test and Question Architecture
+
+Separate reusable test definitions from attempts and question provenance.
+
+Entities
+
+Entity                                                          Responsibility
+
+Question                                                        Canonical question content + answer metadata
+
+QuestionSource                                                  Authored/imported/generated provenance
+
+Test                                                            Reusable configuration and scope
+
+TestQuestion                                                    Question membership/order
+
+Attempt                                                         One execution of a Test
+
+AttemptAnswer                                                   Student response per question
+
+Question immutability
+
+Once a question is used by a submitted Attempt, its historical presentation must remain reproducible. Prefer immutable
+question versions. Editing the current question creates a new version rather than changing history.
+
+Scoring
+
+Scoring rules are versioned with the test/question configuration so old attempts remain explainable even after scoring logic
+changes.
+
+Generated questions
+
+AI-generated questions must carry generator/provider metadata and validation status. Generation never bypasses provenance.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                Page 15
+15. Attempt Persistence and Autosave
+
+Autosave is a reliability feature, not a convenience.
+
+Answer command
+
+PATCH answer requests identify attemptId, questionId, answer payload and client command ID. The server validates that the
+Attempt is still editable and stores the latest draft answer with version metadata.
+
+Autosave strategy
+
+Situation                                                       Behavior
+
+Typing/selecting                                                Debounce client requests
+
+Navigation                                                      Flush pending changes
+
+Blur                                                            Attempt immediate save where useful
+
+Network loss                                                    Queue locally until reconnect
+
+Server conflict                                                 Refresh latest attempt version
+
+Submitted attempt                                               Reject further mutation
+
+Local recovery
+
+Local browser recovery may preserve unsent draft data, but the UI must clearly distinguish local-unsynced state from
+server-saved state.
+
+Security
+
+Do not place authoritative answer keys in client payloads before submission. The client receives only what is necessary to
+render the question.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                              Page 16
+16. Attempt Submission Transaction
+
+Submission is one of the highest-risk commands in KRODEX.
+
+Submission algorithm
+
+ · Load Attempt with account scope and lock/version check.
+ · Reject if already submitted; return prior result for idempotent retry.
+ · Validate required state.
+ · Freeze answers.
+ · Compute score using versioned scoring rules.
+ · Persist submission timestamp/result.
+ · Create eligible ErrorEvidence records or enqueue guaranteed processing.
+ · Write outbox events.
+ · Commit transaction.
+ · Return final Attempt result.
+
+Exactly-once illusion
+
+Distributed systems rarely provide literal exactly-once execution everywhere. KRODEX achieves exactly-once domain effects
+through unique constraints, idempotency keys, transactional state transitions and idempotent consumers.
+
+Timeout behavior
+
+If the client times out after the server commits, retrying the same command must return the committed result rather than create
+another Attempt result.
+
+Submission contract
+
+  Once an Attempt is submitted, the server owns the final state. UI navigation, refreshes and duplicate clicks cannot
+  revert it to editable.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0  Page 17
+17. Dashboard Read Model and Aggregation
+
+Build the dashboard from evidence, not manually maintained counters.
+
+Read model
+
+Use either materialized views/read tables or efficient aggregate queries. For a growing dataset, maintain per-account
+daily/activity summaries and topic-level aggregates while retaining source records.
+
+Dashboard sections
+
+Section                                                         Data source
+
+Today queue                                                     Tasks + due Reviews
+
+Learning pulse                                                  Attempts + Answers
+
+Priority weaknesses                                             Errors + recurrence + syllabus
+
+Recent activity                                                 Domain events
+
+Upcoming                                                        Tasks + Reviews
+
+Setup state                                                     Profile + syllabus + evidence presence
+
+Freshness
+
+Document expected freshness. Core counts should converge immediately after transaction commit where practical; heavier
+analytics may be eventually consistent but must show no false certainty.
+
+Cache invalidation
+
+Invalidate by domain event rather than by individual UI component guesses. The event identifies account and aggregate so
+affected projections can be recomputed.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                         Page 18
+18. Insights Analytics Architecture
+
+Separate raw evidence from analytical definitions.
+
+Metric pipeline
+
+Raw records  validated aggregate query/read model  metric definition  insight object  supporting record IDs. Do not let
+an LLM calculate core metrics from prose.
+
+Metric definitions
+
+Metric                                                          Technical calculation
+
+Test completion                                                 submitted_attempts / started_attempts
+
+Error capture                                                   eligible_incorrect_with_evidence / eligible_incorrect
+
+Review completion                                               completed_reviews / due_reviews
+
+Correction rate                                                 qualifying_correct / completed_reviews
+
+Reopen rate                                                     reopened_errors / resolved_errors
+
+Time to correction                                              resolution_at - error_created_at
+
+Sample-size guard
+
+Metric APIs should return numerator, denominator and sample size. Insight generation can apply thresholds and label limited
+evidence.
+
+Drill-down IDs
+
+Every insight response should include source entity IDs or query parameters sufficient for the UI to navigate to supporting
+records.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                         Page 19
+19. Planner and Backlog Architecture
+
+Planning must reference learning-domain objects without duplicating them.
+
+Task relationships
+
+Task type                                                       Possible source
+
+Study                                                           Manual / syllabus node / recommendation
+
+Practice                                                        Test / syllabus node
+
+Review                                                          Review ID
+
+Admin                                                           Manual
+
+Other                                                           Manual
+
+Scheduling
+
+Planner owns Task scheduling fields. A Review remains owned by Reviews; a planner representation references the Review
+instead of copying its lifecycle.
+
+Missed work
+
+A scheduled task whose due boundary passes remains historically tied to its original date. Recovery actions create explicit audit
+information and optionally update future schedule.
+
+Backlog conversion
+
+BacklogItem  PlannerTask should be a transactional conversion with source linkage. Repeated clicks cannot create duplicate
+tasks.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                           Page 20
+20. Notifications and Event Projection
+
+Notifications are durable projections of meaningful domain facts.
+
+Projection flow
+
+Domain transaction  outbox event  notification projector  deduplication key  Notification record  UI query.
+
+Deduplication
+
+Use a deterministic key such as account + event type + source aggregate + semantic occurrence ID where repeated processing
+would otherwise duplicate messages.
+
+Notification actions
+
+Event                                                              Deep link
+
+error.recorded                                                     /errors/:id
+
+review.due                                                         /reviews/:id
+
+review.overdue                                                     /reviews/:id or recovery
+
+error.reopened                                                     /errors/:id
+
+attempt.analyzed                                                   /attempts/:id
+
+task.missed                                                        /planner
+
+Read state
+
+Marking a notification read updates only notification state. It must never resolve an Error, complete a Review or change Planner
+state.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                               Page 21
+21. Assistant Architecture and AI Guardrails
+
+AI sits behind a controlled orchestration layer.
+
+Assistant pipeline
+
+ · Authenticate user.
+ · Classify request intent.
+ · Retrieve only authorized relevant records.
+ · Minimize and structure evidence.
+ · Call provider through adapter.
+ · Validate structured output.
+ · Attach source references.
+ · Return answer/proposal.
+ · Require confirmation for durable mutation.
+
+Tool boundary
+
+Expose narrow tools such as getError, getAttemptSummary, listDueReviews, getTopicMetrics and proposeTask. Do not give
+the model raw database access.
+
+Structured outputs
+
+AI classification should return category, rationale, confidence and source IDs. The server validates category enums and source
+ownership before storing it.
+
+Mutation protocol
+
+  Assistant proposals are not domain facts. A proposal becomes a mutation only after explicit confirmation or a
+  previously enabled automation policy, and then passes through the same domain service used by the normal UI.
+
+Provider failure
+
+Timeouts, invalid JSON, quota errors and hallucinated IDs are treated as AI failures. Core deterministic workflows continue.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0  Page 22
+22. Caching, Consistency and Offline/Network Behavior
+
+Define what may be stale and what may never be stale.
+
+Consistency tiers
+
+Data                                                            Consistency
+
+Submitted Attempt                                               Strong
+
+Error lifecycle                                                 Strong
+
+Review outcome                                                  Strong
+
+Task completion                                                 Strong
+
+Notifications                                                   Eventual but prompt
+
+Dashboard aggregates                                            Near-real-time/eventual
+
+Insights                                                        Eventual
+
+AI explanation                                                  Best-effort
+
+Client caching
+
+Cache safe GET responses with explicit invalidation. Mutation responses should update/invalidate affected caches. Never use
+a cached Error status to authorize a transition.
+
+Reconnect
+
+On reconnect, the client reconciles local draft operations with server versions. Unsent answer commands are replayed with
+command IDs; already-applied commands are acknowledged idempotently.
+
+Stale UI
+
+  A stale dashboard number is acceptable when clearly understood; a stale Error state used to decide whether a
+  Review may resolve is not. Authorization and lifecycle checks always use server state.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                           Page 23
+23. Search and Filtering Backend
+
+Search should be useful without turning every page into a bespoke query system.
+
+Search index
+
+Start with PostgreSQL indexed text search for syllabus nodes, tests, errors, reviews and tasks. Introduce a dedicated search
+service only when scale or ranking requirements justify it.
+
+Filter contract
+
+Entity                                                          Filter parameters
+
+Errors                                                          state, category, nodeId, recurrenceMin, from, to
+
+Reviews                                                         status, dueBefore, nodeId
+
+Tests                                                           status, scopeId, createdFrom, createdTo
+
+Planner                                                         date, status, type, priority
+
+Notifications                                                   read, eventType, from, to
+
+Pagination
+
+Prefer cursor pagination for event/history-heavy lists. Return stable sort keys and cursors. Avoid unbounded list endpoints.
+
+Deep navigation
+
+Search results should return entity type, display label, state and canonical route. This allows the client to navigate without
+reconstructing URLs from fragile assumptions.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                    Page 24
+24. Concurrency, Versioning and Race Conditions
+
+Real users can click twice, use two tabs or lose connectivity.
+
+Version strategy
+
+Add integer version columns or updatedAt checks to mutable aggregates. Mutations include expected version where concurrent
+editing matters.
+
+Critical races
+
+Race                                                            Protection
+
+Double submit                                                   Idempotency key + submitted state
+
+Two review completions                                          Review lock/version + unique completion
+
+Archive during edit                                             Version check
+
+Two task completions                                            Status transition constraint
+
+Duplicate evidence job                                          Unique source occurrence key
+
+Notification retry                                              Projection dedupe key
+
+User-facing conflict
+
+A conflict should be recoverable: refresh current state, explain what changed and preserve unsent local data when safe.
+
+No hidden overwrites
+
+  Never silently accept last-write-wins for immutable learning evidence. Mutable preferences may use simpler
+  semantics; historical answers/outcomes may not.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                           Page 25
+25. Background Jobs and Worker System
+
+Asynchronous work must be reliable and observable.
+
+Jobs
+
+Job                     Trigger                                 Retry
+                                                                Yes
+AnalyzeAttempt          attempt.submitted                       Yes
+                                                                Yes
+CreateEvidenceSnapshot  eligible incorrect answer               Yes
+                                                                Yes
+ClassifyError           evidence ready                          Yes
+                                                                Yes
+ScheduleReview          error lifecycle change
+
+ProjectNotification     domain event
+
+RefreshAnalytics        configured/event driven
+
+CleanupAssets           retention policy
+
+Job identity
+
+Every job has a deterministic business key or source event ID. Workers must be safe to run more than once.
+
+Retry policy
+
+Use exponential backoff with a bounded retry count. Permanent validation failures move to a dead-letter state and emit an
+operational alert rather than retrying forever.
+
+Worker observability
+
+ · Queue depth.
+ · Age of oldest job.
+ · Success/failure count.
+ · Retry count.
+ · Dead-letter count.
+ · Processing duration.
+ · Source event ID.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                             Page 26
+26. Error Capture Screenshot Service -- Deep Technical Design
+
+Specify the special feature down to implementation boundaries.
+
+Recommended v1 approach
+
+Render a canonical evidence snapshot from structured question/result data. The snapshot renderer receives a sanitized
+EvidenceSnapshot DTO, not arbitrary DOM or privileged browser state. It outputs a deterministic image representation suitable
+for audit.
+
+Snapshot DTO
+
+Field                                                           Example
+
+questionText                                                    Canonical question content
+
+questionMedia                                                   Authorized media refs
+
+studentAnswer                                                   Recorded response
+
+expectedAnswer                                                  Verified answer if available
+
+questionNumber                                                  Attempt position
+
+syllabusPath                                                    Resolved path
+
+capturedAt                                                      Server timestamp
+
+Security
+
+Sanitize HTML/media references before rendering. Do not allow question content to execute scripts. Object storage keys are
+generated server-side.
+
+Consistency
+
+Store a content checksum of the snapshot DTO alongside the asset checksum. This allows later verification that the evidence
+image corresponds to the recorded context.
+
+Degraded mode
+
+If rendering is unavailable, persist the structured evidence and mark asset status Failed. A retry job can later create the image
+without recreating the Error.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                Page 27
+27. Domain Rules for Automatic Error Grouping
+
+Decide when repeated mistakes belong to one Error versus separate Errors.
+
+Default principle
+
+The safest v1 strategy is conservative grouping. Automatically link new evidence to an existing Error only when there is strong
+deterministic identity, such as the same canonical question/skill issue, or a confirmed grouping rule.
+
+Signals
+
+ · Question ID/version.
+ · Syllabus node.
+ · Error category.
+ · Normalized concept identifier where available.
+ · Prior student-confirmed grouping.
+ · AI suggestion only as non-authoritative evidence.
+
+No unsafe merging
+
+Two superficially similar wrong answers should not be merged merely because an AI model says they look similar. Create
+separate evidence and offer a grouping proposal if confidence is insufficient.
+
+Audit
+
+  If grouping changes, store the reason and actor. Merging learning history must never erase the original occurrence
+  records.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0  Page 28
+28. Data Validation and Domain Error Taxonomy
+
+Validation is distributed: UI validation for usability, server validation for authority.
+
+Validation layers
+
+Layer                                                           Purpose
+
+UI                                                              Immediate feedback
+
+API schema                                                      Payload shape/types
+
+Domain                                                          Business rules
+
+Database                                                        Referential/unique/integrity constraints
+
+Worker                                                          External-result validation
+
+Error codes
+
+ · VALIDATION_ERROR
+ · UNAUTHORIZED
+ · FORBIDDEN
+ · NOT_FOUND
+ · CONFLICT
+ · INVALID_STATE
+ · IDEMPOTENCY_REPLAY
+ · DEPENDENCY_UNAVAILABLE
+ · AI_OUTPUT_INVALID
+ · EVIDENCE_CAPTURE_FAILED
+
+Client behavior
+
+Map codes to user-readable messages without exposing stack traces or internal provider details. Preserve request IDs for
+support/debugging.
+
+Domain versus transport
+
+A 400/409 response is not itself a business rule. The domain service must define the actual reason a transition is invalid.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                               Page 29
+29. Observability and Audit Architecture
+
+Trustworthy learning data requires trustworthy operational data.
+
+Three pillars
+
+Signal                                                            Examples
+
+Logs                                                              Structured command/event/job records
+
+Metrics                                                           Latency, errors, queue depth, state transitions
+
+Traces                                                            Request  DB  worker  provider
+
+Correlation
+
+Every request has requestId/traceId. Domain commands and events carry correlationId so a submission can be traced through
+evidence capture, classification, notification and analytics.
+
+Audit records
+
+ · Actor.
+ · Action.
+ · Aggregate type/id.
+ · Before/after state where appropriate.
+ · Reason.
+ · Timestamp.
+ · Correlation ID.
+
+Privacy
+
+  Operational logs must not casually contain full student answers, question text, screenshots or AI prompts. Log
+  identifiers, counts, states and safe metadata instead.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                     Page 30
+30. Testing Architecture
+
+Test the state machine and integrations, not just the rendered page.
+
+Unit tests
+
+ · Error lifecycle transitions.
+ · Review policy.
+ · Priority ranking.
+ · Metric calculations.
+ · Validation.
+ · Idempotency helpers.
+ · Assistant proposal validation.
+
+Integration tests
+
+ · Attempt submission transaction.
+ · Evidence creation.
+ · Outbox persistence.
+ · Review outcome transaction.
+ · Authorization boundaries.
+ · Repository filters by account.
+
+End-to-end tests
+
+Use a browser against a real test database to execute the critical journey: create syllabus  create test  answer incorrectly 
+submit  verify automatic evidence  classify  review  fail  pass  resolve  recur  reopen.
+
+Contract tests
+
+Validate API response shapes and event schemas so frontend/backend and worker consumers can evolve independently.
+
+Property tests
+
+For lifecycle rules, test that impossible transitions never occur across broad combinations of state/outcome/history.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0  Page 31
+31. Performance and Capacity Requirements
+
+Performance targets are engineering goals, not permission to weaken correctness.
+
+Targets
+
+Operation                                                       Target
+
+Normal page query                                               p95 < 500 ms at baseline load
+
+Simple mutation                                                 p95 < 700 ms excluding async work
+
+Answer autosave                                                 p95 < 400 ms
+
+Attempt submit acknowledgement                                  p95 < 1.2 s excluding heavy analysis
+
+Dashboard initial data                                          p95 < 1.0 s for baseline account
+
+Search                                                          p95 < 700 ms
+
+Background evidence job                                         Tracked separately; alert on age/SLA breach
+
+Scaling
+
+Scale API workers horizontally. Keep application servers stateless where possible. Use database indexes, connection pooling
+and queue workers. Store binary evidence outside the relational database.
+
+Large accounts
+
+Paginate histories, aggregate analytics, index accountId + common filters, and avoid loading all attempts/errors into memory.
+
+Performance anti-patterns
+
+ · N+1 entity loading.
+ · Client-side filtering of huge lists.
+ · Recomputing all analytics on every dashboard request.
+ · Unbounded event history queries.
+ · Embedding image binaries in normal API JSON.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                               Page 32
+32. Reliability, Recovery and Backup
+
+Learning evidence must survive normal failures.
+
+Reliability controls
+
+· Transactional writes.
+
+· Idempotency.
+
+· Outbox.
+
+· Retryable workers.
+
+· Database constraints.
+
+· Private object storage with lifecycle policy.
+
+· Automated backups.
+
+· Restore drills.
+
+Recovery scenarios
+
+Failure                                                         Recovery
+
+API crash during submission                                     Retry command; idempotent result
+
+Worker crash                                                    Outbox/job retry
+
+Object storage outage                                           Evidence metadata persists; asset pending/failed
+
+Database failover                                               Restore from durable infrastructure
+
+Projection corruption                                           Rebuild read model from source/event history
+
+AI outage                                                       Deterministic core continues
+
+Backup
+
+Back up relational data and critical object metadata. Evidence objects require an explicit durability strategy. Test restoration, not
+merely backup creation.
+
+RPO/RTO
+
+Set concrete production values before launch; development can use simpler defaults. The implementation must document
+which learning records can be lost under each recovery scenario.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                    Page 33
+33. Deployment Environments and Configuration
+
+Separate development, staging and production behavior.
+
+Environments
+
+Environment                                                     Purpose
+
+Local                                                           Feature development
+
+Test                                                            Automated tests + disposable DB
+
+Staging                                                         Production-like integration/QA
+
+Production                                                      Real student data
+
+Configuration
+
+ · Database URL.
+ · Session/auth secrets.
+ · Object storage credentials.
+ · Queue configuration.
+ · AI provider settings.
+ · Feature flags.
+ · Allowed origins.
+ · Logging level.
+
+Secrets
+
+Secrets are injected through environment/secret management and never committed. Production credentials must never be
+copied into local source files.
+
+Migration strategy
+
+Schema migrations are versioned and forward-compatible. Avoid deployments where the old application cannot safely coexist
+with the new schema during rollout.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                   Page 34
+34. API Security, Rate Limits and Abuse Controls
+
+Protect both the student and the infrastructure.
+
+Rate-limit classes
+
+Endpoint class                                                  Policy
+
+Authentication                                                  Strict
+
+Assistant/AI                                                    Per-account + provider budget
+
+Search                                                          Moderate
+
+Autosave                                                        Controlled to prevent floods
+
+Submit/review                                                   Strict with idempotency
+
+Reads                                                           Higher limits with pagination
+
+Input safety
+
+ · Validate lengths.
+ · Reject unexpected fields.
+ · Sanitize rich content.
+ · Validate MIME/size for evidence.
+ · Never trust client-provided account IDs.
+ · Use allowlists for enums and provider names.
+
+AI budget
+
+Track AI requests/tokens/cost metadata per account and feature. If the budget is exceeded, return a deterministic fallback or
+unavailable state rather than silently failing unrelated core workflows.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                 Page 35
+35. Frontend Architecture and State Management
+
+The frontend should mirror domain boundaries without duplicating business authority.
+
+Client layers
+
+Layer                                                           Responsibility
+
+Routes                                                          URL + page composition
+
+Components                                                      Reusable presentation
+
+Forms                                                           Input state + client validation
+
+Query cache                                                     Server data caching
+
+Command hooks                                                   Mutation requests + invalidation
+
+Local draft store                                               Temporary attempt recovery
+
+Design system                                                   Visual primitives
+
+Server-state rule
+
+Treat API data as server state. Avoid a giant global store containing every domain object. Cache by stable query keys and
+invalidate based on mutation results/events.
+
+Optimistic updates
+
+Allowed for safe presentation changes such as notification read state, but critical learning transitions should wait for server
+acknowledgement or clearly show pending status.
+
+Accessibility
+
+Components must expose semantic controls, keyboard behavior, focus management and accessible status messages. The UI
+must not depend on visual animation to communicate state.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                    Page 36
+36. Route-Level Technical Specification
+
+Map every PRD route to its technical data dependencies.
+
+Route matrix
+
+Route           Primary queries                                 Primary commands
+                                                                complete/start actions
+/dashboard      dashboard summary, queue, activity              filters only
+                                                                create/reschedule/complete
+/insights       metrics + supporting IDs                        create/schedule/archive
+                                                                filter/archive
+/planner        tasks + reviews                                 classify/schedule/start review
+                                                                start/complete
+/backlog        backlog items                                   create/archive/start
+                                                                start
+/errors         error list + counts                             save/submit
+                                                                create/edit/reorder/archive
+/errors/:id     error + evidence + history                      mark read
+                                                                ask/confirm proposal
+/reviews        review queue                                    save
+
+/tests          test list
+
+/tests/:id      test + attempts + errors
+
+/attempts/:id   attempt + questions + answers
+
+/syllabus       tree + node detail
+
+/notifications  notification list
+
+/assistant      grounded retrieval
+
+/settings       profile/preferences
+
+Technical rule
+
+  The route component should not contain the lifecycle algorithm. It invokes a command/query contract and renders
+  returned state.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                  Page 37
+37. State Synchronization and Cross-Module Projections
+
+Guarantee that one action becomes one coherent product state.
+
+Submission propagation
+
+Attempt submission is authoritative. It emits attempt.submitted and, after scoring/evidence processing, relevant error and
+analysis events. Dashboard, Notifications and Insights consume projections rather than independently guessing that a test
+happened.
+
+Review propagation
+
+Review outcome updates Review and Error in one transaction, then emits lifecycle events. Planner references the Review,
+Dashboard reads due counts, Insights reads outcomes, Notifications reads the event.
+
+Projection rebuild
+
+Each read model must have a rebuild command or deterministic recomputation path. If a projector loses data, the source
+records remain intact.
+
+Freshness indicators
+
+Where a projection can lag, internal observability tracks lag. User-facing UI should avoid presenting an old metric as exact
+when its freshness guarantee is weaker.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0  Page 38
+38. Migration, Versioning and Backward Compatibility
+
+Even a greenfield product will evolve after launch.
+
+API versioning
+
+Prefer additive changes first. Breaking changes require a versioned contract or coordinated deployment. Frontend and worker
+consumers must not assume undocumented fields.
+
+Event schema
+
+Every event includes schemaVersion. Consumers tolerate additive fields and explicitly migrate when semantics change.
+
+Question versioning
+
+Submitted attempts reference the question version used. Future edits create new versions so historical evidence remains
+reproducible.
+
+Data migration rules
+
+ · Never overwrite historical outcomes to 'fix' analytics.
+ · Backfill with explicit migration provenance.
+ · Run migrations on staging with production-like data volume.
+ · Verify counts and foreign keys after migration.
+ · Keep rollback/forward strategy documented.
+
+Greenfield baseline
+
+  The first production schema should already contain the fields needed for provenance, lifecycle history and
+  idempotency. Do not postpone these as 'future improvements'.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0  Page 39
+39. Infrastructure-as-Code and Operational Checklist
+
+Turn the architecture into reproducible infrastructure.
+
+Infrastructure components
+
+· Web/API runtime.
+
+· PostgreSQL.
+
+· Queue/worker runtime.
+
+· Redis if used.
+
+· Object storage.
+
+· Secrets.
+
+· DNS/TLS.
+
+· Monitoring/alerting.
+
+· Backup storage.
+
+Deployment pipeline
+
+Stage                                                           Gate
+
+Lint/typecheck                                                  No errors
+
+Unit tests                                                      Pass
+
+Integration tests                                               Pass
+
+Build                                                           Reproducible
+
+Migration check                                                 Forward-compatible
+
+E2E                                                             Critical loop passes
+
+Deploy staging                                                  Smoke tests
+
+Production                                                      Approval + monitoring
+
+Operational alerts
+
+ · Submission failure spike.
+ · Evidence capture failure spike.
+ · Dead-letter jobs.
+ · Queue age breach.
+ · Database saturation.
+ · Authorization error anomaly.
+ · AI provider failure rate.
+ · Projection lag.
+
+Runbook requirement
+
+Every critical alert has a short recovery procedure, owner and verification step. Operational work must never require editing
+learning records manually to 'fix' a UI counter.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                         Page 40
+40. TRD Final Contract and Engineering Acceptance
+
+This document is complete only when the architecture can prove the PRD's product behavior.
+
+Architecture acceptance matrix
+
+Requirement                                                     Technical proof
+
+Persistent learning state                                       PostgreSQL source of truth
+
+Automatic error capture                                         Submission/evidence transaction + jobs
+
+Automatic snapshot                                              EvidenceSnapshot DTO + private object storage
+
+Review correction loop                                          ReviewOutcome + lifecycle services
+
+Resolve/reopen                                                  Server-side state machine + history
+
+Cross-page interconnection                                      Domain events + projections
+
+No duplicate actions                                            Idempotency + unique constraints
+
+AI guardrails                                                   Adapter + structured output + proposal confirmation
+
+Historical integrity                                            Immutable outcomes/versioned questions
+
+Security                                                        Account-scoped repositories + authorization
+
+Recovery                                                        Outbox + retries + backups
+
+Real app states                                                 API contracts + explicit loading/error/empty states
+
+Definition of technically done
+
+ · All P0 domain commands implemented.
+ · All high-risk mutations transactional/idempotent.
+ · All major routes have typed query/command contracts.
+ · Critical events have consumers or documented no-op handling.
+ · Evidence storage is private and recoverable.
+ · Lifecycle rules are unit/integration tested.
+ · End-to-end critical loop passes.
+ · Observability covers critical failures.
+ · Schema migrations are versioned.
+ · No UI-only source of truth remains.
+
+Handoff
+
+App/Web Flow should now convert these contracts into exact route-by-route transitions. UI/UX should map every returned state
+into interaction and visual states. Project Implementation Plan should sequence infrastructure, domain services, routes and QA.
+Schema Ready should implement the entities, keys, constraints and indexes implied by this TRD.
+
+Final engineering principle
+
+  KRODEX should behave like one system: a student action creates authoritative state once, downstream modules
+  consume that state, and every important automated decision can be traced back to a real record.
+
+KRODEX · Technical Requirements Document · From Scratch · v2.0                                                       Page 41
+

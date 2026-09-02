@@ -1,0 +1,1530 @@
+         KRODEX
+
+DETAILED PRODUCT REQUIREMENTS DOCUMENT
+
+       From-Scratch Learning Intelligence Platform
+                Version 2.0 · September 2026
+
+Document                     Purpose                               Build order
+PRD                          What the real product must do         1
+TRD                          How it is engineered                  2
+App/Web Flow                 Every route, transition and state     3
+UI/UX                        Visual and interaction specification  4
+Project Implementation Plan  Build sequencing, QA and delivery     5
+Schema Ready                 Durable database/domain contracts     6
+
+Important: This PRD replaces the earlier lightweight specification. It is intentionally page-dense, page-specific and
+implementation-oriented. The product is treated as a greenfield build, not as an upgrade of the deleted prototype.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                                            Page 1
+1. Product Vision and Product Contract
+
+KRODEX is a learning operating system whose central job is to turn study activity into a durable, explainable evidence
+loop. The application must feel like one system rather than a collection of attractive screens.
+
+The core loop
+
+Plan  Study  Attempt  Submit  Capture error evidence  Classify  Review  Retest  Resolve or Reopen 
+Adapt. Every stage produces durable state that downstream pages can read.
+
+What makes KRODEX different
+
+ · Errors are first-class records, not temporary warnings.
+ · An incorrect test answer can automatically create an evidence-backed error without manual retyping.
+ · Reviews are tied to errors and produce explicit outcomes.
+ · Resolution requires qualifying evidence; opening or reading an error never counts as resolution.
+ · Dashboard, Planner, Errors, Reviews, Tests, Insights and Notifications are projections of shared state.
+
+Product contract
+
+  If a student makes a mistake, KRODEX must remember what happened, preserve the learning context, connect
+  it to the syllabus, create correction work, surface that work, evaluate the correction, and update the student's
+  learning picture without requiring manual copying between modules.
+
+Non-goals
+
+ · Not a social network.
+ · Not a decorative streak counter.
+ · Not an AI-only tutoring wrapper.
+ · Not a static timetable.
+ · Not a collection of independent mock pages.
+ · Not a system that silently edits learning history.
+
+KRODEX · Detailed PRD · From Scratch · v2.0  Page 2
+2. Users, Goals and Success Criteria
+
+The primary user is a student preparing for an examination with a defined syllabus and a recurring need to practice,
+diagnose mistakes and revise weak areas.
+
+Primary user jobs
+
+Job                                          Trigger                              Expected result
+
+Know what to study                           Beginning a session                  One or more actionable priorities
+
+Practice                                     Need performance evidence            A relevant test
+
+Understand a mistake                         Incorrect answer                     Evidence + category + explanation
+
+Correct a mistake                            Review due                           Fresh verification
+
+Track progress                               Any time                             Traceable performance picture
+
+Recover missed work                          Task/review overdue                  Reschedule without erasing history
+
+Success criteria
+
+· A new user can reach the first test without needing undocumented setup.
+
+· An incorrect answer becomes a visible error record after submission.
+
+· The error record contains source context and automatic question evidence.
+
+· A review can be started directly from the error.
+
+· A failed review keeps the error active and adds new evidence.
+
+· A qualifying successful review can resolve the error according to policy.
+
+· A later recurrence can reopen a previously resolved error.
+
+· Refreshing any major page produces the same underlying truth.
+
+Release gates
+
+Gate                                                              Required proof
+
+Core loop                                                         Test  Error  Review  Correction passes end-to-end
+
+Persistence                                                       Refresh/navigation does not lose durable state
+
+Interconnection                                                   Domain events update all dependent modules
+
+Recovery                                                          Failures do not create duplicate or contradictory records
+
+Evidence                                                          Every derived claim can be traced to source data
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                                                  Page 3
+3. Information Architecture and Navigation
+
+The information architecture separates learning workspace from account utilities while keeping all domain objects deeply
+navigable.
+
+Primary routes
+
+Route                                        Purpose                 Primary actions
+
+/dashboard                                   Operational home        Start work, inspect priorities
+
+/insights                                    Evidence analysis       Filter, compare, drill down
+
+/planner                                     Scheduled work          Create, complete, reschedule
+
+/backlog                                     Unscheduled work        Capture, schedule, archive
+
+/errors                                      Error bank              Filter, inspect, review
+
+/errors/:id                                  Error detail            Evidence, classification, review
+
+/reviews                                     Correction queue        Start, complete, inspect
+
+/tests                                       Test library            Create, search, start
+
+/tests/:id                                   Test detail             Inspect config, attempts, start
+
+/attempts/:id                                Attempt detail          Answers, score, evidence
+
+/syllabus                                    Hierarchy               Add/edit/archive nodes
+
+/notifications                               Event inbox             Read, open source
+
+/assistant                                   Evidence-grounded help  Ask, inspect sources
+
+/settings                                    Profile/preferences     Edit, save
+
+Global shell
+
+ · Persistent navigation with clear active state.
+ · Page title and contextual subtitle.
+ · Global search where supported.
+ · Account/status area.
+ · Content region with consistent max-width and spacing.
+ · URL-addressable filters and entity details.
+ · Visible loading, empty, error and success states.
+
+Deep-link rule
+
+  Every durable record that can be referenced by another module must have a stable route. Notifications,
+  insights and recommendations should never terminate in a dead-end card.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                               Page 4
+4. Dashboard -- Complete Page Requirements
+
+Dashboard is the operational home. It should prioritize action and evidence instead of maximizing the number of cards.
+
+Page anatomy
+
+Region                                       Content                                   Interaction
+
+Header                                       Today/date/context                        Change context where supported
+
+Action strip                                 Start test / review / study               Immediate launch
+
+Today queue                                  Due tasks, reviews, tests                 Open/complete/start
+
+Learning pulse                               Recent attempts, accuracy, active errors  Open analytics
+
+Priority weaknesses                          Evidence-backed topics                    Drill into topic/errors
+
+Recent activity                              Domain event timeline                     Open source record
+
+Upcoming                                     Future reviews/tasks                      Open planner
+
+Priority logic
+
+v1 priority is deterministic and explainable. Candidate work can be ranked using unresolved state, review due status,
+recurrence count, recency of failure and explicitly configured syllabus importance. The UI should expose a short reason
+such as '3 recent errors in this topic' rather than an opaque score.
+
+First-use state
+
+When there is no learning evidence, Dashboard should become a guided setup page: profile  syllabus  first task 
+first test. It should not overwhelm the user with empty charts.
+
+Dashboard data contract
+
+ · Counts are derived from durable records.
+ · Activity comes from real domain events.
+ · Weaknesses include supporting evidence counts.
+ · Recommendations include a reason and destination.
+ · Refreshing after a mutation must converge to current state.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                                            Page 5
+5. Dashboard -- State, Loading, Empty and Failure Behavior
+
+A real dashboard must define every state, not only the populated state.
+
+Loading state
+
+· Show structural skeletons matching final card dimensions.
+
+· Do not show stale zeroes as though they were real values.
+
+· Preserve page title and navigation while data loads.
+
+· Long-running analytics can load progressively.
+
+Empty state
+
+Explain why the dashboard is empty and give the next setup action. Example sequence: 'Your learning history is empty'
+ 'Add your syllabus'  'Create your first test'.
+
+Partial-data state
+
+If the student has a syllabus but no tests, show syllabus coverage and the next action rather than pretending performance
+is available.
+
+Error state
+
+A failed dashboard request must identify that the data could not be loaded, provide retry, and preserve navigation. It must
+never replace a failed request with invented placeholder metrics.
+
+Interconnection examples
+
+User action                                                  Immediate dashboard effect
+
+Submit test                                                  Recent activity + performance update
+
+Incorrect answer                                             Active error/priority may update
+
+Complete review                                              Due/open counts change
+
+Complete task                                                Today and activity update
+
+Miss task                                                    Recovery state and notification may appear
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                              Page 6
+6. Syllabus -- Full Page Specification
+
+Syllabus is the structural backbone used to classify questions, errors, reviews, tests and planner work.
+
+Hierarchy
+
+Minimum supported hierarchy: Subject  Chapter  Topic  Subtopic. Every child has exactly one parent in v1. Nodes
+have name, type, ordering, active/archive state and optional description/metadata.
+
+Page layout
+
+Area                                         Behavior
+
+Tree                                         Expandable hierarchy with active selection
+
+Toolbar                                      Add, search, reorder, archive
+
+Node detail                                  Path, coverage, questions, errors, reviews, tasks
+
+Context actions                              Practice, plan, inspect errors
+
+Search                                       Find node and descendants
+
+Node detail requirements
+
+ · Show breadcrumb path.
+ · Show attempted/planned coverage.
+ · Show active errors linked to the node.
+ · Show recent tests/attempts.
+ · Show upcoming reviews.
+ · Show planner work.
+ · Allow direct practice/test creation scoped to node.
+
+Archive rule
+
+  Never destructively delete a syllabus node if historical evidence depends on it. Archive it from active selection
+  while retaining references required to understand past learning events.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                               Page 7
+7. Syllabus -- Create, Edit, Reorder and Archive Flows
+
+The syllabus editor must protect hierarchy integrity and preserve historical meaning.
+
+Create flow
+
+Select parent (unless creating a Subject), enter name, optionally add description, validate duplicate sibling names
+according to policy, save, then return to the node context.
+
+Edit flow
+
+· Inline edit or modal edit may be used.
+
+· Save must preserve node ID.
+
+· Existing questions/errors/tasks remain linked.
+
+· Validation prevents empty names.
+
+· Cancel must not mutate state.
+
+Reorder flow
+
+Sibling ordering is explicit and deterministic. Reordering must not change parent relationships. Existing deep links remain
+valid.
+
+Archive flow
+
+Archive requires confirmation because it changes future selection availability. Historical records remain visible in relevant
+detail pages.
+
+Edge cases
+
+Case                                              Expected behavior
+
+Duplicate name                                    Warn or prevent according to defined uniqueness policy
+
+Empty name                                        Block save
+
+Archived parent                                   Prevent new active children unless explicitly restored
+
+Node with history                                 Archive, do not hard-delete
+
+Concurrent edit                                   Detect conflict or refresh before overwrite
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                                          Page 8
+8. Tests -- Test Library and Test Detail
+
+Tests are reusable practice definitions; Attempts are executions of those definitions.
+
+Test library
+
+Component                                    Required behavior
+
+Search                                       Title, scope, source
+
+Filters                                      Status, syllabus scope, date
+
+Create                                       Open test configuration
+
+Row/card                                     Show count, scope, latest attempt, state
+
+Actions                                      Start, inspect, duplicate, archive
+
+Test detail
+
+The detail page shows configuration, question inventory, source/provenance, attempts, recent performance, and
+unresolved errors originating from the test. Primary action is Start Attempt; secondary actions include Continue Attempt
+where applicable.
+
+Test states
+
+State                                        Meaning
+
+Draft                                        Configuration not yet published/usable
+
+Ready                                        Can be attempted
+
+Archived                                     Hidden from active selection; history retained
+
+Composition preview
+
+Before creation, the user should see intended scope, question count and constraints. The system must not claim a
+generated composition exists until the test has actually been created.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                                       Page 9
+9. Test Creation -- Detailed Form and Validation
+
+The test creation form is a real configuration workflow, not a visual mock.
+
+Required fields
+
+Field                                        Validation
+
+Title                                        Required; non-empty
+
+Syllabus scope                               Required unless using an explicit external source
+
+Question count                               Positive integer within configured limit
+
+Difficulty                                   Optional supported range
+
+Coverage rule                                Optional; must be internally consistent
+
+Question source                              Required provenance type
+
+Creation sequence
+
+ · Enter title.
+ · Choose syllabus scope or source.
+ · Set question count.
+ · Set optional difficulty/coverage.
+ · Preview composition.
+ · Resolve unavailable/insufficient-question warnings.
+ · Create test.
+ · Open test detail.
+ · Start attempt.
+
+Insufficient question pool
+
+If the selected scope cannot satisfy the requested count, the system should explain the deficit and offer lower count or
+broader scope. It must not silently substitute unrelated questions.
+
+Provenance
+
+  Every question in a test must be traceable to a source. Authored, imported and generated questions remain
+  distinguishable throughout test history and error evidence.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                     Page 10
+10. Attempt Page -- Detailed Web Behavior
+
+The attempt page is the highest-focus workflow in the product. It must be fast, resilient and free of unnecessary
+navigation.
+
+Layout
+
+Region                                       Content
+
+Top bar                                      Test title, progress, save status, exit
+
+Question area                                Question number, statement, media if present
+
+Answer area                                  Choice/input control appropriate to question
+
+Navigation                                   Previous, next, question navigator
+
+Utility                                      Flag, notes, log error
+
+Footer                                       Submit control + unanswered count
+
+Autosave
+
+Draft answers persist as the student navigates. Save status should distinguish saved, saving and failed states where
+transport supports it. A transient network failure must not silently discard the current answer.
+
+Question navigator
+
+The navigator identifies answered, unanswered and optionally flagged questions. It should permit direct movement
+without losing answers.
+
+Submit confirmation
+
+Before final submission, show unanswered count and a clear explanation that final answers become locked. Submission
+is an explicit user action.
+
+Abandonment
+
+Leaving an in-progress attempt should not silently delete it. The user can resume or explicitly abandon according to
+policy.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                                        Page 11
+11. Attempt Results -- Scoring and Evidence
+
+Results transform the submitted attempt into an inspectable evidence record.
+
+Results header
+
+Item                                         Display
+
+Score                                        Actual computed score
+
+Accuracy                                     Correct / attempted where meaningful
+
+Completion                                   Answered / total
+
+Time                                         Actual attempt duration if tracked
+
+Scope                                        Syllabus context
+
+Status                                       Submitted / analyzed
+
+Question result list
+
+Each question shows correctness, student's answer, expected answer where available, and a direct action to inspect or
+capture the associated error.
+
+Incorrect answer handling
+
+ · Create or queue ErrorEvidence automatically after analysis.
+ · Preserve question and answer context.
+ · Link to Test, Attempt and Question.
+ · Attach syllabus path.
+ · Offer classification and review actions.
+ · Do not require manual re-entry of the question.
+
+Result-to-error navigation
+
+The incorrect question row must link directly to its Error detail when one exists, or to the capture/classification step when
+processing is incomplete.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                        Page 12
+12. Special Feature -- Automatic Error Capture and
+Screenshot
+
+This is the defining product workflow requested for KRODEX. It must be treated as a P0 feature and designed as a
+transaction, not as a decorative overlay.
+
+Trigger
+
+When an analyzed answer is incorrect, the system creates an ErrorEvidence record automatically. The student may also
+explicitly log an error during an attempt, but automatic capture is the default path after a confirmed incorrect answer.
+
+Evidence captured
+
+Evidence                                     Requirement
+
+Question snapshot                            Capture the in-app question context
+
+Student response                             Preserve exact selected/entered answer
+
+Expected answer                              Preserve verified answer when available
+
+Source IDs                                   Test + Attempt + Question
+
+Syllabus path                                Subject/chapter/topic/subtopic where linked
+
+Timestamp                                    Capture time
+
+Screenshot behavior
+
+For v1, 'screenshot' means an in-app question snapshot. This avoids unrestricted device capture and preserves the exact
+learning context. The UI labels it as automatically captured evidence.
+
+Failure handling
+
+  If snapshot capture fails, the Error must still exist. The record should contain an evidence-unavailable state
+  and allow later attachment/recovery. A failed image operation must never erase the learning event.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                                       Page 13
+13. Error Capture -- Classification and Confirmation
+
+After automatic capture, KRODEX converts raw evidence into a usable learning diagnosis.
+
+Classification panel
+
+Element                                      Behavior
+
+Suggested category                           Pre-filled suggestion when available
+
+Confidence/source                            AI/system/student origin is visible
+
+Explanation                                  Short reason based on evidence
+
+Student edit                                 Change category or mark unknown
+
+Confirm                                      Persist confirmed diagnosis
+
+Skip                                         Keep Unknown without blocking workflow
+
+Categories
+
+ · Conceptual gap
+ · Formula/rule recall
+ · Calculation/algebraic execution
+ · Misread question
+ · Application/transfer
+ · Attention/careless execution
+ · Time-pressure
+ · Unknown
+
+AI boundary
+
+An AI suggestion is not ground truth. The stored model must retain whether the classification was suggested by AI,
+confirmed by the student, or manually entered.
+
+Fast-path requirement
+
+The student should be able to accept a reasonable suggestion in one action. Classification must not become a
+multi-screen administrative form.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                                         Page 14
+14. Errors Page -- Error Bank
+
+Errors is the durable home for mistakes and their correction lifecycle.
+
+Page anatomy
+
+Region                                       Behavior
+
+Header                                       Title, active count, filters
+
+Filter bar                                   State, category, syllabus, date, recurrence
+
+Error list                                   Rows/cards with evidence and next action
+
+Bulk tools                                   Only safe actions such as archive/tag where supported
+
+Detail drawer/link                           Open full error record
+
+Error list row
+
+Each row should show a concise title, syllabus location, category, state, recurrence indicator, last occurrence, next review
+and a primary next action. The student should not have to open every record to know what needs attention.
+
+Sorting
+
+Recommended sort: due/overdue review first, then unresolved recurrence and recency. Student-controlled sorting
+remains available.
+
+Empty state
+
+Explain that incorrect answers from tests can automatically populate the bank. Provide a Run Test action and an Add
+Error action if manual capture is supported.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                         Page 15
+15. Error Detail -- Complete Record
+
+Error detail is the canonical learning record for one mistake pattern.
+
+Header
+
+Show title, lifecycle state, syllabus breadcrumb, occurrence count and next review. Provide direct actions: Start Review,
+Schedule, Edit diagnosis and Archive where allowed.
+
+Evidence section
+
+ · Original question snapshot.
+ · Student answer.
+ · Expected answer.
+ · Question/test/attempt identifiers.
+ · Capture timestamp.
+ · Additional occurrences.
+
+Diagnosis section
+
+Show category, explanation, classification source and student confirmation state. The diagnosis is editable without
+altering the original evidence.
+
+History section
+
+Chronologically list occurrences, reviews, outcomes and lifecycle transitions. Resolved  Reopened must retain the
+previous resolution event.
+
+Resolution section
+
+  An Error cannot become Resolved because it was opened, read, explained or manually checked. Resolution
+  requires a qualifying ReviewOutcome according to the defined review policy.
+
+KRODEX · Detailed PRD · From Scratch · v2.0  Page 16
+16. Error Lifecycle and State Machine
+
+The error lifecycle is central to analytics and review scheduling.
+
+States
+
+State                                                  Meaning
+
+Open                                                   Evidence indicates correction is needed
+
+In review                                              A correction workflow is currently active
+
+Resolved                                               Qualifying evidence achieved
+
+Reopened                                               Later evidence shows recurrence
+
+Archived                                               Removed from active workflow; history retained
+
+Transitions                                  Event                       To
+                                             Review started              In review
+ From                                        Incorrect outcome           Open
+  Open                                       Qualifying correct outcome  Resolved
+  In review                                  Later incorrect evidence    Reopened
+  In review                                  Review started              In review
+  Resolved                                   Archive action              Archived
+  Reopened
+  Any active
+
+Transition rules
+
+ · Transitions are server-validated.
+ · Every automatic transition has a source event.
+ · Historical outcomes are immutable.
+ · Reopening never deletes prior resolution evidence.
+ · Archived errors remain queryable through history.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                            Page 17
+17. Reviews -- Scheduling and Queue
+
+Reviews are correction activities generated from errors and driven by explicit outcomes.
+
+Review record
+
+Field                                        Purpose
+
+Error ID                                     Source learning issue
+
+Due time                                     When correction is expected
+
+Method                                       Question/test/review type
+
+Status                                       Open, due, overdue, completed, skipped
+
+Schedule reason                              Why this interval was chosen
+
+Created source                               System, student, assistant
+
+Review queue
+
+The Reviews page has Due Now, Overdue, Open, Completed and History views. Due and overdue items should be
+prioritized without hiding future work.
+
+Starting a review
+
+Open the source Error, show relevant context, then present a fresh verification question. The student should not simply
+reread the original question and self-mark it correct.
+
+Duplicate prevention
+
+  The system should prevent multiple simultaneously active reviews for the same Error unless the review policy
+  explicitly permits parallel verification.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                               Page 18
+18. Review Attempt and Review Outcome
+
+A Review is complete only when the student produces a real outcome.
+
+Review screen
+
+Region                                       Content
+
+Context                                      Error diagnosis + original evidence
+
+Fresh question                               Verification item
+
+Answer                                       Appropriate response control
+
+Confidence                                   Optional correct/uncertain signal
+
+Submit                                       Finalize review outcome
+
+Outcome types
+
+ · Correct + confident
+ · Correct + uncertain
+ · Incorrect
+ · Skipped
+ · Technical failure (not a learning outcome)
+
+Outcome rules
+
+Incorrect adds evidence and keeps the issue active. Correct outcomes advance the review policy. Correct-but-uncertain
+should not automatically claim resolution. Skipped is not equivalent to success.
+
+Technical failure
+
+If the review cannot be completed because of a system error, do not record it as a learning failure. Preserve the review
+and allow retry.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                       Page 19
+19. Review-to-Error Resolution Automation
+
+This is the complete automated loop connecting Errors and Reviews.
+
+Sequence
+
+ · Error exists with Open state.
+ · Review is scheduled.
+ · Review becomes due.
+ · Student starts fresh verification.
+ · System records ReviewOutcome.
+ · Incorrect  attach new evidence; keep/reopen Error.
+ · Correct  advance resolution policy.
+ · Qualifying evidence  Resolved.
+ · Later recurrence  Reopened.
+ · Dashboard, Insights and Notifications update from resulting events.
+
+Example
+
+A student repeatedly makes a sign error in quadratic equations. The first test captures the question snapshot and creates
+an Error. The review produces another wrong answer, so the new evidence attaches to the same issue. A later review is
+correct, but the product may require a second independent verification before resolution. If a future test is wrong again,
+the Error reopens rather than starting with a blank history.
+
+Explainability
+
+  Every automated state change should be explainable in the UI: 'Reopened because a later verification was
+  incorrect' or 'Resolved after two qualifying correct reviews.'
+
+KRODEX · Detailed PRD · From Scratch · v2.0  Page 20
+20. Planner -- Page and Scheduling Model
+
+Planner turns goals and evidence into scheduled work while preserving history.
+
+Planner views
+
+View                                         Purpose
+
+Today                                        Immediate tasks and due reviews
+
+Week                                         Schedule and workload
+
+Backlog link                                 Unscheduled work
+
+Recovery                                     Missed/overdue work
+
+Completed                                    Historical work
+
+Task model
+
+A Task contains title, type, source, syllabus context, scheduled time/date, duration estimate where supported, status,
+priority and completion metadata.
+
+Completion
+
+Completing a task creates completion evidence. It should not rewrite the original planned date. The difference between
+planned and completed time remains available for insights.
+
+Review integration
+
+Review work can appear as planner work without becoming a duplicate independent review record. The planner task
+references the Review.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                     Page 21
+21. Planner -- Recovery, Missed Work and Recommendations
+
+Missed work is a real state that should be recoverable rather than silently erased.
+
+Missed task behavior
+
+· Keep original task and planned date.
+
+· Mark overdue/missed according to policy.
+
+· Offer reschedule, split, shorten, deprioritize or leave unchanged.
+
+· Record the recovery action separately from original history.
+
+Recommendation engine
+
+Repeated errors can produce a recommendation for targeted practice. Recommendations should be explainable and
+distinguishable from confirmed tasks.
+
+User control
+
+Automatic task creation requires an explicit user-enabled policy. Otherwise the system presents a proposed action and
+waits for confirmation.
+
+Recovery example
+
+Situation                                                       Recommendation
+
+3 errors in one topic                                           Schedule targeted practice
+
+Review overdue                                                  Open recovery choice
+
+Large missed task                                               Split into smaller tasks
+
+Weak topic with no planned work                                 Offer study block
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                 Page 22
+22. Backlog -- Capture and Conversion
+
+Backlog prevents unscheduled intentions from polluting the active calendar.
+
+Backlog fields
+
+Field                                        Requirement
+
+Title                                        Required
+
+Type                                         Study / Practice / Review / Admin / Other
+
+Syllabus link                                Optional
+
+Priority                                     Student-defined
+
+Source                                       Manual / Assistant / Import / System
+
+Status                                       Open / Scheduled / Done / Archived
+
+Notes                                        Optional
+
+Convert to planner
+
+Scheduling a backlog item creates a linked Planner Task. The backlog item becomes Scheduled rather than creating two
+independent work objects.
+
+Convert to test/review
+
+Where the item type and context allow it, the UI may offer 'Turn into Test' or 'Create Review'. The new object stores the
+backlog source.
+
+Empty state
+
+Explain backlog's role and provide Add item plus a short explanation: 'Capture it now; schedule it when you know where it
+fits.'
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                             Page 23
+23. Insights -- Performance Intelligence
+
+Insights explains patterns from actual records and always preserves traceability.
+
+Required insight families
+
+Insight                                      Source
+
+Accuracy by syllabus node                    Answers
+
+Error recurrence                             ErrorEvidence
+
+Review success                               ReviewOutcome
+
+Resolved/reopened rate                       Error lifecycle
+
+Coverage                                     Tasks/tests/attempts + syllabus
+
+Recent trend                                 Time-windowed attempts
+
+Evidence threshold
+
+A small sample should not be presented as a strong conclusion. Insights can say 'limited evidence' and show the sample
+size. The product should not use a single percentage as universal mastery.
+
+Drill-down
+
+Every important insight links to its supporting topic, errors, tests or attempts. A student can move from a weak-topic card
+to the exact mistakes behind it.
+
+Time windows
+
+Support explicit windows such as recent 7/14/30 days and a custom range where practical. The chosen window is visible
+in the UI.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                        Page 24
+24. Insights -- Detailed Metrics and Explainability
+
+Analytics should be useful for decisions, not merely visually impressive.
+
+Core metrics
+
+Metric                                       Definition
+
+Test completion rate                         Submitted attempts / started attempts
+
+Error capture rate                           Eligible incorrect answers with evidence
+
+Review completion                            Completed reviews / due reviews
+
+Correction rate                              Qualifying correct outcomes / completed reviews
+
+Reopen rate                                  Reopened errors / resolved errors
+
+Time to correction                           Error creation  qualifying resolution
+
+Topic comparison
+
+Compare topics only when the evidence window and sample size are visible. Avoid ranking tiny samples against large
+samples without qualification.
+
+Insight explanation
+
+  Every generated insight should be explainable in one sentence and drillable to source records. Example: 'This
+  topic is prioritized because it has 4 unresolved errors from 3 recent attempts.'
+
+No-data behavior
+
+If there is insufficient evidence, provide a meaningful next action such as 'Take a test in this topic' rather than a blank
+chart.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                   Page 25
+25. Notifications -- Event Inbox
+
+Notifications are durable projections of meaningful domain events.
+
+Event types
+
+Event                                        Action
+
+Error recorded                               Open Error
+
+Review due                                   Start Review
+
+Review overdue                               Open Review/recovery
+
+Error reopened                               Open Error
+
+Test analyzed                                Open results
+
+Task missed                                  Open Planner
+
+Notification model
+
+Each notification has event type, created time, read state, source record, optional severity and optional action. Reading
+the notification must not mutate the source record.
+
+Grouping
+
+Avoid notification spam. Multiple internal processing events from one user action should normally result in one useful
+notification rather than a chain of technical messages.
+
+Empty state
+
+Explain that notifications appear when meaningful learning events occur. Do not imply a problem merely because the
+inbox is empty.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                         Page 26
+26. Assistant -- Evidence-Grounded Product Behavior
+
+The Assistant is a controlled interface to KRODEX's recorded learning state.
+
+Allowed tasks
+
+ · Explain an observed mistake.
+ · Summarize recent performance.
+ · Find unresolved errors.
+ · Explain why a topic is prioritized.
+ · Draft a study plan.
+ · Suggest a review or test.
+ · Answer questions about recorded data.
+
+Mutation boundary
+
+Any action that changes durable state is presented as a proposed action requiring explicit confirmation unless the student
+has enabled a corresponding automation policy.
+
+Source grounding
+
+Responses should identify relevant records where practical: ErrorEvidence, Attempt, Review, Task or SyllabusNode. If
+the app has insufficient evidence, the Assistant must say so.
+
+Fallback
+
+If AI is unavailable, the application continues to support test submission, error capture, review scheduling and history
+using deterministic/manual paths.
+
+KRODEX · Detailed PRD · From Scratch · v2.0  Page 27
+27. Settings, Profile and Student Model
+
+Settings controls self-reported context and product preferences without overwriting observed evidence.
+
+Profile
+
+Field                                           Purpose
+
+Display name                                    Personalization
+
+Exam context                                    Learning context
+
+Target year/date                                Planning context
+
+Optional self-assessment                        Subjective context
+
+Student model layers                         Example                      Authority
+                                             Confidence 60/100            Student statement
+ Layer                                       8/12 recent answers correct  Recorded evidence
+  Self-reported                              Repeated calculation errors  Derived evidence
+  Observed                                   Review tomorrow              Plan state
+  Diagnosed
+  Planned
+
+Rule
+
+  Self-assessment can influence how information is presented, but it must never overwrite observed attempts,
+  errors, review outcomes or historical evidence.
+
+Preference examples
+
+ · Notification preferences
+ · Planning defaults
+ · Review behavior defaults
+ · Language
+ · Display preferences
+ · Assistant behavior controls where supported
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                             Page 28
+28. Cross-Module Interconnection Matrix
+
+All major pages must converge on the same domain events.
+
+Primary event matrix
+
+Event                                                     Affected modules
+
+Submit test                                               Tests, Attempts, Errors, Reviews, Dashboard, Insights, Notifications
+
+Complete review                                           Reviews, Errors, Dashboard, Insights, Notifications
+
+Complete task                                             Planner, Dashboard, Activity
+
+Add syllabus node                                         Syllabus, Test scope, Planner scope, classification context
+
+Archive syllabus node                                     Syllabus + historical references
+
+Miss task                                                 Planner, Dashboard, Notifications
+
+Consistency test
+
+A QA user should perform one action, refresh every affected page, and verify convergence. Any page that needs a
+manual 'sync' button for ordinary state propagation fails the product requirement.
+
+Projection rule
+
+Pages may use cached projections for performance, but they must have a documented refresh/invalidation strategy. The
+source domain transaction remains authoritative.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                                                     Page 29
+29. Search, Filtering and Deep Navigation
+
+Search and navigation should make the evidence network traversable.
+
+Global search
+
+Search syllabus nodes, tests, questions, errors, reviews, tasks and notifications. Results identify entity type and current
+state.
+
+Entity filters
+
+Entity                                       Filters
+
+Errors                                       State, category, node, recurrence, date
+
+Reviews                                      Due, overdue, status, node
+
+Tests                                        Status, scope, date
+
+Planner                                      Date, status, type, priority
+
+Notifications                                Read state, event type, date
+
+Navigation chain
+
+Insight  Topic  Error  Evidence  Attempt  Test. This chain should work from clickable UI elements, not require
+the student to manually search each object.
+
+URL state
+
+Meaningful filters and detail states should be URL-addressable where practical so refresh and sharing within the
+authorized account context do not destroy context.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                           Page 30
+30. Data Provenance, Audit and Historical Integrity
+
+KRODEX makes claims about learning, so the system must preserve why a record exists and how it changed.
+
+Minimum provenance
+
+Record                                       Required provenance
+
+Error                                        Attempt + Question + capture time
+
+ErrorEvidence                                Source + evidence type + storage reference
+
+Review                                       Error + schedule reason
+
+ReviewOutcome                                Review + attempt/result
+
+Resolution                                   Qualifying outcome(s)
+
+Insight                                      Rule + evidence window
+
+Notification                                 Domain event + source record
+
+Audit events
+
+Important mutations should record actor, timestamp, previous state, new state and reason where applicable. Automatic
+transitions identify the system as actor.
+
+Immutable history
+
+ · Submitted answers are historical facts.
+ · Review outcomes are historical facts.
+ · Original error evidence is not overwritten by later edits.
+ · Lifecycle history is retained.
+ · Archived records remain interpretable.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                              Page 31
+31. Security, Privacy and Evidence Storage Requirements
+
+KRODEX stores educational performance information and captured question evidence; privacy must be part of the
+product design.
+
+Account isolation
+
+ · Every protected record belongs to an authorized account/tenant context.
+ · Server-side authorization is mandatory.
+ · Client-side visibility is not a security boundary.
+ · Object access must be checked on every protected mutation/read path.
+
+Evidence privacy
+
+The default screenshot implementation is an in-app question snapshot. Broader device capture should require explicit
+permission and a clear explanation of scope, storage and deletion.
+
+External AI
+
+Private student records should not be sent to external AI services unless the integration is explicitly configured and
+permitted. The application should minimize payloads.
+
+Deletion/archive
+
+Deletion semantics must be defined carefully so required historical evidence is not accidentally destroyed. Archive is
+preferred for learning-domain objects with historical references.
+
+KRODEX · Detailed PRD · From Scratch · v2.0  Page 32
+32. Accessibility, Responsive Behavior and Usability
+
+Real product quality includes accessibility and usable behavior across screen sizes.
+
+Accessibility requirements
+
+ · Keyboard navigation through core workflows.
+ · Visible focus state.
+ · Semantic buttons and form controls.
+ · Labels for inputs and status indicators.
+ · Meaningful error messages.
+ · Do not rely on color alone for correctness/state.
+ · Readable text hierarchy and sufficient contrast.
+
+Responsive behavior
+
+Desktop can be the primary design target, but the attempt, error capture, review and dashboard workflows must remain
+usable on smaller screens. Tables may become cards or horizontally scrollable regions.
+
+Attempt on small screens
+
+Question content receives priority. Navigation and submit remain reachable. Error capture is available without covering
+the answer controls.
+
+Interaction principle
+
+  Visual polish must support comprehension. Animation, glass effects or decorative motion must never delay,
+  obscure or compete with critical learning actions.
+
+KRODEX · Detailed PRD · From Scratch · v2.0  Page 33
+33. AI Requirements, Guardrails and Deterministic Core
+
+AI is an assistive layer; deterministic domain rules remain authoritative.
+
+AI may assist with
+
+ · Error classification suggestion.
+ · Error explanation.
+ · Question generation.
+ · Performance summarization.
+ · Study-plan drafting.
+ · Recommendation wording.
+
+AI may not independently
+
+ · Invent a student's attempt.
+ · Invent a syllabus node.
+ · Declare an Error resolved.
+ · Delete historical evidence.
+ · Silently create durable tasks.
+ · Present uncertainty as fact.
+
+Action proposal pattern
+
+For a mutation, the Assistant explains what it proposes, which records it would affect and why. The student confirms. The
+server then executes the validated mutation.
+
+AI failure mode
+
+If the AI provider fails, core functionality falls back to deterministic/manual flows. AI availability is never allowed to become
+a single point of failure for the learning loop.
+
+KRODEX · Detailed PRD · From Scratch · v2.0  Page 34
+34. Empty, Loading, Success and Error States for Every Page
+
+Every major page must be designed as a complete state machine.
+
+Required states
+
+State                                        Product requirement
+
+Loading                                      Structure visible; no fake data
+
+Empty                                        Explain why empty + next action
+
+Populated                                    Real data + actions
+
+Success                                      Confirm meaningful mutation
+
+Error                                        Explain failure + retry/recovery
+
+Partial                                      Show available data without false certainty
+
+Permission                                   Explain access limitation
+
+Page examples                                Empty-state action
+                                             Set up syllabus / create test
+ Page                                        Add subject
+  Dashboard                                  Create first test
+  Syllabus                                   Run test / add error
+  Tests                                      Open Errors / create review
+  Errors                                     Create study block
+  Reviews                                    Take a test to create evidence
+  Planner                                    Explain event types
+  Insights
+  Notifications
+
+No fake completeness
+
+  A page is not complete because its route renders. It is complete when meaningful states, actions, persistence,
+  error recovery and cross-module consequences all work.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                               Page 35
+35. Functional Requirements Catalogue -- P0
+
+P0 requirements define the minimum real product that must work before visual polish is considered release-ready.
+
+Core requirements
+
+ID                                           Requirement                  Acceptance
+
+FR-001                                       Profile persistence          Reload preserves saved values
+
+FR-002                                       Syllabus hierarchy           Four levels with parent integrity
+
+FR-003                                       Test creation                Durable test definition
+
+FR-004                                       Question provenance          Every question has source metadata
+
+FR-005                                       Attempt autosave             Draft answers survive navigation
+
+FR-006                                       Attempt submission           Final state is durable/idempotent
+
+FR-007                                       Automatic error capture      Incorrect answers produce evidence
+
+FR-008                                       Automatic question snapshot  Evidence linked to Error
+
+FR-009                                       Mistake classification       Source + confirmation state stored
+
+FR-010                                       Review scheduling            Review linked to Error
+
+FR-011                                       Review outcome               Correct/incorrect/skip persisted
+
+FR-012                                       Resolution/reopen            Lifecycle policy enforced
+
+FR-013                                       Dashboard truth              Aggregates from real state
+
+FR-014                                       Cross-page convergence       Affected pages reflect events
+
+P0 release rule
+
+A release cannot be accepted if any P0 item is simulated by hardcoded data, local-only state or manually maintained
+counters.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                                       Page 36
+36. Non-Functional Requirements and Engineering Quality
+
+These requirements describe the quality bar for a production-like application.
+
+Requirements
+
+Area                                         Requirement
+
+Performance                                  Core actions feel immediate; analytics can progressively load
+
+Reliability                                  No loss of durable learning records
+
+Idempotency                                  Retries cannot duplicate attempts/errors/reviews
+
+Security                                     Authorization enforced server-side
+
+Accessibility                                Core flows keyboard and semantic-control accessible
+
+Observability                                Failures traceable through domain transactions
+
+Maintainability                              Business rules centralized and testable
+
+Consistency                                  Shared source of truth across pages
+
+Recoverability                               User can retry failed operations without corruption
+
+High-risk transactions
+
+Prioritize reliability for answer autosave, test submission, automatic evidence creation, review completion and lifecycle
+transition. These are the transactions that can corrupt the learning model if implemented incorrectly.
+
+Performance principle
+
+  Do not optimize away correctness. A fast dashboard showing stale or fabricated learning state is worse than a
+  slower dashboard showing trustworthy data.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                                 Page 37
+37. Analytics, Observability and QA Strategy
+
+Testing must validate behavior and state, not merely screenshots.
+
+Product analytics
+
+Metric                                       Definition
+
+Test completion                              Submitted attempts / started
+
+Error capture                                Eligible incorrect answers with evidence
+
+Review completion                            Completed reviews / due
+
+Correction rate                              Qualifying correct outcomes / completed reviews
+
+Reopen rate                                  Reopened / resolved
+
+Time to correction                           Error creation  qualifying resolution
+
+Engineering telemetry
+
+ · Submission failures.
+ · Evidence capture failures.
+ · Duplicate transaction attempts.
+ · Review scheduling failures.
+ · Lifecycle transition failures.
+ · Projection/cache lag.
+ · AI request failures.
+
+QA layers
+
+Unit tests validate business rules. Integration tests validate transactions and event propagation. End-to-end tests validate
+the complete learning loop. Visual regression validates important UI states after behavior is correct.
+
+Critical QA script
+
+  Create syllabus  create test  answer incorrectly  submit  verify automatic snapshot  classify 
+  schedule review  fail review  verify active error  pass later review  verify resolution  cause later
+  recurrence  verify reopen  inspect Dashboard/Insights/Notifications.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                   Page 38
+38. Release Scope, Definition of Done and Final Product
+Contract
+
+The final standard is a functioning learning system, not a collection of screens.
+
+Release tiers
+
+Tier                                         Scope
+
+P0                                           Profile, syllabus, tests, attempts, errors, reviews, dashboard, core
+
+                                             notifications, shared state
+
+P1                                           Deep insights, assistant, planner recommendations, richer search/backlog
+
+                                             automation
+
+P2                                           Advanced adaptive intelligence, additional roles and integrations
+
+Definition of Done
+
+ · UI states are complete.
+ · Domain transitions are explicit.
+ · Durable records persist correctly.
+ · Cross-module consequences work.
+ · Automation is explainable and idempotent.
+ · AI suggestions are distinguishable from facts.
+ · Accessibility checks pass for core flows.
+ · Security/authorization checks pass.
+ · Happy path and edge-case QA pass.
+ · Observability exists for critical failures.
+
+Final contract
+
+  The student performs the learning. KRODEX performs the bookkeeping: capturing evidence, preserving
+  history, connecting records, scheduling correction, evaluating outcomes and updating the system-wide
+  picture.
+
+Handoff to the next five documents
+
+TRD must specify the architecture that can satisfy these requirements. App/Web Flow must specify every route and
+transition. UI/UX must specify the actual interaction and visual states. Project Implementation Plan must build P0 before
+polish. Schema Ready must preserve every relationship, lifecycle state, provenance field and idempotency requirement
+described here.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                                        Page 39
+Appendix A. End-to-End Acceptance Matrix
+
+This appendix is the minimum release checklist for the complete product.
+
+Scenario matrix
+
+Scenario                                     Expected result
+
+First login                                  Profile/setup path available
+
+Create subject                               Subject appears in syllabus
+
+Create topic                                 Topic appears under correct parent
+
+Create test                                  Test persists in library
+
+Start attempt                                Attempt state is In Progress
+
+Answer question                              Draft answer persists
+
+Refresh attempt                              Saved answer remains
+
+Submit                                       Attempt becomes Submitted/Analyzed
+
+Wrong answer                                 ErrorEvidence created automatically
+
+Snapshot                                     Question context visible
+
+Classify                                     Source and confirmation stored
+
+Review due                                   Review appears in queue
+
+Fail review                                  New evidence; Error remains active
+
+Pass review                                  Outcome recorded; policy advances
+
+Resolve                                      Error state becomes Resolved when threshold met
+
+Later fail                                   Resolved error becomes Reopened
+
+Miss task                                    Planner preserves history and offers recovery
+
+Open insight                                 Supporting evidence is drillable
+
+Open notification                            Source record opens
+
+Ask Assistant                                Response grounded in recorded data
+
+AI unavailable                               Core workflow still works
+
+Archive node                                 Historical records remain readable
+
+Network failure                              Retry without duplicate domain records
+
+Final QA rule
+
+  No route is accepted in isolation. The acceptance test must validate the consequences of user actions across
+  every module that consumes the resulting domain state.
+
+KRODEX · Detailed PRD · From Scratch · v2.0                                                   Page 40
+

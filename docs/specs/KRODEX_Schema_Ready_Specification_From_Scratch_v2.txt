@@ -1,0 +1,814 @@
+                  KRODEX
+SCHEMA READY SPECIFICATION
+
+Durable Data Contract · Relationships · Constraints · Lifecycle · Evidence · Analytics
+      The database is the memory of the learning system -- not a storage dump.
+                                    Version 2.0 · September 2026
+
+Layer                  Purpose                                   Truth level
+Raw learning evidence  Answers, attempts, occurrences, outcomes  Authoritative observation
+Domain state           Planner/Error/Review/Test lifecycle       Authoritative current state
+Event log              State-change history and idempotency      Durable connective history
+Derived analytics      Trends, dimensions, progress              Recomputable projection
+Student model          Behavioral inference + confidence         Advisory inference
+AI                     Explanation/classification/proposals      Non-authoritative assistance
+
+Schema rule: never replace raw evidence with a precomputed percentage. Progress can be recalculated; the evidence that
+produced it must remain available.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                                                               Page 1
+1. Schema Principles
+
+The schema must support the complete KRODEX learning loop and preserve historical truth.
+
+Schema contract
+
+ · Every student-owned record is isolated by student/account ownership.
+ · Historical evidence is append-only wherever the record represents an observation.
+ · Current lifecycle state is constrained by explicit transitions.
+ · Foreign keys preserve cross-entity integrity.
+ · Derived metrics are not the primary source of truth.
+
+Engineering rule
+
+Schema changes are reviewed against PRD behavior, TRD contracts and App/Web Flow consequences.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                                       Page 2
+2. Student
+
+Student is the root ownership boundary.
+
+Schema contract
+
+ · Identity/profile data is mutable.
+ · Preferences are stored separately from observed evidence semantics.
+ · Exam context can influence recommendations.
+ · Every student-owned entity must be reachable through ownership validation.
+
+Engineering rule
+
+Never trust a client-supplied studentId; resolve identity server-side.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                      Page 3
+3. SyllabusNode
+
+A self-referencing hierarchy provides durable learning context.
+
+Schema contract
+
+ · Supports Subject  Chapter  Topic  Subtopic.
+ · parentId creates hierarchy.
+ · Sibling ordering can be stored separately.
+ · Archive instead of destructive delete when history references a node.
+
+Engineering rule
+
+Historical Attempts, Errors and Reviews retain their original syllabus references.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                           Page 4
+4. PlannerTask
+
+PlannerTask represents scheduled intended work and its execution state.
+
+Schema contract
+
+ · Store planned start/date/time and duration.
+ · Store source/type/priority and optional syllabus context.
+ · Track completion separately from planned schedule.
+ · Missed work remains historical.
+
+Engineering rule
+
+Planner is canonical for schedule state; Backlog is canonical for unscheduled intention.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                                 Page 5
+5. BacklogItem
+
+Backlog captures work that is not yet scheduled.
+
+Schema contract
+
+ · Store title/type/priority/source/notes.
+ · Scheduling creates a linked PlannerTask.
+ · Recovery keeps original intent and history.
+ · Avoid duplicate conversion.
+
+Engineering rule
+
+Backlog pressure becomes evidence for progress analytics; it is not a moral score by itself.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                                     Page 6
+6. Error
+
+Error represents a recurring mistake pattern, not one screenshot.
+
+Schema contract
+
+ · Own current lifecycle state.
+ · Store category/severity/diagnosis metadata.
+ · Link to syllabus context.
+ · Maintain recurrence count/history.
+ · Link Reviews and evidence.
+
+Engineering rule
+
+One mistake pattern may have many evidence occurrences.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                 Page 7
+7. ErrorEvidence / Question Snapshot
+
+Evidence captures what actually happened.
+
+Schema contract
+
+ · Preserve question identity/context.
+ · Preserve student's response.
+ · Preserve expected answer when verified.
+ · Store capture timestamp and source Attempt/Test.
+ · Snapshot asset lives in private storage with authorized access.
+
+Engineering rule
+
+Snapshot failure must not delete or invalidate the underlying incorrect-answer evidence.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+Error is a pattern; ErrorEvidence is the historical occurrence. Keeping these separate is essential for recurrence analytics and
+Review scheduling.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                                                                         Page 8
+8. Error Lifecycle
+
+Lifecycle must be represented by constrained state values and audited transitions.
+
+Schema contract
+
+ · Open/active  In Review  Resolved.
+ · Incorrect Review returns to active.
+ · Later incorrect recurrence can Reopen a resolved Error.
+ · Archived retains history and prevents normal active workflow.
+
+Engineering rule
+
+Clients request transitions; the domain service validates them.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                           Page 9
+9. Review
+
+Review is a scheduled correction attempt against an Error.
+
+Schema contract
+
+ · Link exactly to the Error.
+ · Store due/scheduled timestamps.
+ · Store status and completion.
+ · Reference immutable ReviewOutcome.
+
+Engineering rule
+
+Reading an Error never changes Review state.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                 Page 10
+10. ReviewOutcome
+
+Outcome is immutable evidence of a verification attempt.
+
+Schema contract
+
+ · Record result: correct/incorrect/uncertain/skipped/technical failure as supported.
+ · Store timestamp and optional confidence.
+ · Link to Review and verification item.
+ · Create downstream events.
+
+Engineering rule
+
+An outcome is never edited to rewrite history; corrections are additive.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                              Page 11
+11. Test
+
+Test is a reusable question-selection definition.
+
+Schema contract
+
+ · Store title, scope/source, composition rules and status.
+ · Support custom Error-based pools.
+ · Preserve provenance of selected questions.
+ · Allow multiple Attempts.
+
+Engineering rule
+
+Test definition and Attempt execution are separate records.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                 Page 12
+12. TestAttempt
+
+Attempt is one execution of a Test.
+
+Schema contract
+
+ · Link student and Test.
+ · Store status, started/submitted timestamps and scoring snapshot where needed.
+ · Freeze question order/selection for that Attempt.
+ · Reject duplicate submission.
+
+Engineering rule
+
+Submission must be idempotent.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                         Page 13
+13. Answer
+
+Answer records a student's response within an Attempt.
+
+Schema contract
+
+ · Link Attempt and question identity.
+ · Store answer payload safely.
+ · Track answer version/save state where required.
+ · Submission locks edits.
+
+Engineering rule
+
+Never store answer keys in client-readable Attempt payloads.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                 Page 14
+14. ProgressEvidence
+
+ProgressEvidence is the measurement backbone.
+
+Schema contract
+
+ · Append-only record.
+ · Store student, dimension, eventType, value, observedAt and source references.
+ · Indexes support time-series queries.
+ · Never update/delete an observation.
+
+Engineering rule
+
+Any correction to an observation is represented by a new observation or explicit correction event, not mutation.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                                                         Page 15
+15. EventLog
+
+EventLog provides durable connectivity between domain mutations and projections.
+
+Schema contract
+
+ · Store event type, source entity, student, payload/version and timestamps.
+ · Store idempotency identity.
+ · Allow handler retry/failure tracking.
+ · Events are emitted after successful state changes.
+
+Engineering rule
+
+Database uniqueness on handler + idempotency key is the final duplicate-protection layer.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+ProgressEvidence is the measurement backbone. It must remain append-only so progress can be recalculated and audited.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                                                              Page 16
+16. Notification
+
+Notification is a user-facing projection, not the source event.
+
+Schema contract
+
+ · Store student, message, priority, read state, source entity and timestamps.
+ · Group repeated events when appropriate.
+ · Marking read changes notification state only.
+
+Engineering rule
+
+Every actionable notification should link to its canonical source.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+EventLog connects successful state changes to projections. Idempotency belongs in durable storage, not only in memory.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                                                               Page 17
+17. Relationships
+
+The relationship graph makes the product interconnected.
+
+Schema contract
+
+ · Student owns all learning records.
+ · SyllabusNode contextualizes PlannerTask, Errors, Tests and evidence.
+ · Test owns Attempts; Attempt owns Answers.
+ · Error owns Reviews and occurrences.
+ · Events produce ProgressEvidence and Notifications.
+
+Engineering rule
+
+Cross-student references must be rejected by ownership/integrity validation.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                     Page 18
+18. Keys & Identifiers
+
+Identifiers must be stable and non-semantic.
+
+Schema contract
+
+ · Use UUID/strong unique IDs.
+ · Never encode mutable labels into IDs.
+ · Foreign keys reference IDs.
+ · External asset IDs remain separate from domain IDs.
+
+Engineering rule
+
+URLs can safely expose opaque record IDs only within authorization boundaries.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+The relationship graph is what makes Dashboard, Planner, Errors, Reviews, Tests and Insights one application rather than isolated
+CRUD pages.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0  Page 19
+19. Timestamps & Time Zones
+
+Time handling must be explicit.
+
+Schema contract
+
+ · Persist timestamps in UTC.
+ · Convert to student's timezone at presentation.
+ · Date-window queries define inclusive/exclusive boundaries explicitly.
+ · Planner local-day semantics are separate from UTC storage.
+
+Engineering rule
+
+Tests must cover early-day and timezone-boundary cases.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                 Page 20
+20. Indexes
+
+Indexes follow real query patterns.
+
+Schema contract
+
+ · Student + time for evidence.
+ · Student + status for queues.
+ · Student + read/priority for notifications.
+ · Foreign keys and frequently filtered lifecycle fields.
+ · Composite indexes only when backed by actual queries.
+
+Engineering rule
+
+Avoid indexes that exist only because they sound useful; verify with query plans as scale grows.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                                         Page 21
+21. Constraints & Validation
+
+Database constraints are the final integrity layer.
+
+Schema contract
+
+ · Non-null required fields.
+ · Enum/check constraints where supported.
+ · Unique constraints for idempotency.
+ · Foreign keys with deliberate cascade/restrict semantics.
+ · Length/range validation at service boundary.
+
+Engineering rule
+
+Client validation improves UX; server and database validation protect truth.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                     Page 22
+22. Deletion & Retention
+
+Destructive deletion must be rare.
+
+Schema contract
+
+ · Archive user-facing domain objects where history matters.
+ · Cascade only for truly dependent child records.
+ · Restrict deletion when historical integrity would break.
+ · Define retention for private snapshots and logs.
+
+Engineering rule
+
+Never delete evidence simply to make a progress metric cleaner.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                 Page 23
+23. Question Asset Storage
+
+Question screenshots and evidence assets require private storage.
+
+Schema contract
+
+ · Object key should not expose personal data.
+ · Access through authorized server path or signed short-lived access.
+ · Validate MIME/type/size.
+ · Track asset lifecycle separately from Error lifecycle.
+
+Engineering rule
+
+Storage failure and database failure need independent recovery paths.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                 Page 24
+24. Analytics Read Models
+
+Analytics can use derived tables/cache without becoming the source of truth.
+
+Schema contract
+
+ · Store aggregation windows if performance requires.
+ · Record calculation version.
+ · Rebuild from ProgressEvidence.
+ · Invalidate/recompute after relevant events.
+
+Engineering rule
+
+An analytics cache may be stale briefly, but the UI must not present stale data as current without context.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                                                    Page 25
+25. Student Model Storage
+
+Behavioral inference needs provenance and confidence.
+
+Schema contract
+
+ · Store pattern name/version, confidence, evidence window and generated-at time.
+ · Keep raw evidence untouched.
+ · Allow recalculation after rule changes.
+ · Expose reason/evidence references.
+
+Engineering rule
+
+Student model is advisory and must never overwrite observed facts.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+Analytics read models are allowed for performance, but they must always be reconstructible from authoritative evidence.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                                                                Page 26
+26. AI Data Contracts
+
+AI consumes scoped evidence and returns structured outputs.
+
+Schema contract
+
+ · Define request context schema.
+ · Define classification schema.
+ · Define insight/explanation schema.
+ · Define action-proposal schema.
+ · Validate every AI response before use.
+
+Engineering rule
+
+AI output never bypasses domain services or authorization.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                 Page 27
+27. Security & Ownership
+
+Schema and service boundaries must make cross-account access difficult.
+
+Schema contract
+
+ · Every student-owned table carries ownership path or enforceable relation.
+ · Queries are scoped before data selection where practical.
+ · Private assets require authorization.
+ · Audit sensitive mutations.
+
+Engineering rule
+
+Security is not a UI feature.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                     Page 28
+28. Migration Strategy
+
+Every schema evolution is deliberate and reversible where possible.
+
+Schema contract
+
+ · Migration files are versioned.
+ · Backfills are explicit and idempotent.
+ · Large migrations use staged rollout.
+ · Old fields are removed only after readers/writers migrate.
+
+Engineering rule
+
+Never manually edit production schema without a migration record.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+Transactions should protect the critical learning operations without coupling every service into one giant transaction.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                                                                Page 29
+29. Seed/Test Data
+
+Test data must model real scenarios.
+
+Schema contract
+
+ · New student with no activity.
+ · Normal active student.
+ · Repeated conceptual Error.
+ · Resolved then Reopened Error.
+ · Planner overload/backlog recovery.
+ · Improving and declining Test trajectories.
+ · Sparse evidence.
+
+Engineering rule
+
+Seed fixtures should produce deterministic dates and values.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                 Page 30
+30. Repository Contract
+
+Repositories expose safe persistence primitives.
+
+Schema contract
+
+ · No UI-specific methods.
+ · Validation at domain boundary.
+ · Explicit transactions for multi-record mutations.
+ · No hidden side effects that bypass events.
+
+Engineering rule
+
+Repositories should be easy to test against isolated databases.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+Schema acceptance is scenario-based: the database must support the actual learning loop end-to-end.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                                            Page 31
+31. Transaction Boundaries
+
+Multi-step learning mutations need atomicity where appropriate.
+
+Schema contract
+
+ · Submit Attempt transactionally locks submission and records final state.
+ · Error creation/evidence linkage is consistent.
+ · Lifecycle transitions and corresponding event creation use an agreed consistency strategy.
+ · Outbox/event log prevents lost events.
+
+Engineering rule
+
+Do not use distributed transactions when an outbox/event-log pattern provides sufficient guarantees.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                                             Page 32
+32. Schema Acceptance Matrix
+
+Schema is ready only when it supports behavior, not merely when migrations run.
+
+Schema contract
+
+ · Create Test  Attempt  Answers  Submit.
+ · Incorrect answer  ErrorEvidence + snapshot metadata.
+ · Error  Review  Outcome  Resolve.
+ · Later incorrect  Reopen.
+ · Planner miss  recovery/backlog evidence.
+ · Progress recompute from evidence.
+ · Notification links to source.
+
+Engineering rule
+
+All scenarios must pass with real persistence and ownership checks.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                        Page 33
+33. Final Schema Checklist
+
+The final database contract must remain understandable to future engineers.
+
+Schema contract
+
+ · Entities documented.
+ · Relationships documented.
+ · Enums documented.
+ · Indexes justified.
+ · Constraints tested.
+ · Migration tested.
+ · Append-only evidence verified.
+ · Timezone semantics tested.
+ · Ownership verified.
+ · Retention/storage policy documented.
+ · Derived models rebuildable.
+
+Engineering rule
+
+Schema Ready means the next engineer can implement services without inventing missing domain semantics.
+
+Verification
+
+ · The rule has an automated test or a clearly defined test scenario.
+ · The relationship cannot be bypassed by normal API calls.
+ · Historical evidence remains available after downstream state changes.
+ · A migration or seed change is reproducible from a clean database.
+
+KRODEX · Schema Ready Specification · From Scratch · v2.0                                                Page 34
+

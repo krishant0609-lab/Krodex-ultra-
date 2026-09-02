@@ -1,0 +1,10 @@
+node_modules/
+dist/
+build/
+.next/
+out/
+coverage/
+supabase/
+*.tsbuildinfo
+*.lock
+package-lock.json

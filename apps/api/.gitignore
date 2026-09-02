@@ -1,0 +1,6 @@
+# apps/api — local ignores (root .gitignore also covers most of these)
+node_modules/
+dist/
+*.tsbuildinfo
+.env
+.env.local

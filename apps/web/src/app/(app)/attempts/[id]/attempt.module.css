@@ -1,0 +1,333 @@
+/**
+ * KRODEX web — attempt detail editorial styles (focus mode).
+ *
+ * Phase 7.6 visual layer. The attempt page is intentionally
+ * minimalist: a quiet header, a single focused question in the
+ * middle, and a list of recorded answers underneath. The goal is
+ * "focus mode" — minimum chrome, no sidebars, no carousels.
+ *
+ * All cosmetic values resolve to design tokens. No raw colors,
+ * no hardcoded spacing.
+ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-8);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-3);
+  padding-bottom: var(--kd-space-6);
+  border-bottom: 1px solid var(--kd-color-border-subtle);
+}
+
+.eyebrow {
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  font-weight: var(--kd-type-caption-weight);
+  letter-spacing: var(--kd-type-caption-tracking);
+  text-transform: uppercase;
+  color: var(--kd-color-text-tertiary);
+  margin: 0;
+}
+
+.title {
+  font-size: var(--kd-type-display-s-size);
+  line-height: var(--kd-type-display-s-leading);
+  font-weight: var(--kd-type-display-s-weight);
+  letter-spacing: var(--kd-type-display-s-tracking);
+  color: var(--kd-color-text-primary);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: var(--kd-type-body-m-size);
+  line-height: var(--kd-type-body-m-leading);
+  color: var(--kd-color-text-secondary);
+  margin: 0;
+  max-width: 64ch;
+}
+
+.headerMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--kd-space-2);
+  flex-wrap: wrap;
+}
+
+.headerCount {
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-text-tertiary);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-8);
+}
+
+/* ----- Focus step (single-question reader) ----- */
+
+.focus {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-4);
+  padding: var(--kd-space-8) var(--kd-space-6);
+  background: var(--kd-color-surface-raised);
+  border: 1px solid var(--kd-color-border-subtle);
+  border-radius: var(--kd-radius-lg);
+}
+
+.focusEyebrow {
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  font-weight: var(--kd-type-caption-weight);
+  letter-spacing: var(--kd-type-caption-tracking);
+  text-transform: uppercase;
+  color: var(--kd-color-text-tertiary);
+  margin: 0;
+}
+
+.focusForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-3);
+}
+
+.focusLabel {
+  font-size: var(--kd-type-body-s-size);
+  line-height: var(--kd-type-body-s-leading);
+  font-weight: var(--kd-type-body-m-weight);
+  color: var(--kd-color-text-primary);
+}
+
+.focusTextarea {
+  width: 100%;
+  padding: var(--kd-space-3) var(--kd-space-4);
+  font-family: var(--kd-font-sans, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+  font-size: var(--kd-type-body-l-size);
+  line-height: var(--kd-type-body-l-leading);
+  color: var(--kd-color-text-primary);
+  background: var(--kd-color-surface-base);
+  border: 1px solid var(--kd-color-border-default);
+  border-radius: var(--kd-radius-md);
+  resize: vertical;
+  min-height: 8rem;
+  transition: border-color var(--kd-motion-duration-base)
+    var(--kd-motion-ease-standard);
+}
+
+.focusTextarea:focus {
+  outline: none;
+  border-color: var(--kd-color-border-focus);
+  box-shadow: 0 0 0 var(--kd-focus-ring-width) var(--kd-color-focus-ring);
+}
+
+.focusTextarea::placeholder {
+  color: var(--kd-color-text-tertiary);
+}
+
+.focusActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--kd-space-3);
+}
+
+.focusSubmit {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kd-space-2);
+  padding: var(--kd-space-3) var(--kd-space-5);
+  background: var(--kd-color-accent-primary);
+  color: var(--kd-color-on-accent-primary);
+  border: 0;
+  border-radius: var(--kd-radius-md);
+  font-size: var(--kd-type-body-m-size);
+  font-weight: var(--kd-type-body-m-weight);
+  cursor: pointer;
+  transition: background var(--kd-motion-duration-base)
+    var(--kd-motion-ease-standard);
+}
+
+.focusSubmit:hover:not(:disabled) {
+  background: var(--kd-color-accent-primary-hover);
+}
+
+.focusSubmit:focus-visible {
+  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
+  outline-offset: var(--kd-focus-ring-offset);
+}
+
+.focusSubmit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ----- Bands ----- */
+
+.readyBand,
+.closedBand,
+.successBand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-2);
+  padding: var(--kd-space-5) var(--kd-space-6);
+  border-radius: var(--kd-radius-md);
+  border: 1px solid var(--kd-color-border-subtle);
+  background: var(--kd-color-surface-raised);
+}
+
+.successBand {
+  background: var(--kd-color-state-success-bg);
+  border-color: var(--kd-color-state-success-border);
+  color: var(--kd-color-state-success-fg);
+}
+
+.readyTitle,
+.closedTitle,
+.successTitle {
+  font-size: var(--kd-type-heading-s-size);
+  line-height: var(--kd-type-heading-s-leading);
+  font-weight: var(--kd-type-heading-s-weight);
+  margin: 0;
+  color: inherit;
+}
+
+.readyBody,
+.closedBody,
+.successBody {
+  font-size: var(--kd-type-body-m-size);
+  line-height: var(--kd-type-body-m-leading);
+  margin: 0;
+  color: inherit;
+}
+
+/* ----- Recorded answers list ----- */
+
+.answersSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-3);
+}
+
+.sectionHeading {
+  font-size: var(--kd-type-heading-s-size);
+  line-height: var(--kd-type-heading-s-leading);
+  font-weight: var(--kd-type-heading-s-weight);
+  color: var(--kd-color-text-primary);
+  margin: 0;
+}
+
+.answersList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--kd-color-border-subtle);
+}
+
+.answersRow {
+  display: grid;
+  grid-template-columns: minmax(0, 8rem) minmax(0, 1fr);
+  gap: var(--kd-space-3);
+  padding: var(--kd-space-3) 0;
+  border-bottom: 1px solid var(--kd-color-border-subtle);
+}
+
+.answersIndex {
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-text-tertiary);
+}
+
+.answersText {
+  font-size: var(--kd-type-body-m-size);
+  line-height: var(--kd-type-body-m-leading);
+  color: var(--kd-color-text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ----- Submit / top-level action button ----- */
+
+.submitButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kd-space-2);
+  padding: var(--kd-space-3) var(--kd-space-5);
+  background: var(--kd-color-accent-primary);
+  color: var(--kd-color-on-accent-primary);
+  border: 0;
+  border-radius: var(--kd-radius-md);
+  font-size: var(--kd-type-body-m-size);
+  font-weight: var(--kd-type-body-m-weight);
+  cursor: pointer;
+  transition: background var(--kd-motion-duration-base)
+    var(--kd-motion-ease-standard);
+}
+
+.submitButton:hover:not(:disabled) {
+  background: var(--kd-color-accent-primary-hover);
+}
+
+.submitButton:focus-visible {
+  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
+  outline-offset: var(--kd-focus-ring-offset);
+}
+
+.submitButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ----- Misc ----- */
+
+.muted {
+  font-size: var(--kd-type-body-s-size);
+  line-height: var(--kd-type-body-s-leading);
+  color: var(--kd-color-text-tertiary);
+  margin: 0;
+}
+
+.errorMeta {
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-state-error-fg);
+  margin: 0;
+}
+
+.footnote {
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-text-tertiary);
+  margin: 0;
+}
+
+.footnoteLink {
+  color: var(--kd-color-text-link);
+  text-decoration: none;
+}
+
+.footnoteLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.footnoteLink:focus-visible {
+  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
+  outline-offset: var(--kd-focus-ring-offset);
+  border-radius: var(--kd-radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .focusTextarea,
+  .focusSubmit,
+  .submitButton,
+  .footnoteLink {
+    transition: none;
+  }
+}

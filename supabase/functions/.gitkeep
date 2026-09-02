@@ -1,0 +1,8 @@
+# KRODEX — Supabase Edge Functions
+#
+# Phase 0: this directory is intentionally empty. Edge functions
+# land in Phase 3 (event-driven connective layer) per the Project
+# Implementation Plan. Example functions that will be created:
+#   - process-event/
+#   - scheduler-tick/
+#   - notification-dispatch/

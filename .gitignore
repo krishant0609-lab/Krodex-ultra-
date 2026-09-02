@@ -1,0 +1,72 @@
+# =============================================================
+# KRODEX — root .gitignore
+# Phase 0: foundation only. No application secrets or build
+# artifacts should ever be committed.
+# =============================================================
+
+# ---------- Node / npm ----------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Coverage / test artifacts
+coverage/
+.nyc_output/
+
+# Build outputs (per-workspace .gitignore should mirror these, but root wins)
+dist/
+build/
+out/
+.next/
+.turbo/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- IDE ----------
+.vscode/
+.vscode-test/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+!.env.example
+
+# ---------- Next.js (apps/web) ----------
+# (also covered by .next/ above, but be explicit)
+.next/
+next-env.d.ts
+
+# ---------- Supabase ----------
+# Local-only Supabase state. supabase/config.toml IS committed.
+supabase/.branches/
+supabase/.temp/
+supabase/.env
+supabase/.env.local
+
+# ---------- Project documentation (reference only) ----------
+# The PDF source-of-truth documents are intentionally NOT tracked.
+# They are inputs to the project, not artifacts of it.
+*.pdf
+
+# ---------- KRODEX project-specific ----------
+.qodo/
+.tmp/
+.cache/

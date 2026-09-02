@@ -1,0 +1,802 @@
+                         KRODEX
+      PROJECT IMPLEMENTATION PLAN
+
+       From-Scratch Engineering Roadmap · Dependency-Gated Delivery · Verification-First
+       PRD  TRD  Flow  UI/UX  Implementation  Schema  Core  Intelligence
+
+                                            Version 2.0 · September 2026
+
+Gate  Build focus                                           Exit condition
+G0    Vision, PRD, TRD, flow, UI/UX                         Requirements frozen and traceable
+G1    Schema + persistence                                  Migrations, constraints and tests green
+G2    Services + APIs                                       Business rules and API contracts green
+G3    Events + jobs                                         Idempotent event propagation verified
+G4    Analytics + student model                             Metrics reproducible from evidence
+G5    Frontend integration                                  Every route uses real APIs and states
+G6    UI/UX + motion                                        Visual acceptance + accessibility
+G7    AI layer                                              Grounded, authorized, failure-safe
+G8    Production readiness                                  Security, performance, E2E and deployment checks
+
+The implementation order is intentionally dependency-first. Do not start with visual polish or AI while the durable state and business
+rules are unstable. The objective is a real application whose UI is a truthful projection of the backend.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0                                Page 1
+Phase 0 -- Repository & Environment Reset
+
+Start from the deleted-app state and establish a reproducible foundation.
+
+Work package
+
+ · Initialize the framework, package manager and TypeScript configuration.
+ · Define environment-variable contract and safe local defaults.
+ · Create formatting/lint/typecheck/test/build scripts.
+ · Set up Git, branch strategy and commit conventions.
+ · Create docs/architecture and decision records.
+
+Engineering guardrails
+
+ · No feature code before architecture acceptance.
+ · Never commit secrets.
+ · Local development must be reproducible from clean install.
+ · Build and test commands must be documented.
+
+Verification gate
+
+Exit: clean install  typecheck  lint  tests  build succeeds on an empty application shell.
+
+Definition of Done
+
+ · Code is type-safe and lint-clean under the project's configured toolchain.
+ · Automated tests cover the new behavior and important failure paths.
+ · No fake data or UI-only state is used to represent a backend fact.
+ · The feature is observable through its source record/event/evidence where applicable.
+ · Documentation and migration notes are updated before the phase closes.
+
+Dependencies
+
+This phase may consume outputs from earlier phases, but it must not bypass their contracts. If an upstream contract is insufficient,
+stop and revise that contract rather than adding an ad-hoc client-side workaround.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0  Page 2
+Phase 1 -- Core Data Model
+
+Build durable entities and persistence before UI features.
+
+Work package
+
+ · Implement Student, SyllabusNode, PlannerTask, BacklogItem, Error, Review, Test, TestAttempt, Answer, ProgressEvidence and
+   Notification.
+
+ · Define Error lifecycle and status enums.
+ · Create foreign keys, indexes and uniqueness constraints.
+ · Make ProgressEvidence append-only.
+ · Add migrations and isolated test database support.
+
+Engineering guardrails
+
+ · Validate every write.
+ · Protect ownership boundaries.
+ · Preserve historical records.
+ · Do not store derived dashboard numbers as the only truth.
+
+Verification gate
+
+Exit: schema migration applies cleanly and repository tests prove relationships, validation, lifecycle and append-only behavior.
+
+Definition of Done
+
+ · Code is type-safe and lint-clean under the project's configured toolchain.
+ · Automated tests cover the new behavior and important failure paths.
+ · No fake data or UI-only state is used to represent a backend fact.
+ · The feature is observable through its source record/event/evidence where applicable.
+ · Documentation and migration notes are updated before the phase closes.
+
+Dependencies
+
+This phase may consume outputs from earlier phases, but it must not bypass their contracts. If an upstream contract is insufficient,
+stop and revise that contract rather than adding an ad-hoc client-side workaround.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0  Page 3
+Phase 2 -- Domain Services & APIs
+
+Move business rules into services and expose stable API contracts.
+
+Work package
+
+ · Implement syllabus, planner, backlog, error, review, test, analytics-support and notification services as appropriate.
+ · Create typed request/response schemas.
+ · Centralize authorization and ownership checks.
+ · Define consistent error envelopes and status mapping.
+ · Write route integration tests.
+
+Engineering guardrails
+
+ · Routes should orchestrate, not own domain rules.
+ · Invalid transitions fail deterministically.
+ · Mutation endpoints are idempotent where retries are possible.
+ · API contracts are versionable.
+
+Verification gate
+
+Exit: service tests and API wiring tests pass; all core CRUD and lifecycle commands are real.
+
+Definition of Done
+
+ · Code is type-safe and lint-clean under the project's configured toolchain.
+ · Automated tests cover the new behavior and important failure paths.
+ · No fake data or UI-only state is used to represent a backend fact.
+ · The feature is observable through its source record/event/evidence where applicable.
+ · Documentation and migration notes are updated before the phase closes.
+
+Dependencies
+
+This phase may consume outputs from earlier phases, but it must not bypass their contracts. If an upstream contract is insufficient,
+stop and revise that contract rather than adding an ad-hoc client-side workaround.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0  Page 4
+Phase 3 -- Event & Connectivity Layer
+
+Connect state changes without duplicating business logic.
+
+Work package
+
+ · Define event catalog.
+ · Emit events only after successful domain mutations.
+ · Persist EventLog entries.
+ · Create idempotent handlers.
+ · Project progress evidence and notifications.
+ · Add retry/failure visibility.
+
+Engineering guardrails
+
+ · Unique idempotency key is authoritative.
+ · Handlers can be retried safely.
+ · Event payloads carry source identifiers.
+ · No event should invent state.
+
+Verification gate
+
+Exit: representative event chains are verified end-to-end and duplicate delivery creates no duplicate effects.
+
+Definition of Done
+
+ · Code is type-safe and lint-clean under the project's configured toolchain.
+ · Automated tests cover the new behavior and important failure paths.
+ · No fake data or UI-only state is used to represent a backend fact.
+ · The feature is observable through its source record/event/evidence where applicable.
+ · Documentation and migration notes are updated before the phase closes.
+
+Dependencies
+
+This phase may consume outputs from earlier phases, but it must not bypass their contracts. If an upstream contract is insufficient,
+stop and revise that contract rather than adding an ad-hoc client-side workaround.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0  Page 5
+Phase 4 -- Analytics / Progress Engine
+
+Build real-time-ish progress from evidence rather than static percentages.
+
+Work package
+
+ · Define seven/eight measurable dimensions from the PRD.
+ · Compute task execution, error health, test improvement, syllabus coverage, review behavior, consistency and composite indicators.
+ · Use explicit date windows.
+ · Expose sample sizes and evidence thresholds.
+ · Create daily/weekly series.
+ · Cache read models only as derived projections.
+
+Engineering guardrails
+
+ · No activity  perfect performance.
+ · Avoid denominator errors.
+ · Use UTC-safe date handling.
+ · Composite scores remain decomposable.
+ · Every metric can trace to evidence.
+
+Verification gate
+
+Exit: seeded scenarios prove improving, declining, empty and conflicting signals; API output is reproducible.
+
+Definition of Done
+
+ · Code is type-safe and lint-clean under the project's configured toolchain.
+ · Automated tests cover the new behavior and important failure paths.
+ · No fake data or UI-only state is used to represent a backend fact.
+ · The feature is observable through its source record/event/evidence where applicable.
+ · Documentation and migration notes are updated before the phase closes.
+
+Dependencies
+
+This phase may consume outputs from earlier phases, but it must not bypass their contracts. If an upstream contract is insufficient,
+stop and revise that contract rather than adding an ad-hoc client-side workaround.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0  Page 6
+Phase 5 -- Student Model
+
+Infer behavior from accumulated evidence with confidence.
+
+Work package
+
+ · Create deterministic pattern modules for consistency, procrastination/recovery, error recurrence, review behavior, workload pressure
+   and learning trajectory.
+
+ · Store inferred state separately from raw evidence.
+ · Attach confidence and evidence window.
+ · Version inference rules.
+ · Expose explainable reasons.
+
+Engineering guardrails
+
+ · Low evidence lowers confidence.
+ · Inference never rewrites raw records.
+ · Contradictory signals remain visible.
+ · Student model is advisory, not authoritative.
+
+Verification gate
+
+Exit: inference tests cover sparse, normal, improving, declining and contradictory scenarios.
+
+Definition of Done
+
+ · Code is type-safe and lint-clean under the project's configured toolchain.
+ · Automated tests cover the new behavior and important failure paths.
+ · No fake data or UI-only state is used to represent a backend fact.
+ · The feature is observable through its source record/event/evidence where applicable.
+ · Documentation and migration notes are updated before the phase closes.
+
+Dependencies
+
+This phase may consume outputs from earlier phases, but it must not bypass their contracts. If an upstream contract is insufficient,
+stop and revise that contract rather than adding an ad-hoc client-side workaround.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0  Page 7
+Phase 6 -- Frontend Architecture & Data Integration
+
+Connect every route to real state before premium polish.
+
+Work package
+
+ · Create shared data-fetch/query layer.
+ · Define loading, empty, partial, success and error contracts.
+ · Build route shells and state boundaries.
+ · Wire mutations with cache invalidation/revalidation.
+ · Implement deep links.
+ · Add frontend integration tests.
+
+Engineering guardrails
+
+ · No mock data in production routes.
+ · Do not hide fetch failures.
+ · Mutation success must be visible in UI.
+ · Server and client state must converge after refresh.
+
+Verification gate
+
+Exit: every required route renders real data or a truthful empty state and all critical mutations work through the UI.
+
+Definition of Done
+
+ · Code is type-safe and lint-clean under the project's configured toolchain.
+ · Automated tests cover the new behavior and important failure paths.
+ · No fake data or UI-only state is used to represent a backend fact.
+ · The feature is observable through its source record/event/evidence where applicable.
+ · Documentation and migration notes are updated before the phase closes.
+
+Dependencies
+
+This phase may consume outputs from earlier phases, but it must not bypass their contracts. If an upstream contract is insufficient,
+stop and revise that contract rather than adding an ad-hoc client-side workaround.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0  Page 8
+Phase 7 -- UI/UX Implementation
+
+Apply the premium design system to real flows.
+
+Work package
+
+ · Implement Light-first theme and Dark mode.
+ · Add Champagne/Lavender/Sapphire/Emerald/Rose/Amber semantic accents.
+ · Build editorial layouts.
+ · Implement responsive behavior.
+ · Implement accessibility states.
+ · Add restrained motion and microinteractions.
+
+Engineering guardrails
+
+ · No generic dashboard grids.
+ · No neon overload.
+ · Motion follows real state changes.
+ · Attempt mode remains distraction-free.
+ · Visual hierarchy must match product priorities.
+
+Verification gate
+
+Exit: visual acceptance across desktop/mobile, both themes, reduced motion and key workflows.
+
+Definition of Done
+
+ · Code is type-safe and lint-clean under the project's configured toolchain.
+ · Automated tests cover the new behavior and important failure paths.
+ · No fake data or UI-only state is used to represent a backend fact.
+ · The feature is observable through its source record/event/evidence where applicable.
+ · Documentation and migration notes are updated before the phase closes.
+
+Dependencies
+
+This phase may consume outputs from earlier phases, but it must not bypass their contracts. If an upstream contract is insufficient,
+stop and revise that contract rather than adding an ad-hoc client-side workaround.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0  Page 9
+Phase 8 -- AI Layer
+
+Add intelligence only after deterministic evidence exists.
+
+Work package
+
+ · Define provider abstraction.
+ · Define structured AI request/response schemas.
+ · Ground retrieval in authorized KRODEX evidence.
+ · Implement classification suggestions.
+ · Implement insight explanations and assistant responses.
+ · Implement action proposals with confirmation.
+ · Add failure, timeout and quota states.
+
+Engineering guardrails
+
+ · AI never directly mutates database state.
+ · AI cannot invent evidence.
+ · Every proposed mutation passes normal domain validation.
+ · Provider failure leaves core app usable.
+
+Verification gate
+
+Exit: golden cases demonstrate grounded answers, safe refusal, correct classification structure and proposal confirmation.
+
+Definition of Done
+
+ · Code is type-safe and lint-clean under the project's configured toolchain.
+ · Automated tests cover the new behavior and important failure paths.
+ · No fake data or UI-only state is used to represent a backend fact.
+ · The feature is observable through its source record/event/evidence where applicable.
+ · Documentation and migration notes are updated before the phase closes.
+
+Dependencies
+
+This phase may consume outputs from earlier phases, but it must not bypass their contracts. If an upstream contract is insufficient,
+stop and revise that contract rather than adding an ad-hoc client-side workaround.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0  Page 10
+Phase 9 -- Capture / Evidence Pipeline
+
+Implement the signature wrong-question capture experience robustly.
+
+Work package
+
+ · Define question snapshot generation from Attempt evidence.
+ · Persist private evidence assets.
+ · Attach snapshot to ErrorEvidence.
+ · Provide in-app review viewer.
+ · Handle processing failures and retries.
+ · Expose capture provenance.
+
+Engineering guardrails
+
+ · Capture should not depend on manual re-entry.
+ · Asset access is authorized.
+ · Failed asset processing does not erase Error evidence.
+ · Do not implement unrestricted device surveillance.
+
+Verification gate
+
+Exit: wrong answer  evidence  snapshot  classification  Error can be verified in a full test.
+
+Definition of Done
+
+ · Code is type-safe and lint-clean under the project's configured toolchain.
+ · Automated tests cover the new behavior and important failure paths.
+ · No fake data or UI-only state is used to represent a backend fact.
+ · The feature is observable through its source record/event/evidence where applicable.
+ · Documentation and migration notes are updated before the phase closes.
+
+Dependencies
+
+This phase may consume outputs from earlier phases, but it must not bypass their contracts. If an upstream contract is insufficient,
+stop and revise that contract rather than adding an ad-hoc client-side workaround.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0  Page 11
+Phase 10 -- Review / Retest Engine
+
+Make the Error Book an actual improvement loop.
+
+Work package
+
+ · Schedule Reviews.
+ · Select fresh verification questions.
+ · Record ReviewOutcome.
+ · Incorrect  active/recurred Error.
+ · Qualifying correct  Resolved.
+ · Later incorrect  Reopened.
+ · Generate custom Tests from Error pools.
+
+Engineering guardrails
+
+ · A review is not merely reading.
+ · Fresh verification must be distinct when policy requires.
+ · Resolution requires explicit evidence.
+ · Custom Test composition is deterministic.
+
+Verification gate
+
+Exit: repeated mistake, successful recovery, resolution and reopen scenarios all pass.
+
+Definition of Done
+
+ · Code is type-safe and lint-clean under the project's configured toolchain.
+ · Automated tests cover the new behavior and important failure paths.
+ · No fake data or UI-only state is used to represent a backend fact.
+ · The feature is observable through its source record/event/evidence where applicable.
+ · Documentation and migration notes are updated before the phase closes.
+
+Dependencies
+
+This phase may consume outputs from earlier phases, but it must not bypass their contracts. If an upstream contract is insufficient,
+stop and revise that contract rather than adding an ad-hoc client-side workaround.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0  Page 12
+Phase 11 -- Planner / Backlog Automation
+
+Make planning operational rather than a static calendar.
+
+Work package
+
+ · Generate reminders from upcoming work.
+ · Detect missed/partial tasks.
+ · Create backlog recovery suggestions.
+ · Carry unresolved work without erasing history.
+ · Connect Planner completion to progress evidence.
+ · Allow safe rescheduling.
+
+Engineering guardrails
+
+ · Automation must be explainable.
+ · Never punish a missed task by deleting it.
+ · Backlog pressure feeds analytics as evidence, not as a moral judgment.
+ · User can recover from overload.
+
+Verification gate
+
+Exit: planned  completed/missed  backlog/recovery  progress update is verified.
+
+Definition of Done
+
+ · Code is type-safe and lint-clean under the project's configured toolchain.
+ · Automated tests cover the new behavior and important failure paths.
+ · No fake data or UI-only state is used to represent a backend fact.
+ · The feature is observable through its source record/event/evidence where applicable.
+ · Documentation and migration notes are updated before the phase closes.
+
+Dependencies
+
+This phase may consume outputs from earlier phases, but it must not bypass their contracts. If an upstream contract is insufficient,
+stop and revise that contract rather than adding an ad-hoc client-side workaround.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0  Page 13
+Phase 12 -- Notifications & Scheduling
+
+Deliver meaningful notifications without notification spam.
+
+Work package
+
+ · Implement due-review reminders.
+ · Implement upcoming planner reminders.
+ · Implement missed-task alerts.
+ · Implement Error reopen notifications.
+ · Group repeated events.
+ · Respect user preferences and quiet periods.
+
+Engineering guardrails
+
+ · Every notification links to its source.
+ · Read state is separate from source state.
+ · Repeated event projections are idempotent.
+ · No backend noise in student inbox.
+
+Verification gate
+
+Exit: notification scenarios pass with correct source links and deduplication.
+
+Definition of Done
+
+ · Code is type-safe and lint-clean under the project's configured toolchain.
+ · Automated tests cover the new behavior and important failure paths.
+ · No fake data or UI-only state is used to represent a backend fact.
+ · The feature is observable through its source record/event/evidence where applicable.
+ · Documentation and migration notes are updated before the phase closes.
+
+Dependencies
+
+This phase may consume outputs from earlier phases, but it must not bypass their contracts. If an upstream contract is insufficient,
+stop and revise that contract rather than adding an ad-hoc client-side workaround.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0  Page 14
+Phase 13 -- End-to-End & Failure Testing
+
+Test the product as a connected system.
+
+Work package
+
+ · Run new-student journey.
+ · Run test  wrong  Error  Review  Resolve.
+ · Run Resolve  later wrong  Reopen.
+ · Run planner miss  recovery.
+ · Run network interruption during Attempt.
+ · Run duplicate submit and duplicate event delivery.
+ · Run permission/ownership tests.
+
+Engineering guardrails
+
+ · Test actual browser interactions, not only curl.
+ · Refresh after mutations.
+ · Test direct deep links.
+ · Test empty and partial data.
+ · Capture screenshots/videos for visual regressions.
+
+Verification gate
+
+Exit: critical journeys pass on clean environment and known failure paths are recoverable.
+
+Definition of Done
+
+ · Code is type-safe and lint-clean under the project's configured toolchain.
+ · Automated tests cover the new behavior and important failure paths.
+ · No fake data or UI-only state is used to represent a backend fact.
+ · The feature is observable through its source record/event/evidence where applicable.
+ · Documentation and migration notes are updated before the phase closes.
+
+Dependencies
+
+This phase may consume outputs from earlier phases, but it must not bypass their contracts. If an upstream contract is insufficient,
+stop and revise that contract rather than adding an ad-hoc client-side workaround.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0  Page 15
+Phase 14 -- Security Hardening
+
+Treat student learning data as private application data.
+
+Work package
+
+ · Enforce server-side authorization.
+ · Protect private snapshots.
+ · Keep service credentials server-only.
+ · Validate file uploads.
+ · Rate-limit sensitive endpoints.
+ · Audit logs for privileged operations.
+ · Check dependency vulnerabilities.
+
+Engineering guardrails
+
+ · Never trust client studentId.
+ · Never expose service-role secrets.
+ · Do not log answer content unnecessarily.
+ · Use least-privilege access.
+
+Verification gate
+
+Exit: security checklist and abuse cases pass; secrets scan clean.
+
+Definition of Done
+
+ · Code is type-safe and lint-clean under the project's configured toolchain.
+ · Automated tests cover the new behavior and important failure paths.
+ · No fake data or UI-only state is used to represent a backend fact.
+ · The feature is observable through its source record/event/evidence where applicable.
+ · Documentation and migration notes are updated before the phase closes.
+
+Dependencies
+
+This phase may consume outputs from earlier phases, but it must not bypass their contracts. If an upstream contract is insufficient,
+stop and revise that contract rather than adding an ad-hoc client-side workaround.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0  Page 16
+Phase 15 -- Performance & Production Readiness
+
+Make the real application reliable under normal student usage.
+
+Work package
+
+ · Measure route latency.
+ · Optimize heavy charts and evidence images.
+ · Add caching where safe.
+ · Verify database indexes.
+ · Load-test key APIs.
+ · Verify production build.
+ · Run production-like environment smoke tests.
+ · Configure monitoring and error reporting.
+
+Engineering guardrails
+
+ · Cache only derived/read data.
+ · Never cache across users incorrectly.
+ · Avoid layout shift.
+ · Keep Attempt interactions responsive.
+
+Verification gate
+
+Exit: production build, smoke tests, performance budgets and deployment configuration pass.
+
+Definition of Done
+
+ · Code is type-safe and lint-clean under the project's configured toolchain.
+ · Automated tests cover the new behavior and important failure paths.
+ · No fake data or UI-only state is used to represent a backend fact.
+ · The feature is observable through its source record/event/evidence where applicable.
+ · Documentation and migration notes are updated before the phase closes.
+
+Dependencies
+
+This phase may consume outputs from earlier phases, but it must not bypass their contracts. If an upstream contract is insufficient,
+stop and revise that contract rather than adding an ad-hoc client-side workaround.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0  Page 17
+Phase 16 -- Release & Continuous Improvement
+
+Release only after acceptance and establish a controlled feedback loop.
+
+Work package
+
+ · Create release candidate.
+ · Freeze schema/API contracts for release.
+ · Run migration rehearsal.
+ · Run E2E smoke suite.
+ · Verify environment variables.
+ · Create rollback plan.
+ · Release staged.
+ · Monitor errors and domain-event failures.
+
+Engineering guardrails
+
+ · No last-minute feature additions during release validation.
+ · Document known limitations.
+ · Every post-release fix gets a regression test.
+ · Keep product analytics privacy-conscious.
+
+Verification gate
+
+Exit: release checklist signed and rollback path demonstrated.
+
+Definition of Done
+
+ · Code is type-safe and lint-clean under the project's configured toolchain.
+ · Automated tests cover the new behavior and important failure paths.
+ · No fake data or UI-only state is used to represent a backend fact.
+ · The feature is observable through its source record/event/evidence where applicable.
+ · Documentation and migration notes are updated before the phase closes.
+
+Dependencies
+
+This phase may consume outputs from earlier phases, but it must not bypass their contracts. If an upstream contract is insufficient,
+stop and revise that contract rather than adding an ad-hoc client-side workaround.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0  Page 18
+Repository Structure
+
+Use a structure that makes domain boundaries obvious.
+
+Area               Implementation requirement
+apps/web           Next.js application routes and UI.
+src/domain         Pure domain types and rules.
+src/services       Business operations.
+src/repositories   Persistence adapters.
+src/events         Event bus, log and handlers.
+src/analytics      Metrics and progress engine.
+src/student-model  Inference and confidence.
+src/ai             Provider abstraction and structured AI.
+prisma             Schema and migrations.
+tests/e2e          Browser journeys.
+docs               PRD, TRD, flow, UI/UX, decisions and reports.
+
+Gate
+
+ · Evidence is documented.
+ · Known limitations are explicit.
+ · No feature is accepted solely because the route returns HTTP 200.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0            Page 19
+Git & Change Discipline
+
+Keep every phase reviewable.
+
+                                                                                                                                              i
+                                                                                                                                              u
+                                                                                                                                              a
+                                                                                                                                              s
+                                                                                                                                              s
+
+Gate
+
+ · Evidence is documented.
+ · Known limitations are explicit.
+ · No feature is accepted solely because the route returns HTTP 200.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0                                                                                       Page 20
+Testing Pyramid
+
+Use multiple levels of confidence.
+
+Area                  Implementation requirement
+Unit                  Validators, calculators, lifecycle rules, formatters.
+Repository            Constraints, relationships, persistence semantics.
+Service               Business rules and cross-domain transitions.
+API                   Authorization, envelopes, validation and wiring.
+Frontend integration  Route state, mutation, cache/revalidation.
+E2E                   Real browser workflows and failure recovery.
+Visual                Theme, responsive, accessibility and motion regression.
+
+Gate
+
+ · Evidence is documented.
+ · Known limitations are explicit.
+ · No feature is accepted solely because the route returns HTTP 200.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0                     Page 21
+Data Truth Hierarchy
+
+When values disagree, know which source wins.
+
+Area          Implementation requirement
+Raw evidence  Immutable observed facts: Attempts, Answers, ErrorEvidence, ReviewOutcome, Planner completion.
+Domain state  Current lifecycle/status derived through authorized commands.
+Events        Durable record of state changes.
+Read models   Derived projections for fast UI.
+AI inference  Advisory interpretation with confidence and evidence window.
+
+Gate
+
+ · Evidence is documented.
+ · Known limitations are explicit.
+ · No feature is accepted solely because the route returns HTTP 200.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0                                                    Page 22
+Critical Automated Journeys
+
+These are the product's most important tests.
+
+Area  Implementation requirement
+J1    Wrong Test answer automatically creates Error evidence and snapshot.
+J2    Error Review incorrect keeps Error active and adds recurrence.
+J3    Qualifying Review correct resolves Error.
+J4    Later wrong answer reopens the same Error pattern.
+J5    Custom Test from 20 selected Errors contains exactly the intended pool.
+J6    Planner miss creates recovery/backlog pressure and updates progress evidence.
+J7    Completed backlog recovery improves relevant analytics without erasing history.
+J8    Dashboard/Insights/Notifications converge after each domain event.
+
+Gate
+
+ · Evidence is documented.
+ · Known limitations are explicit.
+ · No feature is accepted solely because the route returns HTTP 200.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0                             Page 23
+Release Checklist
+
+Final gate before calling KRODEX production-ready.
+
+Area           Implementation requirement
+Build          Clean production build with no hidden error suppression.
+Type safety    Full project typecheck green.
+Tests          Unit/service/API/E2E suites green.
+Security       Auth, ownership, private evidence and secrets verified.
+Data           Migrations rehearsed and backup/rollback path defined.
+UX             Light/Dark, mobile, accessibility and reduced-motion verified.
+Observability  Errors, event failures and important latency signals visible.
+Recovery       Network failure, retry, duplicate command and partial processing tested.
+
+Gate
+
+ · Evidence is documented.
+ · Known limitations are explicit.
+ · No feature is accepted solely because the route returns HTTP 200.
+
+KRODEX · Project Implementation Plan · From Scratch · v2.0                               Page 24
+

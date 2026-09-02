@@ -1,0 +1,9 @@
+# KRODEX — Supabase migrations
+#
+# Phase 0: this directory is intentionally empty. The first migration
+# is created in Phase 1 (core data model + persistence) per the
+# Project Implementation Plan.
+#
+# Each migration file MUST be named with a 14-digit timestamp prefix
+# (e.g. 20260101000000_init_schema.sql) so that `supabase db reset`
+# applies them in order.

@@ -189,7 +189,7 @@ function stubFetch(routes: PlannerFetchRoutes): MockInstance<typeof global.fetch
           [TASK_IN_PROGRESS.id]: TASK_IN_PROGRESS,
           [TASK_COMPLETED.id]: TASK_COMPLETED,
         };
-        const base = candidates[id] ?? TASK_PLANNED;
+        const base = id ? (candidates[id] ?? TASK_PLANNED) : TASK_PLANNED;
         const body = parseBody(init?.body);
         const merged = body && typeof body === 'object' ? { ...base, ...body } : base;
         return Promise.resolve(

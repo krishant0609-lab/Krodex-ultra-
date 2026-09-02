@@ -105,6 +105,12 @@ interface CardPartProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
 }
 
+type CardTitleProps = HTMLAttributes<HTMLHeadingElement> & {
+  children?: ReactNode;
+  /** Heading level. Default 3. */
+  level?: 2 | 3 | 4 | 5 | 6;
+};
+
 function CardPart({ className, children, ...rest }: CardPartProps): JSX.Element {
   return (
     <div className={className} {...rest}>
@@ -124,12 +130,15 @@ function CardEyebrow(props: CardPartProps): JSX.Element {
     />
   );
 }
-function CardTitle(props: CardPartProps): JSX.Element {
+function CardTitle({ level = 3, className, children, ...rest }: CardTitleProps): JSX.Element {
+  // Render the requested heading level while preserving the
+  // cardTitle typography. Consumers MUST pick a level that
+  // fits their page's heading order (no skipping).
+  const Tag = `h${level}` as 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
   return (
-    <h3
-      {...(props as HTMLAttributes<HTMLHeadingElement>)}
-      className={cls([styles.cardTitle, props.className])}
-    />
+    <Tag {...rest} className={cls([styles.cardTitle, className])}>
+      {children}
+    </Tag>
   );
 }
 function CardBody(props: CardPartProps): JSX.Element {

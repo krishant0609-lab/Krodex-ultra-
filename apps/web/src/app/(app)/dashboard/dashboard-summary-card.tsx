@@ -103,7 +103,7 @@ export function DashboardSummaryCard<T>({
       <Card.Header>
         <div>
           <Card.Eyebrow>{eyebrow}</Card.Eyebrow>
-          <Card.Title>{title}</Card.Title>
+          <Card.Title level={2}>{title}</Card.Title>
         </div>
         {cta}
       </Card.Header>

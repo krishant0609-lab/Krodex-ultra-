@@ -11,8 +11,12 @@
  */
 
 import '@testing-library/jest-dom/vitest';
-import { afterEach, vi } from 'vitest';
+import * as axeMatchers from 'vitest-axe/matchers';
+import 'vitest-axe/extend-expect';
+import { afterEach, expect, vi } from 'vitest';
 import { clearAuth } from '../lib/auth-store';
+
+expect.extend(axeMatchers);
 
 if (typeof window !== 'undefined' && !window.matchMedia) {
   Object.defineProperty(window, 'matchMedia', {

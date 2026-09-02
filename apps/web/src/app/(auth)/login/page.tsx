@@ -3,20 +3,30 @@
 /**
  * KRODEX web — dev login.
  *
- * Phase 6 ships only the dev-token mint path (per
- * Implementation Plan §291 — auth flows are out of Phase 6
- * scope beyond the dev convenience). The user enters a user_id
- * and an optional email; we POST to /auth/dev-token, persist
- * the bearer token in the memory store, and redirect to
- * /dashboard.
+ * Phase 7.11 visual layer:
+ *  - Editorial card on a quiet background. Brand mark, eyebrow
+ *    "Session", title "Sign in", and a calm description that
+ *    names the dev-only nature of the flow.
+ *  - Three labeled fields: user_id (required), email (optional),
+ *    ttl_seconds (required). All inputs use the shared design
+ *    tokens. The submit button uses the accent and is disabled
+ *    while the mint is in flight.
+ *  - 7-state contract honored: loading (pending), error (mint
+ *    failed), success (redirect to /dashboard). There is no
+ *    empty / partial state for a mint form — those are N/A.
  *
- * There is no signup, no SSO, no password reset, no refresh.
- * Those belong to the auth phase.
+ * The mutation uses the existing useDevLogin hook from Phase 6
+ * (POST /auth/dev-token). The auth store is the memory-only
+ * store from Phase 6. No new server state, no new contracts.
  */
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDevLogin } from '../../../hooks/use-auth';
+import { ApiError } from '../../../lib/api-client';
+import { Field } from '../../../components/field';
+import { Input } from '../../../components/input';
+import styles from './login.module.css';
 
 export default function LoginPage(): JSX.Element {
   const router = useRouter();
@@ -36,99 +46,114 @@ export default function LoginPage(): JSX.Element {
       });
       router.replace('/dashboard');
     } catch {
-      // The mutation's `error` is rendered below.
+      // Error rendered below.
     }
   };
 
   return (
-    <main
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '2rem',
-      }}
-    >
-      <form
-        onSubmit={onSubmit}
-        data-testid="login-form"
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.75rem',
-          width: '20rem',
-          maxWidth: '100%',
-        }}
+    <main className={styles.shell}>
+      <section
+        className={styles.card}
+        aria-label="Dev login"
+        data-testid="login-card"
       >
-        <h1 style={{ fontSize: '1.25rem', margin: 0 }}>KRODEX — dev login</h1>
-        <p style={{ margin: 0, color: '#555', fontSize: '0.875rem' }}>
-          Mint a development bearer token. Available only when the API is
-          configured with the dev-token route.
-        </p>
+        <div className={styles.brand}>
+          <span className={styles.brandMark} aria-hidden="true">
+            KX
+          </span>
+          <span className={styles.brandWord}>KRODEX</span>
+        </div>
 
-        <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-          <span style={{ fontSize: '0.875rem' }}>User ID (UUID)</span>
-          <input
-            type="text"
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
-            required
-            data-testid="login-user-id"
-            style={{ padding: '0.5rem', border: '1px solid #ccc', borderRadius: '0.25rem' }}
-          />
-        </label>
-
-        <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-          <span style={{ fontSize: '0.875rem' }}>Email (optional)</span>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            data-testid="login-email"
-            style={{ padding: '0.5rem', border: '1px solid #ccc', borderRadius: '0.25rem' }}
-          />
-        </label>
-
-        <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-          <span style={{ fontSize: '0.875rem' }}>Token TTL (seconds)</span>
-          <input
-            type="number"
-            min={60}
-            max={86400}
-            value={ttl}
-            onChange={(e) => setTtl(Number(e.target.value))}
-            data-testid="login-ttl"
-            style={{ padding: '0.5rem', border: '1px solid #ccc', borderRadius: '0.25rem' }}
-          />
-        </label>
-
-        <button
-          type="submit"
-          disabled={devLogin.isPending}
-          data-testid="login-submit"
-          style={{
-            padding: '0.5rem 1rem',
-            border: '1px solid #111',
-            background: '#111',
-            color: '#fff',
-            borderRadius: '0.25rem',
-            opacity: devLogin.isPending ? 0.6 : 1,
-          }}
-        >
-          {devLogin.isPending ? 'Minting…' : 'Sign in'}
-        </button>
-
-        {devLogin.isError ? (
-          <p
-            role="alert"
-            data-testid="login-error"
-            style={{ margin: 0, color: '#842029', fontSize: '0.875rem' }}
-          >
-            {(devLogin.error as Error)?.message ?? 'Login failed.'}
+        <header className={styles.intro}>
+          <p className={styles.eyebrow}>Session</p>
+          <h1 className={styles.title}>Sign in</h1>
+          <p className={styles.description}>
+            Mint a development bearer token. Available only when the API is
+            configured with the dev-token route.
           </p>
-        ) : null}
-      </form>
+        </header>
+
+        <form
+          onSubmit={onSubmit}
+          data-testid="login-form"
+          className={styles.form}
+          noValidate
+        >
+          <Field
+            id="login-user-id"
+            label="User ID"
+            required
+            helper="UUID of an existing user row."
+          >
+            <Input
+              id="login-user-id"
+              type="text"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              required
+              data-testid="login-user-id"
+            />
+          </Field>
+
+          <Field
+            id="login-email"
+            label="Email"
+            optional
+            helper="Optional. Stored on the session for display only."
+          >
+            <Input
+              id="login-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              data-testid="login-email"
+            />
+          </Field>
+
+          <Field
+            id="login-ttl"
+            label="Token TTL (seconds)"
+            helper="Between 60 and 86400."
+          >
+            <Input
+              id="login-ttl"
+              type="number"
+              min={60}
+              max={86400}
+              value={ttl}
+              onChange={(e) => setTtl(Number(e.target.value))}
+              data-testid="login-ttl"
+            />
+          </Field>
+
+          <div className={styles.actions}>
+            <button
+              type="submit"
+              className={styles.submit}
+              disabled={devLogin.isPending}
+              data-testid="login-submit"
+            >
+              {devLogin.isPending ? 'Minting…' : 'Sign in'}
+            </button>
+            {devLogin.isError ? (
+              <p
+                className={styles.errorMeta}
+                role="alert"
+                data-testid="login-error"
+              >
+                {devLogin.error instanceof ApiError
+                  ? `${devLogin.error.code} (${devLogin.error.status})`
+                  : 'Login failed.'}
+              </p>
+            ) : null}
+          </div>
+        </form>
+
+        <p className={styles.hint}>
+          Sessions are kept in memory only. A page reload will require a new
+          token.
+        </p>
+      </section>
     </main>
   );
 }

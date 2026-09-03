@@ -20,6 +20,7 @@ import { registerBacklogRoutes } from './backlog';
 import { registerProgressRoutes } from './progress';
 import { registerAnalyticsRoutes } from './analytics';
 import { registerStudentModelRoutes } from './student-model';
+import { registerAssistantRoutes } from './assistant';
 
 export function registerAllRoutes(app: FastifyInstance): void {
   registerAuthRoutes(app);
@@ -33,4 +34,5 @@ export function registerAllRoutes(app: FastifyInstance): void {
   registerProgressRoutes(app);
   registerAnalyticsRoutes(app);
   registerStudentModelRoutes(app);
+  registerAssistantRoutes(app);
 }

@@ -118,6 +118,12 @@ export class DependencyUnavailableError extends AppError {
   }
 }
 
+export class AiOutputInvalidError extends AppError {
+  constructor(message: string, options: AppErrorOptions = {}) {
+    super('AI_OUTPUT_INVALID', message, options);
+  }
+}
+
 export class InternalError extends AppError {
   constructor(message = 'internal error', options: AppErrorOptions = {}) {
     super('INTERNAL', message, options);

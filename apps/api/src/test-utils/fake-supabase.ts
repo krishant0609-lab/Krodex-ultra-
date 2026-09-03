@@ -137,6 +137,11 @@ class FakeQueryBuilder {
     return this;
   }
 
+  neq(column: string, value: unknown): this {
+    this.filters.push((r) => r[column] !== value);
+    return this;
+  }
+
   gt(column: string, value: unknown): this {
     this.filters.push((r) => typeof r[column] === 'string' && (r[column] as string) > (value as string));
     return this;

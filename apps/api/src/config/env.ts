@@ -48,11 +48,13 @@ export interface ApiEnv {
 
   // AI (Phase 8)
   readonly aiProvider: string;
+  readonly aiProviderUrl: string;
   readonly aiApiKey: string;
   readonly aiModelDefault: string;
   readonly aiModelReasoning: string;
   readonly aiTimeoutMs: number;
   readonly aiMaxRetries: number;
+  readonly aiProposalTtlMs: number;
 
   // Storage
   readonly storageBucketErrorCaptures: string;
@@ -126,11 +128,13 @@ export function loadEnv(): ApiEnv {
     authRefreshTtlSeconds: num(process.env.AUTH_REFRESH_TTL_SECONDS, 2_592_000),
 
     aiProvider: trim(process.env.AI_PROVIDER) || 'openai',
+    aiProviderUrl: trim(process.env.AI_PROVIDER_URL) || 'https://api.openai.com/v1',
     aiApiKey: trim(process.env.AI_API_KEY),
     aiModelDefault: trim(process.env.AI_MODEL_DEFAULT) || 'gpt-4o-mini',
     aiModelReasoning: trim(process.env.AI_MODEL_REASONING) || 'gpt-4o',
     aiTimeoutMs: num(process.env.AI_TIMEOUT_MS, 20_000),
     aiMaxRetries: num(process.env.AI_MAX_RETRIES, 2),
+    aiProposalTtlMs: num(process.env.AI_PROPOSAL_TTL_MS, 30 * 60 * 1000),
 
     storageBucketErrorCaptures:
       trim(process.env.STORAGE_BUCKET_ERROR_CAPTURES) || 'error-captures',

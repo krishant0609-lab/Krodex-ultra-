@@ -10,6 +10,8 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type { ApiEnv } from './config/env';
 import { getUserClient } from './db/supabase';
 import { UnauthorizedError } from './errors';
+import { createProvider, RetryingProvider } from './ai/provider.default';
+import { createAssistantService, type AssistantService } from './services/assistant-service';
 
 export interface RequestAuth {
   userId: string;
@@ -33,11 +35,27 @@ declare module 'fastify' {
      * `app.eventBus.status()`; route tests do not.
      */
     eventBus?: import('./events/event-bus').EventBus;
+    /**
+     * Phase 8 assistant orchestrator. Built once at boot and
+     * shared across all routes. Construction is cheap (it just
+     * wraps a provider), but caching it on the app avoids
+     * re-reading env + re-constructing retrying wrappers on
+     * every request.
+     */
+    assistantService: AssistantService;
   }
 }
 
 export function installRequestDecorations(app: FastifyInstance, env: ApiEnv): void {
   app.decorate('krodexEnv', env);
+  // Build the provider + assistant service once. Tests that
+  // want to swap the provider inject their own service via
+  // `app.decorate('assistantService', svc)` before registering
+  // routes.
+  const baseProvider = createProvider(env);
+  const retryingProvider = new RetryingProvider(baseProvider, env.aiMaxRetries);
+  const assistantService = createAssistantService(env, retryingProvider);
+  app.decorate('assistantService', assistantService);
   app.decorateRequest('auth', null);
   app.decorateRequest('supabaseUser', null);
 }

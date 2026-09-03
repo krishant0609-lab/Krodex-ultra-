@@ -42,7 +42,7 @@ async function setSeed(seed: string): Promise<void> {
 }
 
 test.describe('Phase 8 — AI proposal end-to-end', () => {
-  test.beforeEach(async ({ page, context }) => {
+  test.beforeEach(async ({ context }) => {
     await setTheme(context, 'light');
   });
 

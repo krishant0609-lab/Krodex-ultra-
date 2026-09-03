@@ -42,7 +42,7 @@ async function setSeed(seed: string): Promise<void> {
 }
 
 test.describe('Phase 8 — /assistant', () => {
-  test.beforeEach(async ({ page, context }) => {
+  test.beforeEach(async ({ context }) => {
     // Pin to a single theme so the editorial layer is stable.
     await setTheme(context, 'light');
   });

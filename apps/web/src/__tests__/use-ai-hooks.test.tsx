@@ -21,7 +21,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 
 import { setAuth, clearAuth } from '../lib/auth-store';
-import { ApiError } from '../lib/api-client';
+import type { ApiError } from '../lib/api-client';
 import {
   useAssistantQuery,
   useProposalConfirm,

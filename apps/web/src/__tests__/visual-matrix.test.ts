@@ -180,9 +180,20 @@ describe('Phase 7.13 — visual verification matrix', () => {
     // Each template pattern is stored as {prefix, suffix}.
     const templateIds: Array<{ prefix: string; suffix: string }> = [];
     const literalRe = /data-testid=["']([a-zA-Z0-9_-]+)["']/g;
-    // `prefix-${expr}suffix`: the prefix is any [a-zA-Z0-9_-]+ before
-    // `${`, the suffix is any [a-zA-Z0-9_-]+ after the matching `}`.
-    const templateRe = /data-testid=\{`([a-zA-Z0-9_-]*)\$\{[^}]+\}([a-zA-Z0-9_-]*)`\}/g;
+    // Template `data-testid` patterns come in two shapes:
+    //   1. `prefix-${expr}suffix` — one interpolation.
+    //   2. `prefix-${expr}-${expr}suffix` — multiple interpolations
+    //      separated by literal segments (e.g. Phase 8's
+    //      `assistant-source-${s.kind}-${s.id}`).
+    // We capture the leading literal prefix and trailing literal
+    // suffix of any template; the segments in between must all
+    // be `${…}` interpolations or `[a-zA-Z0-9_-]+` literals, but
+    // the static prefix/suffix check is sufficient for our
+    // "no orphan testids" invariant — if a testid starts with
+    // the template's prefix and ends with its suffix, the
+    // template can produce it.
+    const templateRe =
+      /data-testid=\{`([a-zA-Z0-9_-]*)((?:\$\{[^}]+\}|[a-zA-Z0-9_-]+)*)([a-zA-Z0-9_-]*)`\}/g;
     for (const file of srcFiles) {
       const src = fs.readFileSync(file, 'utf8');
       let m: RegExpExecArray | null;
@@ -190,8 +201,10 @@ describe('Phase 7.13 — visual verification matrix', () => {
         if (m[1]) literalIds.add(m[1]);
       }
       while ((m = templateRe.exec(src)) !== null) {
-        if (m[1] !== undefined && m[2] !== undefined) {
-          templateIds.push({ prefix: m[1], suffix: m[2] });
+        const prefix = m[1] ?? '';
+        const suffix = m[3] ?? '';
+        if (prefix !== undefined && suffix !== undefined) {
+          templateIds.push({ prefix, suffix });
         }
       }
     }

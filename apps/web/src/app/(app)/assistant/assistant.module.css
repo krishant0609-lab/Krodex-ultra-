@@ -58,7 +58,7 @@
   border: 1px solid var(--kd-color-accent);
   border-radius: var(--kd-radius-md);
   background: var(--kd-color-accent);
-  color: var(--kd-color-text-on-accent, #fff);
+  color: var(--kd-color-text-inverse);
   font-family: var(--kd-font-body);
   font-size: var(--kd-font-size-sm);
   font-weight: 600;
@@ -228,6 +228,6 @@
 .errorMeta {
   font-family: var(--kd-font-body);
   font-size: var(--kd-font-size-sm);
-  color: var(--kd-color-text-error, #b91c1c);
+  color: var(--kd-color-state-error-fg);
   margin: 0;
 }

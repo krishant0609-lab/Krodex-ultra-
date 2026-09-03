@@ -39,6 +39,7 @@ import { Badge } from '../../../../components/badge';
 import { ApiError } from '../../../../lib/api-client';
 import { useErrorEntry, useUpdateErrorEntry } from '../../../../hooks/use-errors';
 import { formatShortDate, formatLongDate } from '../../../../lib/format-date';
+import { ClassificationSuggestCard } from './classification-suggest-card';
 import styles from './error-detail.module.css';
 
 interface ErrorDetailPageProps {
@@ -195,6 +196,16 @@ export default function ErrorDetailPage({
                   : 'This entry is on your active list. Mark it resolved when you have a clean run.'}
             </p>
           </header>
+
+          {/* Phase 8: AI classification suggestion. Shown only for
+              unclassified entries. The card is self-contained: it
+              fetches its own suggestion, shows the manual fallback
+              when AI is unavailable, and writes the chosen category
+              through the existing update hook. */}
+          <ClassificationSuggestCard
+            errorId={entry.data.id}
+            currentCategory={entry.data.mistake_type}
+          />
 
           <section className={styles.section} aria-label="Dates">
             <h2 className={styles.sectionHeading}>Dates</h2>

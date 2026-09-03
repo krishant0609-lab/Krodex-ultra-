@@ -34,15 +34,27 @@ import type {
   AiProvider,
   AiRequest,
 } from '../ai/provider';
-import { AiOutputInvalidError, DependencyUnavailableError, isAppError } from '../errors';
 import {
+  AiOutputInvalidError,
+  DependencyUnavailableError,
+  NotFoundError,
+  isAppError,
+} from '../errors';
+import {
+  buildAssistantEvidence,
   buildClassificationEvidence,
+  type AssistantEvidenceBundle,
   type ClassificationEvidence,
 } from '../ai/evidence';
 import {
   normalizeClassifierError,
   suggestClassification,
 } from '../ai/classifier';
+import {
+  answerAssistantQuery,
+  normalizeAssistantError,
+} from '../ai/assistant';
+import { classifyIntent } from '../ai/intent';
 import type {
   AssistantProposalT,
   AssistantResponseT,
@@ -158,6 +170,137 @@ export class AssistantService {
       candidateSourceIds: collectCandidateSourceIds(evidence),
     };
   }
+
+  /**
+   * Non-authoritative Q&A against the student's own records.
+   *
+   * Flow:
+   *   1. Classify the question's intent (rule-based, see
+   *      `ai/intent.ts`).
+   *   2. Pull a server-side, RLS-scoped evidence bundle (capped
+   *      at 10 errors / 10 reviews / 10 topics).
+   *   3. Call the model. The model's response is Zod-validated
+   *      and the citation-ownership guard rejects any id outside
+   *      the bundle.
+   *   4. If the response includes a `proposal` (only allowed
+   *      when the intent is `recommendation`), attach a
+   *      server-generated id, a server-generated `createdAt`,
+   *      and store it in the in-process TTL map so the student
+   *      can confirm it on the next call.
+   *
+   * The route handler returns the `AssistantResponse` to the
+   * client. The proposal (if any) lives only in the in-process
+   * map — never in the database — until the student confirms.
+   *
+   * The AI never mutates state. Even when a `create_task` or
+   * `schedule_review` proposal is returned, the only side effect
+   * here is putting an entry in the TTL map. The actual write
+   * happens in `confirmProposal`, after explicit student
+   * confirmation, via the existing domain services.
+   *
+   * @param client    The per-request Supabase client (RLS-scoped).
+   * @param userId    The authenticated student.
+   * @param input     The student's question + optional context.
+   */
+  async answerQuery(
+    client: SupabaseClient,
+    userId: string,
+    input: AnswerQueryInput,
+  ): Promise<AnswerQueryResult> {
+    if (!this.env.aiApiKey) {
+      throw new DependencyUnavailableError('AI provider not configured', {
+        context: { provider: this.env.aiProvider, hasApiKey: false },
+      });
+    }
+
+    const intent = classifyIntent(input.question);
+
+    const bundle = await buildAssistantEvidence(
+      client,
+      userId,
+      { errorLimit: 10, reviewLimit: 10, topicLimit: 10 },
+      this.now,
+    );
+
+    let response: AssistantResponseT;
+    try {
+      response = await answerAssistantQuery(
+        this.provider,
+        this.modelReasoning,
+        input.question,
+        intent,
+        bundle,
+      );
+    } catch (err) {
+      normalizeAssistantError(err);
+    }
+    response = response!;
+
+    // The model may include a proposal (only on `recommendation`).
+    // We overwrite the model-supplied id and createdAt with
+    // server-generated values and store the proposal in the
+    // in-process TTL map. The route returns the *new* id back to
+    // the client so the confirm endpoint can find it.
+    if (response.proposal) {
+      const serverProposal: AssistantProposalT = {
+        ...response.proposal,
+        id: makeProposalId(),
+        createdAt: this.now().getTime(),
+      };
+      // Lazy import to avoid a hard dependency between the
+      // service and the proposer module — the route never reads
+      // the import side-effects.
+      const { storeProposal } = await import('../ai/proposer');
+      storeProposal(userId, serverProposal, this.now);
+      response = { ...response, proposal: serverProposal };
+    }
+
+    return {
+      response,
+      // The full evidence id set, for the UI to verify the model's
+      // citations. Same shape as the classification path.
+      candidateSourceIds: collectAssistantCandidateSourceIds(bundle),
+    };
+  }
+
+  /**
+   * Confirm or reject a proposal. The student explicitly opts in
+   * (or out); the AI is never allowed to execute a mutation
+   * without this round-trip.
+   *
+   * On confirm, the proposal is dispatched to the matching
+   * domain service. The domain service enforces its own
+   * ownership + validation — this method does not duplicate
+   * that.
+   *
+   * On reject, the proposal is removed from the TTL map and
+   * no mutation is performed.
+   *
+   * On expiry (TTL elapsed) or unknown id, this throws
+   * `NotFoundError` so the route returns 404.
+   */
+  async confirmProposal(
+    userId: string,
+    input: ConfirmProposalInput,
+  ): Promise<ConfirmProposalResult> {
+    const { lookupProposal, deleteProposal } = await import('../ai/proposer');
+    const proposal = lookupProposal(userId, input.proposalId, this.now);
+    if (!proposal) {
+      throw new NotFoundError(`proposal ${input.proposalId} not found`);
+    }
+    if (!input.confirmed) {
+      deleteProposal(userId, input.proposalId);
+      return { proposal, executed: false };
+    }
+    // The route is responsible for the actual domain call. We
+    // return the proposal so the route can dispatch it. Keeping
+    // the side effect out of the orchestrator is intentional —
+    // it makes the orchestrator trivially testable and matches
+    // the Phase 8 invariant: "AI never mutates the database".
+    // The actual write is performed by the route handler via the
+    // existing planner / review service.
+    return { proposal, executed: true };
+  }
 }
 
 function collectCandidateSourceIds(ev: ClassificationEvidence): string[] {
@@ -166,6 +309,37 @@ function collectCandidateSourceIds(ev: ClassificationEvidence): string[] {
   if (ev.topic) ids.push(ev.topic.id);
   for (const r of ev.recentByTopic) ids.push(r.id);
   return ids;
+}
+
+/**
+ * Collect every record id the assistant was allowed to cite in
+ * the supplied bundle. The UI uses this to verify that each
+ * `source.id` the model emitted corresponds to a real record.
+ */
+function collectAssistantCandidateSourceIds(
+  bundle: AssistantEvidenceBundle,
+): string[] {
+  const ids: string[] = [];
+  for (const e of bundle.errors) ids.push(e.id);
+  for (const r of bundle.reviews) ids.push(r.id);
+  for (const t of bundle.topics) ids.push(t.id);
+  return ids;
+}
+
+/**
+ * Generate a server-side id for a new proposal. The model's
+ * `proposal.id` is never trusted; the orchestrator always
+ * overwrites it. `crypto.randomUUID` is available in both
+ * Node 19+ and the Fastify runtime.
+ */
+function makeProposalId(): string {
+  if (typeof globalThis.crypto?.randomUUID === 'function') {
+    return globalThis.crypto.randomUUID();
+  }
+  // Defensive fallback for environments without Web Crypto.
+  return `prop_${Date.now().toString(36)}_${Math.random()
+    .toString(36)
+    .slice(2, 10)}`;
 }
 
 /**
@@ -188,6 +362,12 @@ export interface AnswerQueryInput {
 
 export interface AnswerQueryResult {
   readonly response: AssistantResponseT;
+  /**
+   * Every record id the assistant was allowed to cite. The UI
+   * uses this to verify that each `source.id` the model emitted
+   * corresponds to a real record.
+   */
+  readonly candidateSourceIds: string[];
 }
 
 export interface ConfirmProposalInput {

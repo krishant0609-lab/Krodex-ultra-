@@ -239,6 +239,31 @@ function dataFor(path, method) {
         candidateSourceIds: ['err-1', 'topic-arithmetic'],
       });
     }
+    if (currentSeed() === 'ai-assistant-proposal') {
+      return ok({
+        response: {
+          answer:
+            'I can schedule a 30-minute review of Arithmetic on Friday for you.',
+          sources: [
+            { kind: 'topic', id: 'topic-arithmetic', excerpt: 'name: Arithmetic' },
+          ],
+          proposal: {
+            id: 'proposal-abc',
+            kind: 'create_task',
+            description: 'Schedule a 30-min review of Arithmetic on Friday.',
+            affectedRecords: ['topic-arithmetic'],
+            payload: {
+              title: 'Review Arithmetic',
+              duration_minutes: 30,
+              topic_id: 'topic-arithmetic',
+              due_at: '2026-09-04T17:00:00.000Z',
+            },
+            createdAt: Date.parse('2026-09-03T12:00:00.000Z'),
+          },
+        },
+        candidateSourceIds: ['topic-arithmetic'],
+      });
+    }
     // Default — keep the surface honest: an answer with a single
     // synthesised source so the page renders cleanly when an E2E
     // spec forgets to set a seed. The assistant route is mounted
@@ -285,6 +310,30 @@ function dataFor(path, method) {
       path === '/review/schedules' || path === '/notifications' ||
       path === '/planner/tasks' || path === '/backlog' ||
       path === '/progress/evidence') {
+    // Phase 8 Step 10: under seed=ai-assistant-proposal, the
+    // /planner/tasks endpoint returns the synthetic task the
+    // proposal-confirm fixture dispatched. This is what the
+    // /planner page renders after the confirm hook invalidates
+    // the planner tasks query key.
+    if (path === '/planner/tasks' && currentSeed() === 'ai-assistant-proposal') {
+      return ok({
+        items: [
+          {
+            id: 'task-new',
+            user_id: 'user-fixture',
+            title: 'Review Arithmetic',
+            duration_minutes: 30,
+            topic_id: 'topic-arithmetic',
+            due_at: '2026-09-04T17:00:00.000Z',
+            source: 'assistant_proposal',
+            created_at: NOW,
+            updated_at: NOW,
+            status: 'pending',
+          },
+        ],
+        nextCursor: null,
+      });
+    }
     return ok(emptyPage());
   }
 

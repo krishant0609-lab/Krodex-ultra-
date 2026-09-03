@@ -46,6 +46,9 @@ const NAV: readonly NavItem[] = [
   { href: '/insights', label: 'Insights' },
   { href: '/student-model', label: 'Model' },
   { href: '/notifications', label: 'Inbox' },
+  // Phase 8: non-authoritative AI assistant. Listed as 'Assistant'
+  // so the student can reach the Q&A surface from the same nav.
+  { href: '/assistant', label: 'Assistant' },
   { href: '/settings', label: 'Settings' },
 ];
 

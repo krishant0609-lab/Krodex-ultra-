@@ -191,6 +191,95 @@ function dataFor(path, method) {
     });
   }
 
+  // Phase 8: POST /assistant/queries
+  //   seed=ai-assistant            → 200 with answer + sources + proposal
+  //   seed=ai-assistant-empty      → 200 with answer, no sources
+  //   seed=ai-assistant-unavailable → 503 DEPENDENCY_UNAVAILABLE
+  //   seed=ai-assistant-invalid    → 422 AI_OUTPUT_INVALID
+  //   default                      → 200 with a plain answer (no proposal)
+  if (path === '/assistant/queries' && method === 'POST') {
+    if (currentSeed() === 'ai-assistant-unavailable') {
+      return err('DEPENDENCY_UNAVAILABLE', 'AI provider not configured', 503);
+    }
+    if (currentSeed() === 'ai-assistant-invalid') {
+      return err('AI_OUTPUT_INVALID', 'AI output did not match the expected schema', 422);
+    }
+    if (currentSeed() === 'ai-assistant-empty') {
+      return ok({
+        response: {
+          answer: 'I have nothing to draw on yet.',
+          sources: [],
+        },
+        candidateSourceIds: [],
+      });
+    }
+    if (currentSeed() === 'ai-assistant') {
+      return ok({
+        response: {
+          answer:
+            'Review Arithmetic next; you have one open error on it (see err-1).',
+          sources: [
+            { kind: 'error', id: 'err-1', excerpt: 'I misread the second sentence.' },
+            { kind: 'topic', id: 'topic-arithmetic', excerpt: 'name: Arithmetic' },
+          ],
+          proposal: {
+            id: 'proposal-abc',
+            kind: 'create_task',
+            description: 'Schedule a 30-min review of Arithmetic on Friday.',
+            affectedRecords: ['topic-arithmetic'],
+            payload: {
+              title: 'Review Arithmetic',
+              duration_minutes: 30,
+              topic_id: 'topic-arithmetic',
+              due_at: '2026-09-04T17:00:00.000Z',
+            },
+            createdAt: Date.parse('2026-09-03T12:00:00.000Z'),
+          },
+        },
+        candidateSourceIds: ['err-1', 'topic-arithmetic'],
+      });
+    }
+    // Default — keep the surface honest: an answer with a single
+    // synthesised source so the page renders cleanly when an E2E
+    // spec forgets to set a seed. The assistant route is mounted
+    // in the nav on every page, so the dev-server warmup can
+    // incidentally exercise it.
+    return ok({
+      response: {
+        answer: 'No records match your question yet.',
+        sources: [],
+      },
+      candidateSourceIds: [],
+    });
+  }
+
+  // Phase 8: POST /assistant/proposals/:id/confirm
+  //   seed=ai-assistant-not-found  → 404 NOT_FOUND
+  //   default                      → 200 with executed:true + dispatched row
+  // The dispatch shape mirrors what the real API returns for a
+  // 'create_task' proposal that successfully created a planner
+  // task. We don't actually create anything; the fixture is
+  // trusted and the test only asserts the page transitions to
+  // the "Applied" band.
+  if (/^\/assistant\/proposals\/[a-z0-9-]+\/confirm$/.test(path) && method === 'POST') {
+    const id = path.split('/')[3];
+    if (currentSeed() === 'ai-assistant-not-found') {
+      return err('NOT_FOUND', 'proposal expired', 404);
+    }
+    return ok({
+      executed: true,
+      proposal: {
+        id,
+        kind: 'create_task',
+        description: 'Schedule a 30-min review of Arithmetic on Friday.',
+        affectedRecords: ['topic-arithmetic'],
+        payload: {},
+        createdAt: Date.parse('2026-09-03T12:00:00.000Z'),
+      },
+      dispatched: { kind: 'create_task', taskId: 'task-new' },
+    });
+  }
+
   // Paginated list endpoints.
   if (path === '/tests' || path === '/tests/attempts' || path === '/errors' ||
       path === '/review/schedules' || path === '/notifications' ||

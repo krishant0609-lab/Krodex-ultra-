@@ -1,0 +1,233 @@
+/* KRODEX web — Assistant page styles.
+ *
+ * Phase 8 editorial visual layer. Reads the same tokens and
+ * section-grid vocabulary as the other Phase 7 editorial pages
+ * (insights, notifications, settings) so the AI surface sits
+ * in the same design language.
+ */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-3);
+  padding: var(--kd-space-5);
+  border: 1px solid var(--kd-color-border-subtle);
+  border-radius: var(--kd-radius-lg);
+  background: var(--kd-color-surface-card);
+}
+
+.label {
+  font-family: var(--kd-font-eyebrow);
+  font-size: var(--kd-font-size-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--kd-color-text-muted);
+}
+
+.textarea {
+  width: 100%;
+  min-height: 5.5rem;
+  padding: var(--kd-space-3);
+  border: 1px solid var(--kd-color-border-subtle);
+  border-radius: var(--kd-radius-md);
+  background: var(--kd-color-surface-background);
+  color: var(--kd-color-text-primary);
+  font-family: var(--kd-font-body);
+  font-size: var(--kd-font-size-md);
+  line-height: var(--kd-line-height-relaxed);
+  resize: vertical;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--kd-color-accent);
+  box-shadow: 0 0 0 3px var(--kd-color-accent-soft);
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.primaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--kd-space-2) var(--kd-space-4);
+  border: 1px solid var(--kd-color-accent);
+  border-radius: var(--kd-radius-md);
+  background: var(--kd-color-accent);
+  color: var(--kd-color-text-on-accent, #fff);
+  font-family: var(--kd-font-body);
+  font-size: var(--kd-font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.primaryAction:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.primaryAction:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.secondaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--kd-space-2) var(--kd-space-4);
+  border: 1px solid var(--kd-color-border-subtle);
+  border-radius: var(--kd-radius-md);
+  background: transparent;
+  color: var(--kd-color-text-primary);
+  font-family: var(--kd-font-body);
+  font-size: var(--kd-font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.secondaryAction:hover:not(:disabled) {
+  background: var(--kd-color-surface-card-hover);
+}
+
+.secondaryAction:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.answerBlock,
+.sourcesBlock,
+.errorBlock,
+.proposalBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-3);
+  padding: var(--kd-space-5);
+  border: 1px solid var(--kd-color-border-subtle);
+  border-radius: var(--kd-radius-lg);
+  background: var(--kd-color-surface-card);
+  margin-top: var(--kd-space-4);
+}
+
+.sectionHeading {
+  font-family: var(--kd-font-eyebrow);
+  font-size: var(--kd-font-size-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--kd-color-text-muted);
+  margin: 0;
+}
+
+.answerText {
+  font-family: var(--kd-font-body);
+  font-size: var(--kd-font-size-md);
+  line-height: var(--kd-line-height-relaxed);
+  color: var(--kd-color-text-primary);
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.muted {
+  color: var(--kd-color-text-muted);
+  font-family: var(--kd-font-body);
+  font-size: var(--kd-font-size-sm);
+  line-height: var(--kd-line-height-relaxed);
+  margin: 0;
+}
+
+.sourceList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-2);
+}
+
+.sourceItem {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: var(--kd-space-3);
+  align-items: baseline;
+  padding: var(--kd-space-2) var(--kd-space-3);
+  border: 1px solid var(--kd-color-border-subtle);
+  border-radius: var(--kd-radius-md);
+  background: var(--kd-color-surface-background);
+}
+
+.sourceKind {
+  font-family: var(--kd-font-eyebrow);
+  font-size: var(--kd-font-size-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--kd-color-text-muted);
+}
+
+.sourceId {
+  font-family: var(--kd-font-mono);
+  font-size: var(--kd-font-size-xs);
+  color: var(--kd-color-text-link);
+}
+
+.sourceExcerpt {
+  font-family: var(--kd-font-body);
+  font-size: var(--kd-font-size-sm);
+  color: var(--kd-color-text-primary);
+}
+
+.proposalCta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-3);
+  padding: var(--kd-space-4);
+  border: 1px solid var(--kd-color-border-subtle);
+  border-radius: var(--kd-radius-md);
+  background: var(--kd-color-surface-background);
+}
+
+.proposalDescription {
+  font-family: var(--kd-font-body);
+  font-size: var(--kd-font-size-md);
+  line-height: var(--kd-line-height-relaxed);
+  color: var(--kd-color-text-primary);
+  margin: 0;
+}
+
+.proposalMeta {
+  font-family: var(--kd-font-body);
+  font-size: var(--kd-font-size-sm);
+  color: var(--kd-color-text-muted);
+  margin: 0;
+}
+
+.proposalActions {
+  display: flex;
+  gap: var(--kd-space-2);
+}
+
+.proposalApplied,
+.proposalRejected {
+  font-family: var(--kd-font-body);
+  font-size: var(--kd-font-size-sm);
+  color: var(--kd-color-text-muted);
+  margin: 0;
+  padding: var(--kd-space-2) var(--kd-space-3);
+  border: 1px solid var(--kd-color-border-subtle);
+  border-radius: var(--kd-radius-md);
+  background: var(--kd-color-surface-background);
+}
+
+.errorMeta {
+  font-family: var(--kd-font-body);
+  font-size: var(--kd-font-size-sm);
+  color: var(--kd-color-text-error, #b91c1c);
+  margin: 0;
+}

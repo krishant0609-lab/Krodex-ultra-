@@ -25,6 +25,7 @@ export const ROUTES = {
   studentModel: '/student-model',
   notifications: '/notifications',
   settings: '/settings',
+  assistant: '/assistant',
   attempt: '/attempts/attempt-notfound',
   testDetail: '/tests/test-notfound',
   errorDetail: '/errors/error-notfound',

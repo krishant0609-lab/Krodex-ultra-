@@ -1,0 +1,223 @@
+# KRODEX — Continuous Integration (Phase 16 M1)
+#
+# Seven merge-blocking stages, in order:
+#   1. lint
+#   2. typecheck
+#   3. unit tests
+#   4. integration tests
+#   5. build
+#   6. migration check (M3)
+#   7. fixture-based E2E (the 16 existing Playwright specs, NOT the M7 smoke)
+#
+# Failure of any stage blocks merge. The M7 real-stack smoke is a
+# separate, scheduled workflow (not part of M1 acceptance). The TRD
+# §39 "deploy staging" stage is a host-target concern (§11 Q1) and
+# is a future workflow.
+#
+# Pinned to Node 20 (matches the .nvmrc / engines.node >= 20.0.0
+# requirement from package.json). npm ci is the only install step
+# to keep the lockfile the source of truth.
+
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+# Cancel in-progress runs on the same branch / PR to save minutes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Stage 1: lint ────────────────────────────────────────────────────
+  # Runs ESLint over the whole tree + the env-var audit (M2) as a
+  # check, because env-var drift is a deployment-time regression and
+  # belongs in the merge gate.
+  lint:
+    name: '1/7 — lint'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: ESLint
+        run: npm run lint
+      - name: Prettier format check
+        run: npm run format:check
+      - name: Env-var audit (M2)
+        # The audit is run against the .env.example template; the
+        # template should be self-consistent (every key present).
+        run: npm run audit:env -- .env.example
+
+  # ── Stage 2: typecheck ───────────────────────────────────────────────
+  typecheck:
+    name: '2/7 — typecheck'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: TypeScript
+        run: npm run typecheck
+
+  # ── Stage 3: unit tests ──────────────────────────────────────────────
+  unit-tests:
+    name: '3/7 — unit tests'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Vitest (run)
+        working-directory: apps/api
+        run: npm test -- --reporter=verbose
+
+  # ── Stage 4: integration tests ───────────────────────────────────────
+  # The Phase 16 plan treats "integration tests" as the existing
+  # vitest suites that exercise cross-module paths (event bus +
+  # routes + DB helper, etc.) and the migrations.test.ts row-count +
+  # FK assertions. There is no separate "integration" workspace;
+  # everything runs from apps/api. The migration-rehearsal script
+  # (stage 6) is the structural counterpart.
+  integration-tests:
+    name: '4/7 — integration tests'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Vitest (migrations + cross-module)
+        working-directory: apps/api
+        # The two suites that exercise the integration surface:
+        #   - src/db/__tests__/migrations.test.ts (offline row-count + FK)
+        #   - the rest of the cross-module tests (event bus, routes, ops)
+        # We run the whole vitest suite twice is wasteful; the test
+        # script above is already the merge gate. Here we run the
+        # specific integration-shaped files first as a faster failure
+        # mode, then the full suite is exercised in stage 3.
+        run: npm test -- src/db/__tests__/migrations.test.ts
+
+  # ── Stage 5: build ───────────────────────────────────────────────────
+  build:
+    name: '5/7 — build'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [lint, typecheck, unit-tests, integration-tests]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build (shared + api + web)
+        run: npm run build
+      - name: Upload api artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-dist
+          path: apps/api/dist
+          retention-days: 7
+      - name: Upload web artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: apps/web/.next
+          retention-days: 7
+
+  # ── Stage 6: migration check (M3) ────────────────────────────────────
+  # Runs the migration-rehearsal script in its three-path order:
+  #   (a) supabase CLI + live Postgres (preferred)
+  #   (b) psql reachable (fallback)
+  #   (c) offline vitest fallback (returns OK_STRUCTURAL_ONLY)
+  # The script writes its verdict to scripts/out/migration-rehearsal.json.
+  # In CI we always run path (c) because the runner has no live DB.
+  migration-check:
+    name: '6/7 — migration check'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Migration rehearsal (M3)
+        # The script is idempotent and writes its verdict to
+        # scripts/out/migration-rehearsal.json. We accept the
+        # OK_STRUCTURAL_ONLY verdict (offline fallback) in CI.
+        run: bash scripts/migration-rehearsal.sh
+      - name: Upload rehearsal report
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-rehearsal
+          path: scripts/out/migration-rehearsal.json
+          retention-days: 7
+      - name: Display verdict
+        run: cat scripts/out/migration-rehearsal.json
+
+  # ── Stage 7: fixture-based E2E ───────────────────────────────────────
+  # The existing 16 Playwright specs in apps/web/tests/e2e/. They
+  # boot the fixture-server.mjs (truthful envelopes, no live DB) +
+  # the Next dev server, in the same way the local dev loop does.
+  # The M7 real-stack smoke is a separate, scheduled workflow.
+  e2e-fixture:
+    name: '7/7 — fixture-based E2E'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright browsers
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+      - name: Vitest smoke (Phase 15 + Phase 16 additions)
+        # The Phase 15 smoke spec + the M8 ops spec are the unit-level
+        # bridge between stages 3/4 and the E2E stage; running them
+        # here is belt-and-suspenders because the E2E stage already
+        # covers the cross-module paths via the fixture.
+        working-directory: apps/api
+        run: npm run smoke:test
+      - name: Playwright (fixture-based)
+        working-directory: apps/web
+        run: npx playwright test --reporter=list
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report
+          retention-days: 7

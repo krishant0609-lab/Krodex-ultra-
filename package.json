@@ -28,6 +28,10 @@
     "format:check": "prettier --check .",
     "test": "npm --workspace @krodex/api run test",
     "test:watch": "npm --workspace @krodex/api run test:watch",
+    "security:check": "npm audit --audit-level=moderate --omit=dev",
+    "security:check:full": "npm audit --audit-level=moderate",
+    "perf:baseline": "node scripts/perf-baseline.mjs",
+    "smoke:test": "npm --workspace @krodex/api run test -- src/__tests__/phase15-smoke.test.ts",
     "clean": "rimraf \"**/dist\" \"**/.next\" \"**/.turbo\" \"**/*.tsbuildinfo\""
   },
   "devDependencies": {

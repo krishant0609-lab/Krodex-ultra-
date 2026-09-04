@@ -487,6 +487,30 @@ export const AdminRecomputeBody = z.object({
 });
 export type AdminRecomputeBodyT = z.infer<typeof AdminRecomputeBody>;
 
+// --- Phase 16: ops/event-failures ---
+
+/**
+ * `GET /ops/event-failures` query params.
+ *
+ * - `since` — required ISO 8601 timestamp; the lower bound of the
+ *   time window (`event_log.last_attempted_at >= since`).
+ * - `until` — required ISO 8601 timestamp; the upper bound of the
+ *   time window (`event_log.last_attempted_at <= until`).
+ * - `status` — optional filter; one of `failed`, `dead_letter`,
+ *   or `all` (default `all` = both).
+ *
+ * Both `since` and `until` are mandatory so a caller cannot ask
+ * for an unbounded window against the entire event_log history.
+ * The handler enforces `since < until` and a maximum window of
+ * 7 days (RUNBOOK §1.1).
+ */
+export const OpsEventFailuresQuery = z.object({
+  since: IsoTimestamp,
+  until: IsoTimestamp,
+  status: z.enum(['failed', 'dead_letter', 'all']).optional(),
+});
+export type OpsEventFailuresQueryT = z.infer<typeof OpsEventFailuresQuery>;
+
 // --- Phase 5: student model ---
 
 /**

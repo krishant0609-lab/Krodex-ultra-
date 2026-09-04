@@ -23,6 +23,7 @@ import { registerStudentModelRoutes } from './student-model';
 import { registerAssistantRoutes } from './assistant';
 import { registerEvidenceRoutes } from './evidence';
 import { registerReviewSessionRoutes } from './review-session';
+import { registerOpsRoutes } from './ops';
 
 export function registerAllRoutes(app: FastifyInstance): void {
   registerAuthRoutes(app);
@@ -39,4 +40,6 @@ export function registerAllRoutes(app: FastifyInstance): void {
   registerAssistantRoutes(app);
   registerEvidenceRoutes(app);
   registerReviewSessionRoutes(app);
+  // Phase 16 M8: service-role-only ops monitor.
+  registerOpsRoutes(app);
 }

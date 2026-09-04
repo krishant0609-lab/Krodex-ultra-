@@ -72,3 +72,10 @@ supabase/.env.local
 .qodo/
 .tmp/
 .cache/
+
+# ---------- Phase 16 M7 smoke (real-API run mode marker) ----------
+# The .stack-state.json is the single source of truth for the local
+# integrated stack availability. It is written by global-setup.mjs and
+# regenerated on every run. Source files in tests/e2e/smoke/ ARE
+# committed; only the marker file is ignored.
+apps/web/tests/e2e/smoke/.stack-state.json

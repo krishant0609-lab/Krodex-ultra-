@@ -13,6 +13,7 @@
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install chromium",
     "test:e2e:fixture": "node tests/e2e/fixture-server.mjs",
+    "test:smoke": "playwright test --config=playwright.smoke.config.ts",
     "clean": "rimraf .next *.tsbuildinfo"
   },
   "dependencies": {

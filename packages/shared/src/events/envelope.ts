@@ -51,7 +51,11 @@ export type EventType =
   | 'backlog.item_recovered'
   | 'progress.planner_completed'
   | 'progress.planner_missed'
-  | 'progress.error_resolved';
+  | 'progress.error_resolved'
+  /** Phase 12 — notifications & scheduling */
+  | 'review.due'
+  | 'review.overdue'
+  | 'task.upcoming';
 
 /** Per-event payload shapes. */
 export interface EventPayloadMap {
@@ -85,6 +89,10 @@ export interface EventPayloadMap {
   'progress.planner_completed': ProgressPlannerPayload;
   'progress.planner_missed': ProgressPlannerPayload;
   'progress.error_resolved': ProgressErrorResolvedPayload;
+  /** Phase 12 — notifications & scheduling */
+  'review.due': ReviewDuePayload;
+  'review.overdue': ReviewOverduePayload;
+  'task.upcoming': TaskUpcomingPayload;
 }
 
 export interface AttemptSubmittedPayload {
@@ -271,6 +279,29 @@ export interface ProgressErrorResolvedPayload {
   user_id: string;
   error_id: string;
   observed_at: string;
+}
+
+// --- Phase 12 payload types ----------------------------------
+
+export interface ReviewDuePayload {
+  schedule_id: string;
+  error_id: string;
+  due_at: string;
+  strategy: string;
+}
+
+export interface ReviewOverduePayload {
+  schedule_id: string;
+  error_id: string;
+  due_at: string;
+  overdue_by_seconds: number;
+}
+
+export interface TaskUpcomingPayload {
+  task_id: string;
+  plan_date: string;
+  subject_id: string | null;
+  due_at: string;
 }
 
 /** The envelope. Matches TRD §8 fields verbatim. */

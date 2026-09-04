@@ -92,6 +92,7 @@ export const queryKeys = {
     ['notifications', params ?? {}] as const,
   notification: (notificationId: string) =>
     ['notifications', notificationId] as const,
+  notificationPreferences: () => ['notifications', 'preferences'] as const,
 
   // health
   health: () => ['health'] as const,

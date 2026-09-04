@@ -393,6 +393,7 @@ export const ListProgressEvidenceQuery = z.object({
 export const ListNotificationsQuery = z.object({
   unread_only: z.boolean().optional(),
   severity: z.enum(['info', 'success', 'warning', 'critical']).optional(),
+  kind: z.string().min(1).max(64).optional(),
   ...CursorPagination.shape,
 });
 
@@ -401,6 +402,51 @@ export const UpdateNotificationBody = z.object({
   dismissed: z.boolean().optional(),
 });
 export type UpdateNotificationBodyT = z.infer<typeof UpdateNotificationBody>;
+
+// --- Phase 12: notification preferences + dispatch --------------------
+
+/**
+ * `GET /notifications/preferences` — no query params; included for
+ * symmetry with the other list endpoints.
+ */
+export const GetNotificationPreferencesQuery = z.object({});
+
+/**
+ * `PATCH /notifications/preferences` body.
+ *
+ * All fields optional. The service merges the patch over the
+ * persisted blob, so callers can update a single key at a time.
+ *
+ * `quiet_hours` is a nested object — when present, ALL of its
+ * fields are merged (not just the ones provided). To turn off
+ * quiet hours, send `{ quiet_hours: { enabled: false } }` and the
+ * existing `start` / `end` are preserved.
+ */
+export const QuietHoursSchema = z.object({
+  enabled: z.boolean().optional(),
+  start: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'start must be HH:MM').optional(),
+  end: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'end must be HH:MM').optional(),
+});
+
+export const UpdateNotificationPreferencesBody = z.object({
+  quiet_hours: QuietHoursSchema.optional(),
+  enabled_kinds: z.array(z.string().min(1).max(64)).max(50).optional(),
+  disabled_kinds: z.array(z.string().min(1).max(64)).max(50).optional(),
+  in_app_enabled: z.boolean().optional(),
+  email_enabled: z.boolean().optional(),
+  push_enabled: z.boolean().optional(),
+});
+export type UpdateNotificationPreferencesBodyT = z.infer<typeof UpdateNotificationPreferencesBody>;
+
+/**
+ * `POST /notifications/dispatch-tick` body.
+ *
+ * - `limit` — maximum deliveries to process. Defaults to 100.
+ */
+export const DispatchTickBody = z.object({
+  limit: z.coerce.number().int().min(1).max(500).optional(),
+});
+export type DispatchTickBodyT = z.infer<typeof DispatchTickBody>;
 
 // --- common path params ------------------------------------------------
 

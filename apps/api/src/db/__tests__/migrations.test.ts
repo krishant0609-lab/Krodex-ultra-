@@ -84,6 +84,9 @@ const EXPECTED_MIGRATION_FILES = [
   // backlog_recovery_events, planner_tasks.partial_count,
   // planner_tasks.source_task_id.
   '20260901164346_15_review_and_planner_history.sql',
+  // Phase 12: notification dedup_key column + (user_id, dedup_key)
+  // unique index for the project_notification projector.
+  '20260901164346_16_notification_dedup.sql',
 ] as const;
 
 const MIGRATION_NAMING_PATTERN =

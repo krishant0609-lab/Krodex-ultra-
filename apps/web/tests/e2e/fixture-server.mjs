@@ -38,6 +38,15 @@ function currentSeed() {
   return process.env.FIXTURE_SEED ?? 'empty';
 }
 
+// Phase 13: the error-book + reopen loop specs use seeds that
+// target the same synthetic schedule as Phase 10. Alias them
+// here so a single set of fixture branches serves both spec
+// generations without duplicating the row shape.
+const PHASE10_SEED_ALIASES = new Set(['phase10-review', 'phase13-error-loop', 'phase13-reopen-loop']);
+function isPhase10Seed() {
+  return PHASE10_SEED_ALIASES.has(currentSeed());
+}
+
 function ok(data) {
   return { success: true, data };
 }
@@ -63,6 +72,13 @@ function readJsonBody(req) {
 function emptyPage() {
   return { items: [], nextCursor: null };
 }
+
+// Phase 12: track which notification ids have been marked read
+// in the in-memory fixture. PATCH /notifications/:id adds to the
+// set; GET /notifications under the phase12-notifications seed
+// reads from the set to determine each row's read_at. This is
+// what the page invalidation query sees after a mark-read click.
+const phase12ReadSet = new Set();
 
 // Per-endpoint data. Empty by default. Some endpoints get a minimal
 // populated shape under SEED === 'populated' so visual tests can
@@ -179,7 +195,7 @@ async function dataFor(path, method, req) {
     // Phase 10: under seed=phase10-review, the synthetic schedule
     // id `phase10-review-001` is returned as a populated row in
     // state `due` with a known error_id. Other ids still 404.
-    if (currentSeed() === 'phase10-review') {
+    if (isPhase10Seed()) {
       const id = path.split('/').pop();
       if (id === 'phase10-review-001') {
         return ok({
@@ -206,7 +222,7 @@ async function dataFor(path, method, req) {
   // Returns a deterministic verification question and a state
   // transition.
   if (/^\/reviews\/[a-z0-9-]+\/start$/.test(path) && method === 'POST') {
-    if (currentSeed() === 'phase10-review' &&
+    if (isPhase10Seed() &&
         path.split('/')[2] === 'phase10-review-001') {
       return ok({
         schedule: {
@@ -237,7 +253,7 @@ async function dataFor(path, method, req) {
   // Phase 10: POST /reviews/:id/outcome
   // Returns the appropriate transition based on the outcome in body.
   if (/^\/reviews\/[a-z0-9-]+\/outcome$/.test(path) && method === 'POST') {
-    if (currentSeed() === 'phase10-review' &&
+    if (isPhase10Seed() &&
         path.split('/')[2] === 'phase10-review-001') {
       const body = await readJsonBody(req);
       const outcome = body?.outcome;
@@ -272,7 +288,7 @@ async function dataFor(path, method, req) {
 
   // Phase 10: GET /reviews/:id/verification-question (idempotent read)
   if (/^\/reviews\/[a-z0-9-]+\/verification-question$/.test(path) && method === 'GET') {
-    if (currentSeed() === 'phase10-review' &&
+    if (isPhase10Seed() &&
         path.split('/')[2] === 'phase10-review-001') {
       return ok({
         kind: 'found',
@@ -285,7 +301,7 @@ async function dataFor(path, method, req) {
 
   // Phase 10: GET /reviews/:id/lifecycle
   if (/^\/reviews\/[a-z0-9-]+\/lifecycle$/.test(path) && method === 'GET') {
-    if (currentSeed() === 'phase10-review' &&
+    if (isPhase10Seed() &&
         path.split('/')[2] === 'phase10-review-001') {
       return ok([
         {
@@ -314,7 +330,7 @@ async function dataFor(path, method, req) {
   // Phase 10: GET /errors/err-phase10-001 (under phase10-review seed)
   if (/^\/errors\/[a-z0-9-]+$/.test(path) && method === 'GET') {
     const id = path.split('/').pop();
-    if (currentSeed() === 'phase10-review' && id === 'err-phase10-001') {
+    if (isPhase10Seed() && id === 'err-phase10-001') {
       return ok({
         id,
         user_id: 'user-fixture',
@@ -493,6 +509,92 @@ async function dataFor(path, method, req) {
     });
   }
 
+  // Phase 12: GET /notifications/preferences — return the user's
+  // current preferences. The fixture is trusted: a brand-new
+  // student gets the default preferences (all kinds enabled,
+  // in_app on, email/push off, quiet hours disabled).
+  if (path === '/notifications/preferences' && method === 'GET') {
+    return ok({
+      quiet_hours: { enabled: false, start: '22:00', end: '08:00' },
+      enabled_kinds: [],
+      disabled_kinds: [],
+      in_app_enabled: true,
+      email_enabled: false,
+      push_enabled: false,
+      created_at: '2026-09-01T00:00:00.000Z',
+      updated_at: '2026-09-01T00:00:00.000Z',
+    });
+  }
+  // Phase 12: PATCH /notifications/preferences — accept the patch
+  // and echo the merged preferences back. The fixture is a stub;
+  // the test asserts the page transitioned to the success band
+  // and that a PATCH was issued.
+  if (path === '/notifications/preferences' && method === 'PATCH') {
+    await readJsonBody(req);
+    return ok({
+      quiet_hours: { enabled: true, start: '22:00', end: '08:00' },
+      enabled_kinds: [],
+      disabled_kinds: ['review_due'],
+      in_app_enabled: true,
+      email_enabled: false,
+      push_enabled: false,
+      updated_at: '2026-09-04T12:00:00.000Z',
+    });
+  }
+
+  // Phase 12: PATCH /notifications/:id — accept the read/dismissed
+  // update and echo the row back. The fixture is trusted: a
+  // successful PATCH is the source of truth for the page. The
+  // row's id is added to the in-memory read set so a subsequent
+  // GET (e.g. after query invalidation) returns the read state.
+  if (/^\/notifications\/[a-z0-9-]+$/.test(path) && method === 'PATCH') {
+    const id = path.split('/').pop();
+    await readJsonBody(req);
+    phase12ReadSet.add(id);
+    return ok({
+      id,
+      user_id: 'user-fixture',
+      kind: 'review_due',
+      severity: 'warning',
+      title: 'A review is due',
+      body: 'Open the review to keep your error book on track.',
+      payload: {},
+      dedup_key: `fixture-dedup-${id}`,
+      read_at: '2026-09-04T12:00:00.000Z',
+      dismissed_at: null,
+      created_at: '2026-09-04T11:00:00.000Z',
+      updated_at: '2026-09-04T12:00:00.000Z',
+    });
+  }
+
+  // Phase 12: under seed=phase12-notifications, /notifications
+  // returns one synthetic review_due row so the inbox shows
+  // populated state. Each row's read_at reflects whether the
+  // in-memory read set has been populated by an earlier
+  // PATCH /notifications/:id mark-read.
+  if (path === '/notifications' && currentSeed() === 'phase12-notifications') {
+    const isRead = phase12ReadSet.has('notif-phase12-001');
+    return ok({
+      items: [
+        {
+          id: 'notif-phase12-001',
+          user_id: 'user-fixture',
+          kind: 'review_due',
+          severity: 'warning',
+          title: 'A review is due',
+          body: 'Open the review to keep your error book on track.',
+          payload: { schedule_id: 'phase10-review-001', error_id: 'err-phase10-001' },
+          dedup_key: 'fixture-dedup-notif-phase12-001',
+          read_at: isRead ? '2026-09-04T12:00:00.000Z' : null,
+          dismissed_at: null,
+          created_at: '2026-09-04T11:00:00.000Z',
+          updated_at: '2026-09-04T11:00:00.000Z',
+        },
+      ],
+      nextCursor: null,
+    });
+  }
+
   // Paginated list endpoints.
   if (path === '/tests' || path === '/tests/attempts' || path === '/errors' ||
       path === '/review/schedules' || path === '/notifications' ||
@@ -525,7 +627,7 @@ async function dataFor(path, method, req) {
     // Phase 10: under seed=phase10-review, the /review/schedules
     // list returns the synthetic `phase10-review-001` row so the
     // index page has a clickable link into the detail page.
-    if (path === '/review/schedules' && currentSeed() === 'phase10-review') {
+    if (path === '/review/schedules' && isPhase10Seed()) {
       return ok({
         items: [
           {
@@ -653,6 +755,10 @@ async function handler(req, res) {
     if (typeof body?.seed === 'string' && /^[a-z0-9-]+$/.test(body.seed)) {
       // eslint-disable-next-line no-undef
       process.env.FIXTURE_SEED = body.seed;
+      // Clearing the read set on every seed flip keeps the
+      // mark-read state scoped to the current suite — the
+      // default 'empty' seed reverts all rows to unread.
+      phase12ReadSet.clear();
       // eslint-disable-next-line no-undef
       const newSeed = process.env.FIXTURE_SEED;
       res.setHeader('Content-Type', 'application/json');

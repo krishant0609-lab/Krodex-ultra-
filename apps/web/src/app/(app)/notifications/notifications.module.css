@@ -145,6 +145,72 @@
   cursor: not-allowed;
 }
 
+.prefsLink {
+  font-family: inherit;
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  font-weight: var(--kd-type-caption-weight);
+  letter-spacing: var(--kd-type-caption-tracking);
+  text-transform: uppercase;
+  color: var(--kd-color-accent);
+  background: transparent;
+  border: 1px solid var(--kd-color-border-default);
+  padding: var(--kd-space-2) var(--kd-space-3);
+  border-radius: var(--kd-radius-md);
+  text-decoration: none;
+  transition: background var(--kd-motion-duration-base)
+    var(--kd-motion-ease-standard);
+}
+
+.prefsLink:hover {
+  background: var(--kd-color-surface-raised);
+}
+
+.prefsLink:focus-visible {
+  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
+  outline-offset: var(--kd-focus-ring-offset);
+}
+
+.filterBar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--kd-space-2);
+  margin: var(--kd-space-4) 0 0;
+}
+
+.filterChip {
+  font-family: inherit;
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  font-weight: var(--kd-type-caption-weight);
+  letter-spacing: var(--kd-type-caption-tracking);
+  text-transform: uppercase;
+  color: var(--kd-color-text-secondary);
+  background: var(--kd-color-surface-raised);
+  border: 1px solid var(--kd-color-border-subtle);
+  padding: var(--kd-space-1) var(--kd-space-3);
+  border-radius: var(--kd-radius-pill, 999px);
+  text-decoration: none;
+  transition: background var(--kd-motion-duration-base)
+    var(--kd-motion-ease-standard);
+}
+
+.filterChip:hover {
+  background: var(--kd-color-surface-sunken);
+}
+
+.filterChip[data-active='true'] {
+  color: var(--kd-color-text-inverse);
+  background: var(--kd-color-accent);
+  border-color: var(--kd-color-accent);
+}
+
+.filterChip:focus-visible {
+  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
+  outline-offset: var(--kd-focus-ring-offset);
+}
+
 .errorMeta {
   font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
   font-size: var(--kd-type-caption-size);

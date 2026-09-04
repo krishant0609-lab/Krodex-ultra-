@@ -6,6 +6,9 @@
  * writes happen inside the submit_test_attempt / schedule_review
  * / record_progress_evidence RPCs — those keep the counter math
  * in one transaction.
+ *
+ * Phase 12 adds: get / patch notification preferences, plus a
+ * dispatch-tick helper for the delivery worker.
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -18,6 +21,15 @@ import type {
 import { NotFoundError } from '../errors';
 import { assertOwned } from '../auth/ownership';
 import { asRow, asRows } from './_row';
+import {
+  getPreferences as getNotificationPreferencesImpl,
+  updatePreferences as updateNotificationPreferencesImpl,
+  type NotificationPreferences,
+} from './notification-preferences-service';
+import {
+  dispatchPendingDeliveries as dispatchImpl,
+  type DispatchResult,
+} from './notification-delivery-service';
 
 export interface ListEvidenceFilter {
   dimension?: ProgressDimension;
@@ -91,6 +103,7 @@ export async function recordProgressEvidence(
 export interface ListNotificationsFilter {
   unread_only?: boolean;
   severity?: NotificationSeverity;
+  kind?: string;
   limit?: number;
 }
 
@@ -107,6 +120,7 @@ export async function listNotifications(
     .limit(Math.min(filter.limit ?? 50, 200));
   if (filter.unread_only) q = q.is('read_at', null);
   if (filter.severity) q = q.eq('severity', filter.severity);
+  if (filter.kind) q = q.eq('kind', filter.kind);
   const { data, error } = await q;
   if (error) throw new Error(`listNotifications failed: ${error.message}`);
   return asRows<NotificationRow>(data ?? []);
@@ -157,4 +171,34 @@ export async function updateNotification(
   }
   assertOwned(data, userId);
   return asRow<NotificationRow>(data);
+}
+
+// --- Phase 12: notification preferences + delivery --------------------
+
+/** Read the current user's notification preferences. */
+export function getNotificationPreferences(
+  client: SupabaseClient,
+  userId: string,
+): Promise<NotificationPreferences> {
+  return getNotificationPreferencesImpl(client, userId);
+}
+
+/** Patch the current user's notification preferences. */
+export function updateNotificationPreferences(
+  client: SupabaseClient,
+  userId: string,
+  patch: Partial<NotificationPreferences>,
+): Promise<NotificationPreferences> {
+  return updateNotificationPreferencesImpl(client, userId, patch);
+}
+
+/**
+ * Run a single dispatch-tick on the notification delivery queue.
+ * Returns the count of in_app rows transitioned to `sent`.
+ */
+export async function dispatchNotificationDeliveries(
+  client: SupabaseClient,
+  options: { limit?: number } = {},
+): Promise<DispatchResult> {
+  return dispatchImpl(client, options);
 }

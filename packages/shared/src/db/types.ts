@@ -749,6 +749,8 @@ export interface NotificationRow {
   read_at: IsoTimestamp | null;
   dismissed_at: IsoTimestamp | null;
   expires_at: IsoTimestamp | null;
+  /** Per PHASE12_PLAN §6: sha256(kind | source_aggregate_id | user_id | date_bucket). */
+  dedup_key: string | null;
   created_at: IsoTimestamp;
   updated_at: IsoTimestamp;
 }
@@ -764,6 +766,7 @@ export interface NotificationInsert {
   read_at?: IsoTimestamp | null;
   dismissed_at?: IsoTimestamp | null;
   expires_at?: IsoTimestamp | null;
+  dedup_key?: string | null;
 }
 
 export interface NotificationUpdate {
@@ -1343,4 +1346,32 @@ export interface EvidenceSnapshot {
   attemptId: string;
   timestamp: string;
   sourceIds?: string[];
+}
+
+// -------------------------------------------------------------
+// Phase 12 — notification preferences
+// -------------------------------------------------------------
+
+/**
+ * Per-user notification preferences, stored in `profiles.settings`
+ * under the key `notification_preferences`. The shape mirrors the
+ * server's NotificationPreferences in
+ * apps/api/src/services/notification-preferences-service.ts.
+ *
+ * `quiet_hours.start` / `quiet_hours.end` are HH:MM (24h) strings
+ * interpreted in the user's timezone (from `users.timezone`).
+ */
+export interface NotificationPreferencesShared {
+  quiet_hours: {
+    enabled: boolean;
+    start: string;
+    end: string;
+  };
+  enabled_kinds: readonly string[];
+  disabled_kinds: readonly string[];
+  in_app_enabled: boolean;
+  email_enabled: boolean;
+  push_enabled: boolean;
+  created_at?: string;
+  updated_at?: string;
 }

@@ -19,6 +19,8 @@
  *  - 7-state contract honored: loading, empty, error,
  *    populated. The empty state is honest: "Inbox zero"
  *    — we do not invent notifications.
+ *  - Phase 12: header gains a "Preferences" link to
+ *    /notifications/preferences.
  *
  * Hooks used (no new server state):
  *  - useNotifications({ limit: 50 })
@@ -28,6 +30,9 @@
  * read-and-act list; filtering is a future affordance.
  */
 
+import { Suspense } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { PageShell } from '../../../components/page-shell';
 import { Badge } from '../../../components/badge';
 import { ApiError } from '../../../lib/api-client';
@@ -46,6 +51,17 @@ const SEVERITY_TONES = {
 } as const;
 
 type Severity = keyof typeof SEVERITY_TONES;
+
+const KIND_FILTERS: ReadonlyArray<{ id: string; label: string }> = [
+  { id: 'review_due', label: 'Review due' },
+  { id: 'review_overdue', label: 'Review overdue' },
+  { id: 'error_recorded', label: 'Errors' },
+  { id: 'task_missed', label: 'Task missed' },
+  { id: 'task_completed', label: 'Task completed' },
+  { id: 'task_upcoming', label: 'Task upcoming' },
+  { id: 'backlog_recovery', label: 'Backlog' },
+  { id: 'attempt_analyzed', label: 'Attempts' },
+];
 
 function excerpt(text: string | null): string {
   if (!text) return '';
@@ -143,7 +159,22 @@ function NotificationRow({
 }
 
 export default function NotificationsPage(): JSX.Element {
-  const notifications = useNotifications({ limit: 50 });
+  // useSearchParams() in the inner component requires a Suspense
+  // boundary at the page level so Next.js can bail out of static
+  // prerendering cleanly.
+  return (
+    <Suspense fallback={null}>
+      <NotificationsPageContent />
+    </Suspense>
+  );
+}
+
+function NotificationsPageContent(): JSX.Element {
+  const searchParams = useSearchParams();
+  const kindFilter = searchParams.get('kind') ?? undefined;
+  const notifications = useNotifications(
+    kindFilter ? { kind: kindFilter, limit: 50 } : { limit: 50 },
+  );
   const items = notifications.data?.items ?? [];
   const isEmpty =
     !notifications.isLoading && !notifications.isError && items.length === 0;
@@ -159,6 +190,15 @@ export default function NotificationsPage(): JSX.Element {
       isEmpty={isEmpty}
       emptyTitle="Inbox zero"
       emptyMessage="Nothing has been written to your inbox yet. New items will appear here as the system produces them."
+      actions={
+        <Link
+          href="/notifications/preferences"
+          data-testid="notifications-prefs-link"
+          className={styles.prefsLink}
+        >
+          Preferences
+        </Link>
+      }
     >
       <ol className={styles.list} data-testid="notifications-list">
         {items.map((n) => (
@@ -179,6 +219,31 @@ export default function NotificationsPage(): JSX.Element {
           />
         ))}
       </ol>
+      <nav
+        className={styles.filterBar}
+        aria-label="Filter by kind"
+        data-testid="notifications-filter-bar"
+      >
+        <Link
+          href="/notifications"
+          className={styles.filterChip}
+          data-active={kindFilter ? undefined : 'true'}
+          data-testid="notifications-filter-all"
+        >
+          All
+        </Link>
+        {KIND_FILTERS.map((k) => (
+          <Link
+            key={k.id}
+            href={`/notifications?kind=${encodeURIComponent(k.id)}`}
+            className={styles.filterChip}
+            data-active={kindFilter === k.id ? 'true' : undefined}
+            data-testid={`notifications-filter-${k.id}`}
+          >
+            {k.label}
+          </Link>
+        ))}
+      </nav>
       {notifications.isError ? (
         <p className={styles.errorMeta} role="status">
           {notifications.error instanceof ApiError

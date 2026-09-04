@@ -17,6 +17,8 @@ export interface ListNotificationsParams {
   state?: 'unread' | 'read' | 'archived';
   cursor?: string | null;
   limit?: number;
+  kind?: string;
+  severity?: 'info' | 'success' | 'warning' | 'critical';
 }
 
 export function useNotifications(params?: ListNotificationsParams) {

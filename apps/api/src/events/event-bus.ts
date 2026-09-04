@@ -90,8 +90,31 @@ const PROJECT_PROGRESS_EVIDENCE_EVENTS: readonly EventType[] = [
   'system.tick',
 ];
 
-/** notification.created is the only event the project_notification handler writes. */
-const PROJECT_NOTIFICATION_EVENTS: readonly EventType[] = ['notification.created'];
+/**
+ * Per PHASE12_PLAN.md §8a + §12, project_notification subscribes to
+ * every notification-worthy domain event. The handler is a no-op
+ * for types it does not recognize (returns `succeeded` with
+ * wrote=0), so the subscription list is the only place that drives
+ * worker fan-out.
+ */
+const PROJECT_NOTIFICATION_EVENTS: readonly EventType[] = [
+  // Phase 0–9 — backward-compat with the pre-Phase-12 producer
+  'notification.created',
+  // Phase 9 — error lifecycle / capture
+  'error.lifecycle.active',
+  'error.lifecycle.reopened',
+  'attempt.analyzed',
+  // Phase 10 — review / retest
+  'review.outcome_recorded',
+  // Phase 11 — planner / backlog
+  'task.missed',
+  'task.completed',
+  'backlog.item_created',
+  // Phase 12 — scheduled reminders
+  'review.due',
+  'review.overdue',
+  'task.upcoming',
+];
 
 /**
  * attempt.submitted triggers the derived attempt.analyzed fan-out

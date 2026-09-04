@@ -45,6 +45,13 @@ export const queryKeys = {
   errors: (params?: Record<string, unknown>) =>
     ['errors', params ?? {}] as const,
   errorEntry: (errorId: string) => ['errors', errorId] as const,
+  // Phase 9: evidence viewer + lifecycle history. Keyed by their
+  // own resource id so the cache survives across the error-entry
+  // page navigation.
+  evidence: (evidenceId: string) => ['evidence', evidenceId] as const,
+  errorEntryEvidence: (errorId: string) =>
+    ['errors', errorId, 'evidence'] as const,
+  errorLifecycle: (errorId: string) => ['errors', errorId, 'lifecycle'] as const,
 
   // reviews
   reviews: (params?: Record<string, unknown>) =>

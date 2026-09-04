@@ -1,21 +1,23 @@
 /**
- * KRODEX web — reviews page integration test.
+ * KRODEX web — reviews page integration test (Phase 10).
  *
- * Verifies the Phase 7.8 acceptance criteria for the
- * Reviews queue (index + detail):
+ * Verifies the review session flow on the detail page:
  *
  *   1. The /reviews index renders a quiet list of review
  *      schedules with state badge, strategy, error id,
  *      and due date.
  *   2. Each row is a deep link to /reviews/[id].
- *   3. Empty and error states render truthfully (no fake
- *      data, no fake "0 reviews" success).
- *   4. The /reviews/[id] detail page renders the title
- *      block, meta badges, dates, source error, and
- *      the mark-passed action button.
+ *   3. Empty and error states render truthfully.
+ *   4. The /reviews/[id] detail page surfaces the new
+ *      session flow: Start review button → verification
+ *      question → outcome selection → outcome feedback.
  *   5. The detail page handles a missing id (NOT_FOUND)
- *      by surfacing the error band — not a soft empty
- *      state.
+ *      by surfacing the error band.
+ *   6. The "Start review" mutation calls the new
+ *      POST /reviews/:id/start endpoint and renders the
+ *      verification question card.
+ *   7. Submitting an outcome posts to /reviews/:id/outcome
+ *      and renders the outcome feedback panel.
  *
  * The hook layer is exercised against a stubbed `fetch`
  * (same pattern as tests.test.tsx / errors.test.tsx), so
@@ -121,6 +123,11 @@ const REVIEW_A = {
   updated_at: '2026-09-01T00:00:00.000Z',
 };
 
+const REVIEW_IN_PROGRESS = {
+  ...REVIEW_A,
+  state: 'in_progress',
+};
+
 const REVIEW_B = {
   id: 'rev-bbbbbbbbbbbb',
   user_id: 'u-1',
@@ -141,6 +148,74 @@ interface ReviewsFetchRoutes {
   detail: 'success' | 'notFound' | 'error';
 }
 
+interface StartFetchResponse {
+  status: number;
+  body: {
+    schedule: typeof REVIEW_IN_PROGRESS;
+    errorTransition: { fromStatus: string; toStatus: string };
+    verification: {
+      kind: 'found' | 'none';
+      questionId?: string;
+      difficulty?: number;
+    };
+  };
+}
+
+function startResponse(): StartFetchResponse {
+  return {
+    status: 200,
+    body: {
+      schedule: REVIEW_IN_PROGRESS,
+      errorTransition: { fromStatus: 'active', toStatus: 'in_review' },
+      verification: {
+        kind: 'found',
+        questionId: 'q-fresh-aaaaaaaaaa',
+        difficulty: 3,
+      },
+    },
+  };
+}
+
+function outcomeResponse(outcome: 'correct' | 'incorrect' | 'partial'): {
+  status: number;
+  body: {
+    outcomeId: string;
+    errorTransition: { fromStatus: string; toStatus: string };
+    nextReviewScheduled: boolean;
+    nextReview: null | {
+      dueAt: string;
+      reasonCode: string;
+      reasonText: string;
+      confidence: number;
+      requiresConfirmation: boolean;
+    };
+    terminalOutcome: typeof outcome;
+  };
+} {
+  return {
+    status: 200,
+    body: {
+      outcomeId: 'out-cccccccccccc',
+      errorTransition: {
+        fromStatus: 'in_review',
+        toStatus: outcome === 'correct' ? 'resolved' : 'active',
+      },
+      nextReviewScheduled: outcome !== 'correct',
+      nextReview:
+        outcome === 'correct'
+          ? null
+          : {
+              dueAt: '2026-09-22T00:00:00.000Z',
+              reasonCode: 'spaced',
+              reasonText: '3 days from now, spaced policy',
+              confidence: 0.4,
+              requiresConfirmation: true,
+            },
+      terminalOutcome: outcome,
+    },
+  };
+}
+
 function stubFetch(routes: ReviewsFetchRoutes): MockInstance<typeof global.fetch> {
   return vi
     .spyOn(global, 'fetch')
@@ -157,7 +232,72 @@ function stubFetch(routes: ReviewsFetchRoutes): MockInstance<typeof global.fetch
           ? (input as Request).method
           : 'GET');
 
-      // PATCH /review/schedules/:id
+      // POST /reviews/:id/start
+      if (method === 'POST' && /\/reviews\/[a-z0-9-]+\/start$/.test(url)) {
+        return Promise.resolve(
+          jsonResponse({ status: 200, body: success(startResponse().body) }),
+        );
+      }
+
+      // POST /reviews/:id/outcome
+      if (method === 'POST' && /\/reviews\/[a-z0-9-]+\/outcome$/.test(url)) {
+        const body = parseBody(init?.body);
+        const outcome =
+          (body?.['outcome'] as 'correct' | 'incorrect' | 'partial') ?? 'correct';
+        return Promise.resolve(
+          jsonResponse({ status: 200, body: success(outcomeResponse(outcome).body) }),
+        );
+      }
+
+      // GET /reviews/:id/lifecycle
+      if (method === 'GET' && /\/reviews\/[a-z0-9-]+\/lifecycle$/.test(url)) {
+        return Promise.resolve(
+          jsonResponse({
+            status: 200,
+            body: success([
+              {
+                id: 'ev-1',
+                from_status: null,
+                to_status: 'active',
+                trigger: 'system',
+                reason: 'created',
+                review_id: null,
+                created_at: '2026-08-30T00:00:00.000Z',
+              },
+              {
+                id: 'ev-2',
+                from_status: 'active',
+                to_status: 'in_review',
+                trigger: 'student_review',
+                reason: 'start',
+                review_id: 'rev-aaaaaaaaaaaa',
+                created_at: '2026-09-02T00:00:00.000Z',
+              },
+            ]),
+          }),
+        );
+      }
+
+      // GET /reviews/:id/verification-question
+      if (
+        method === 'GET' &&
+        /\/reviews\/[a-z0-9-]+\/verification-question$/.test(url)
+      ) {
+        return Promise.resolve(
+          jsonResponse({
+            status: 200,
+            body: success({
+              kind: 'found',
+              questionId: 'q-fresh-aaaaaaaaaa',
+              difficulty: 3,
+            }),
+          }),
+        );
+      }
+
+      // PATCH /review/schedules/:id (legacy endpoint, no longer
+      // used by the Phase 10 page but kept for back-compat
+      // coverage on the legacy stub).
       if (method === 'PATCH' && /\/review\/schedules\/[a-z0-9-]+$/.test(url)) {
         const idMatch = url.match(/\/review\/schedules\/([a-z0-9-]+)$/);
         const id = idMatch ? idMatch[1] : REVIEW_A.id;
@@ -166,31 +306,6 @@ function stubFetch(routes: ReviewsFetchRoutes): MockInstance<typeof global.fetch
         const merged = body && typeof body === 'object' ? { ...base, ...body } : base;
         return Promise.resolve(
           jsonResponse({ status: 200, body: success(merged) }),
-        );
-      }
-
-      // POST /review/schedules/:id/attempts
-      if (
-        method === 'POST' &&
-        /\/review\/schedules\/[a-z0-9-]+\/attempts$/.test(url)
-      ) {
-        const body = parseBody(init?.body);
-        return Promise.resolve(
-          jsonResponse({
-            status: 200,
-            body: success({
-              id: 'att-cccccccccccc',
-              user_id: 'u-1',
-              schedule_id: REVIEW_A.id,
-              question_id: body?.['question_id'] ?? null,
-              outcome: body?.['outcome'] ?? 'failed',
-              selected_option_ids: body?.['selected_option_ids'] ?? [],
-              free_text: null,
-              duration_ms: null,
-              created_at: '2026-09-02T00:00:00.000Z',
-              updated_at: '2026-09-02T00:00:00.000Z',
-            }),
-          }),
         );
       }
 
@@ -299,7 +414,7 @@ describe('ReviewsPage (index)', () => {
 });
 
 describe('ReviewDetailPage (/reviews/[id])', () => {
-  it('renders the title block, meta badges, dates, and source error', async () => {
+  it('renders the title block, meta badges, dates, source error, and Start review button', async () => {
     stubFetch({ list: 'success', detail: 'success' });
     render(
       <ReviewDetailPage params={settledParams({ id: REVIEW_A.id })} />,
@@ -309,18 +424,9 @@ describe('ReviewDetailPage (/reviews/[id])', () => {
       await screen.findByTestId('review-title'),
     ).toBeInTheDocument();
     expect(screen.getByTestId('review-title').textContent).toMatch(/spaced/i);
-    expect(screen.getByTestId('review-mark-passed')).toBeInTheDocument();
-    expect(screen.getByTestId('review-mark-failed')).toBeInTheDocument();
-  });
-
-  it('renders the reopen button when the schedule is completed', async () => {
-    stubFetch({ list: 'success', detail: 'success' });
-    render(
-      <ReviewDetailPage params={settledParams({ id: REVIEW_B.id })} />,
-      { wrapper: makeWrapper() },
-    );
-    await screen.findByTestId('review-title');
-    expect(screen.getByTestId('review-reopen')).toBeInTheDocument();
+    expect(screen.getByTestId('review-start')).toBeInTheDocument();
+    // The old "mark passed" / "mark failed" controls are gone —
+    // the only available action in the idle state is Start.
   });
 
   it('renders the error state when the id is unknown', async () => {
@@ -332,32 +438,90 @@ describe('ReviewDetailPage (/reviews/[id])', () => {
     expect(await screen.findByTestId('page-state-error')).toBeInTheDocument();
   });
 
-  it('submits a status change and updates the schedule', async () => {
+  it('starts the review and renders the verification question', async () => {
     const user = userEvent.setup();
     const spy = stubFetch({ list: 'success', detail: 'success' });
     render(
       <ReviewDetailPage params={settledParams({ id: REVIEW_A.id })} />,
       { wrapper: makeWrapper() },
     );
-    const button = await screen.findByTestId('review-mark-passed');
-    expect(button).toBeInTheDocument();
-    await user.click(button);
+    const startButton = await screen.findByTestId('review-start');
+    await user.click(startButton);
+    const card = await screen.findByTestId('review-verification-card');
+    expect(card).toBeInTheDocument();
+    expect(
+      screen.getByTestId('review-verification-qid').textContent,
+    ).toBe('q-fresh-aaaaaaaaaa');
+    expect(screen.getByTestId('review-outcome-correct')).toBeInTheDocument();
+    expect(screen.getByTestId('review-outcome-partial')).toBeInTheDocument();
+    expect(screen.getByTestId('review-outcome-incorrect')).toBeInTheDocument();
+
+    // The start mutation posts to /reviews/:id/start.
     await waitFor(() => {
-      const calledUrls = spy.mock.calls.map((c) => {
-        const input = c[0];
-        if (typeof input === 'string') return input;
-        if (input instanceof URL) return input.toString();
-        return (input as Request).url;
-      });
-      const methodPerCall = spy.mock.calls.map((c) => {
+      const started = spy.mock.calls.some((c) => {
         const init = c[1] as RequestInit | undefined;
-        return init?.method ?? 'GET';
+        const u =
+          typeof c[0] === 'string'
+            ? c[0]
+            : c[0] instanceof URL
+              ? c[0].toString()
+              : (c[0] as Request).url;
+        return (
+          init?.method === 'POST' &&
+          /\/reviews\/[a-z0-9-]+\/start$/.test(u)
+        );
       });
-      const patched = calledUrls.some(
-        (u, i) =>
-          methodPerCall[i] === 'PATCH' && u.includes(`/review/schedules/${REVIEW_A.id}`),
-      );
-      expect(patched).toBe(true);
+      expect(started).toBe(true);
     });
+  });
+
+  it('submits an outcome and renders the feedback panel', async () => {
+    const user = userEvent.setup();
+    const spy = stubFetch({ list: 'success', detail: 'success' });
+    render(
+      <ReviewDetailPage params={settledParams({ id: REVIEW_A.id })} />,
+      { wrapper: makeWrapper() },
+    );
+    await user.click(await screen.findByTestId('review-start'));
+    await screen.findByTestId('review-verification-card');
+
+    await user.click(screen.getByTestId('review-outcome-incorrect'));
+    await user.click(screen.getByTestId('review-submit-outcome'));
+
+    const feedback = await screen.findByTestId('review-outcome-feedback');
+    expect(feedback).toBeInTheDocument();
+    expect(screen.getByTestId('review-next-due')).toBeInTheDocument();
+
+    await waitFor(() => {
+      const posted = spy.mock.calls.some((c) => {
+        const init = c[1] as RequestInit | undefined;
+        const body = parseBody(init?.body);
+        const u =
+          typeof c[0] === 'string'
+            ? c[0]
+            : c[0] instanceof URL
+              ? c[0].toString()
+              : (c[0] as Request).url;
+        return (
+          init?.method === 'POST' &&
+          /\/reviews\/[a-z0-9-]+\/outcome$/.test(u) &&
+          body?.['outcome'] === 'incorrect' &&
+          body?.['questionId'] === 'q-fresh-aaaaaaaaaa'
+        );
+      });
+      expect(posted).toBe(true);
+    });
+  });
+
+  it('surfaces the lifecycle history once the schedule is loaded', async () => {
+    stubFetch({ list: 'success', detail: 'success' });
+    render(
+      <ReviewDetailPage params={settledParams({ id: REVIEW_A.id })} />,
+      { wrapper: makeWrapper() },
+    );
+    await screen.findByTestId('review-title');
+    const list = await screen.findByTestId('review-lifecycle-list');
+    expect(list).toBeInTheDocument();
+    expect(screen.getAllByTestId('review-lifecycle-item').length).toBe(2);
   });
 });

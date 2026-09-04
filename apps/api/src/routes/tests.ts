@@ -32,13 +32,17 @@ import {
   AnswerTestQuestionBody,
   AttachTestQuestionBody,
   CreateTestDefinitionBody,
+  FromErrorsTestBody,
   IdParam,
   ListTestAttemptsQuery,
   ListTestDefinitionsQuery,
   StartTestAttemptBody,
   UpdateTestDefinitionBody,
 } from '../validation/schemas';
+import type { FromErrorsTestBodyT } from '../validation/schemas';
 import * as tests from '../services/tests';
+import { generateErrorPoolTest } from '../services/error-pool-test-generator';
+import * as bridge from '../services/attempt-capture-bridge';
 import { ForbiddenError } from '../errors';
 import type { ApiSuccessEnvelope } from '@krodex/shared';
 
@@ -66,6 +70,56 @@ export function registerTestRoutes(app: FastifyInstance): void {
     });
     return ok<TestDefinitionRow>(reply, created, 201);
   });
+
+  /**
+   * POST /tests/from-errors
+   *
+   * Phase 10: compose a deterministic custom test from a set of
+   * ErrorEntry ids. The service is idempotent at the data level:
+   * the (sorted) id set is the pool signature, and a second call
+   * with the same set returns the existing test with
+   * `isNew: false`. The route is additionally wrapped in
+   * `withIdempotency` so a client retry with the same
+   * `Idempotency-Key` returns the prior response without
+   * re-running the service call.
+   */
+  app.post(
+    '/tests/from-errors',
+    { preHandler: app.authPreHandler },
+    async (req, reply) => {
+      const auth = requireAuth(req);
+      const body = parseBody(FromErrorsTestBody, req.body);
+      await withIdempotency<
+        FromErrorsTestBodyT,
+        { testId: string; questionCount: number; isNew: boolean }
+      >({
+        env: app.krodexEnv,
+        req,
+        reply,
+        body,
+        route: 'POST /tests/from-errors',
+        action: async () => {
+          const result = await generateErrorPoolTest(req.supabaseUser, auth.userId, {
+            errorIds: body.errorIds,
+            ...(body.title ? { title: body.title } : {}),
+            questionsPerError: body.questionsPerError,
+          });
+          return {
+            testId: result.testId,
+            questionCount: result.questionCount,
+            isNew: result.isNew,
+          };
+        },
+        envelope: (data, requestId, timestamp) => ({
+          success: true,
+          data,
+          requestId,
+          timestamp,
+        }),
+      });
+      return reply;
+    },
+  );
 
   app.get('/tests/:id', { preHandler: app.authPreHandler }, async (req, reply) => {
     const auth = requireAuth(req);
@@ -171,6 +225,11 @@ export function registerTestRoutes(app: FastifyInstance): void {
     async (req, reply) => {
       const auth = requireAuth(req);
       const params = parseParams(IdParam, req.params);
+      // Submit is the durable unit. The capture pipeline runs as
+      // post-commit work: it must never roll back the grade and
+      // must never fail the submit response. The submit RPC has
+      // already written test_attempts and error_entries; the
+      // bridge is best-effort.
       const result = await withIdempotency({
         env: app.krodexEnv,
         req,
@@ -186,6 +245,23 @@ export function registerTestRoutes(app: FastifyInstance): void {
           timestamp,
         }),
       });
+      // Fan out the capture pipeline per wrong answer. Bridge is
+      // internally failure-tolerant: it returns a per-question
+      // failure list and never throws. The outer try/catch is a
+      // defensive backstop for unexpected infrastructure errors.
+      try {
+        await bridge.runCaptureForAttempt(req.supabaseUser, {
+          userId: auth.userId,
+          attemptId: params.id,
+          storageBucket: app.krodexEnv.storageBucketErrorEvidence,
+          aiProvider: app.assistantService.configuredProvider,
+        });
+      } catch (err) {
+        req.log.warn(
+          { err, attemptId: params.id },
+          'capture bridge threw after submit; attempt grading preserved',
+        );
+      }
       return result;
     },
   );

@@ -1,0 +1,89 @@
+/**
+ * KRODEX web — Evidence viewer styles (Phase 9).
+ *
+ * Single visual surface for the rendered evidence snapshot. The
+ * container is a calm card; the image is centered and never
+ * bleeds outside the card. Fallback states (loading, missing
+ * snapshot, expired URL, error) are styled with the same
+ * typography as the surrounding page so the reader does not feel
+ * a different context inside the card.
+ */
+
+.viewer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--kd-space-3);
+  width: 100%;
+}
+
+.image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--kd-radius-md);
+  background: var(--kd-color-surface-sunken);
+  border: 1px solid var(--kd-color-border-subtle);
+}
+
+.fallback {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-2);
+  width: 100%;
+  padding: var(--kd-space-4);
+  border: 1px dashed var(--kd-color-border-subtle);
+  border-radius: var(--kd-radius-md);
+  background: var(--kd-color-surface-sunken);
+}
+
+.fallbackTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--kd-color-text-primary);
+}
+
+.fallbackBody {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--kd-color-text-secondary);
+  line-height: 1.5;
+}
+
+.answerRow {
+  display: flex;
+  gap: var(--kd-space-2);
+  align-items: baseline;
+  font-size: 0.9rem;
+}
+
+.answerLabel {
+  font-weight: 600;
+  color: var(--kd-color-text-secondary);
+  min-width: 8ch;
+}
+
+.answerValue {
+  color: var(--kd-color-text-primary);
+  word-break: break-word;
+}
+
+.answerValueMuted {
+  color: var(--kd-color-text-tertiary);
+  font-style: italic;
+}
+
+.meta {
+  font-size: 0.8rem;
+  color: var(--kd-color-text-tertiary);
+  text-align: center;
+}
+
+.spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 12rem;
+  width: 100%;
+}

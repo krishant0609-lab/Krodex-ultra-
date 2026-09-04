@@ -5,38 +5,45 @@
  *
  *   /reviews/[id]
  *
- * Phase 7.8 visual layer:
- *  - Breadcrumbs: Reviews → schedule id.
- *  - Title block: state + strategy (visual badges) and
- *    the due date.
- *  - Meta row: scheduled_at, completed_at (when present),
- *    error_id.
- *  - Action row: "Mark passed" (active/due → completed +
- *    passed) and "Record failed attempt" (sends a
- *    /review/schedules/:id/attempts POST) — surfaced only
- *    when the corresponding transition is valid.
- *  - 7-state contract honored: loading, empty (NOT_FOUND),
- *    error, populated. (NOT_FOUND renders as an honest
- *    error band, not a soft "no data" state.)
+ * Phase 10 rewrite. The page is now a session orchestrator:
  *
- * Hooks used (no new server state):
- *  - useReviewSchedule(id)
- *  - useUpdateReviewSchedule(id)
- *  - useRecordReviewAttempt(id)
+ *   1. Loading the schedule.
+ *   2. "Start review" → POST /reviews/:id/start
+ *      (moves schedule to `in_progress`, error to `in_review`,
+ *      and picks a fresh verification question).
+ *   3. Show the verification question; student picks an
+ *      outcome ('correct' | 'incorrect' | 'partial') and
+ *      submits → POST /reviews/:id/outcome.
+ *   4. Surface the lifecycle transition + next-review
+ *      decision; show the immutable lifecycle history.
+ *
+ * The Phase 7.8 "Mark passed" / "Record failed attempt" controls
+ * are removed — those were sending the wrong outcome values
+ * (Bugs 1–2 in the Phase 10 plan) and writing the wrong
+ * questionId. The new flow is the only path.
+ *
+ * 7-state contract honored: loading, empty (NOT_FOUND),
+ * error, populated. The session states sit on top of populated
+ * (idle → started → answered → terminal).
  */
 
-import { use } from '../../../../lib/react-async';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { use } from '../../../../lib/react-async';
 import { PageShell } from '../../../../components/page-shell';
 import { Badge } from '../../../../components/badge';
+import { Button } from '../../../../components/button';
 import { ApiError } from '../../../../lib/api-client';
+import { useReviewSchedule } from '../../../../hooks/use-reviews';
 import {
-  useRecordReviewAttempt,
-  useReviewSchedule,
-  useUpdateReviewSchedule,
-} from '../../../../hooks/use-reviews';
+  useStartReview,
+  type OutcomeResult,
+} from '../../../../hooks/use-review-session';
 import { formatLongDate, formatShortDate } from '../../../../lib/format-date';
+import { ReviewLifecyclePanel } from './components/review-lifecycle-panel';
+import { ReviewOutcomeFeedback } from './components/review-outcome-feedback';
+import { VerificationQuestionCard } from './components/verification-question';
 import styles from './review-detail.module.css';
 
 interface ReviewDetailPageProps {
@@ -52,12 +59,6 @@ const STATE_TONES = {
   missed: 'rose',
 } as const;
 
-const OUTCOME_TONES = {
-  correct: 'success',
-  incorrect: 'rose',
-  partial: 'champagne',
-} as const;
-
 const STRATEGY_LABELS = {
   standard: 'standard',
   spaced: 'spaced',
@@ -66,8 +67,9 @@ const STRATEGY_LABELS = {
 } as const;
 
 type ReviewState = keyof typeof STATE_TONES;
-type ReviewOutcomeData = 'correct' | 'incorrect' | 'partial';
 type ReviewStrategy = keyof typeof STRATEGY_LABELS;
+
+type SessionPhase = 'idle' | 'started' | 'answered';
 
 function strategyLabel(strategy: string | null | undefined): string {
   if (!strategy) return '';
@@ -81,53 +83,62 @@ export default function ReviewDetailPage({
   const { id } = use(params);
   const router = useRouter();
   const schedule = useReviewSchedule(id);
-  const update = useUpdateReviewSchedule(id);
-  const record = useRecordReviewAttempt(id);
+  const start = useStartReview(id);
+
+  const [phase, setPhase] = useState<SessionPhase>('idle');
+  const [verification, setVerification] = useState<
+    | { kind: 'found'; questionId: string; difficulty: number }
+    | { kind: 'none' }
+    | null
+  >(null);
+  const [outcome, setOutcome] = useState<OutcomeResult | null>(null);
+
+  // Reset local session state when navigating between schedules.
+  useEffect(() => {
+    setPhase('idle');
+    setVerification(null);
+    setOutcome(null);
+  }, [id]);
 
   const isLoading = schedule.isLoading;
   const isError = schedule.isError;
   const isEmpty = !isLoading && !isError && !schedule.data;
 
-  const handleMarkPassed = (): void => {
-    update.mutate(
-      { state: 'completed', outcome: 'passed' },
+  const data = schedule.data;
+  const state = data?.state as ReviewState | undefined;
+  const isOpen =
+    state === 'scheduled' || state === 'due' || state === 'in_progress';
+  const isTerminal = state === 'completed' || state === 'skipped';
+  // "Already started" means the server already moved the schedule
+  // to `in_progress` (e.g. a refresh mid-session). The student can
+  // resume by reading the deterministic verification question.
+  const scheduleIsInProgress = state === 'in_progress';
+
+  const handleStart = (): void => {
+    start.mutate(
+      {},
       {
-        onSuccess: () => {
-          // Stay on the page; the entry refetches and shows
-          // the completed state.
+        onSuccess: (res) => {
+          setVerification(res.verification);
+          setPhase('started');
         },
       },
     );
   };
 
-  const handleRecordFailed = (): void => {
-    if (!schedule.data) return;
-    record.mutate({
-      schedule_id: id,
-      question_id: schedule.data.error_id,
-      outcome: 'failed',
-      selected_option_ids: [],
-    });
+  const handleResume = (): void => {
+    // Reload the verification question (idempotent GET).
+    setPhase('started');
   };
 
-  const handleSkip = (): void => {
-    update.mutate({ state: 'skipped', outcome: 'partial' });
-  };
-
-  const handleReopen = (): void => {
-    update.mutate({ state: 'due' });
-  };
-
-  const data = schedule.data;
-  const state = data?.state as ReviewState | undefined;
-  const outcome = data?.outcome as ReviewOutcomeData | null | undefined;
-  const isOpen =
-    state === 'scheduled' || state === 'due' || state === 'in_progress';
-  const isClosed = state === 'completed' || state === 'skipped';
+  const handleOutcomeRecorded = useCallback((res: OutcomeResult) => {
+    setOutcome(res);
+    setPhase('answered');
+  }, []);
 
   return (
     <PageShell
-      title="Review schedule"
+      title="Review session"
       eyebrow="Review queue"
       description={
         data
@@ -144,19 +155,6 @@ export default function ReviewDetailPage({
         <Link href="/reviews" style={{ color: 'var(--kd-color-text-link)' }}>
           Back to review queue
         </Link>
-      }
-      actions={
-        data && isOpen ? (
-          <button
-            type="button"
-            className={styles.primaryAction}
-            onClick={handleMarkPassed}
-            disabled={update.isPending || record.isPending}
-            data-testid="review-mark-passed"
-          >
-            {update.isPending ? 'Saving…' : 'Mark passed'}
-          </button>
-        ) : null
       }
     >
       {data ? (
@@ -183,18 +181,20 @@ export default function ReviewDetailPage({
                   {strategyLabel(data.strategy)}
                 </span>
               ) : null}
-              {outcome ? (
-                <Badge tone={OUTCOME_TONES[outcome] ?? 'lavender'} size="sm">
-                  outcome: {outcome}
+              {data.outcome ? (
+                <Badge tone="lavender" size="sm">
+                  outcome: {data.outcome}
                 </Badge>
               ) : null}
             </div>
             <p className={styles.subtitle}>
-              {isOpen
-                ? 'This schedule is open. Mark it passed when the review sticks, or record an attempt if it did not.'
-                : isClosed
-                  ? 'This schedule is closed. Reopen it if the mistake came back, or skip it to write it off.'
-                  : 'This schedule is in your queue.'}
+              {phase === 'answered'
+                ? 'Outcome recorded. The lifecycle below shows how this error moved.'
+                : isOpen
+                  ? 'Start the review to receive a fresh verification question — distinct from the original wrong question.'
+                  : isTerminal
+                    ? 'This schedule is closed. The error may already be resolved.'
+                    : 'This schedule is in your queue.'}
             </p>
           </header>
 
@@ -235,76 +235,61 @@ export default function ReviewDetailPage({
             )}
           </section>
 
-          {isOpen ? (
-            <div className={styles.secondaryActions}>
-              <button
-                type="button"
-                className={styles.secondaryAction}
-                onClick={handleRecordFailed}
-                disabled={update.isPending || record.isPending}
-                data-testid="review-mark-failed"
-              >
-                Record failed attempt
-              </button>
-              <button
-                type="button"
-                className={styles.secondaryAction}
-                onClick={handleSkip}
-                disabled={update.isPending || record.isPending}
-                data-testid="review-skip"
-              >
-                Skip
-              </button>
+          {/* Session start / resume control. Shown only while the
+              schedule is open and the student has not yet submitted
+              an outcome. */}
+          {isOpen && phase !== 'answered' ? (
+            <div className={styles.startRow}>
+              {scheduleIsInProgress && phase === 'idle' ? (
+                <Button
+                  variant="primary"
+                  onClick={handleResume}
+                  data-testid="review-resume"
+                >
+                  Resume review
+                </Button>
+              ) : phase === 'idle' ? (
+                <Button
+                  variant="primary"
+                  onClick={handleStart}
+                  disabled={start.isPending}
+                  data-testid="review-start"
+                >
+                  {start.isPending ? 'Starting…' : 'Start review'}
+                </Button>
+              ) : null}
+              {start.isError ? (
+                <p
+                  className={styles.errorMeta}
+                  role="alert"
+                  data-testid="review-start-error"
+                >
+                  {start.error instanceof ApiError
+                    ? `Could not start: ${start.error.code} (${start.error.status})`
+                    : 'Could not start the review.'}
+                </p>
+              ) : null}
             </div>
           ) : null}
 
-          {isClosed ? (
-            <div className={styles.secondaryActions}>
-              <button
-                type="button"
-                className={styles.secondaryAction}
-                onClick={handleReopen}
-                disabled={update.isPending}
-                data-testid="review-reopen"
-              >
-                Reopen
-              </button>
-            </div>
+          {/* Verification question form. Shown after start (or
+              resume) and before the outcome is recorded. */}
+          {phase === 'started' && verification ? (
+            <VerificationQuestionCard
+              reviewId={id}
+              question={verification}
+              onRecorded={handleOutcomeRecorded}
+            />
           ) : null}
 
-          {update.isError ? (
-            <p
-              className={styles.errorMeta}
-              role="alert"
-              data-testid="review-update-error"
-            >
-              {update.error instanceof ApiError
-                ? `Update failed: ${update.error.code} (${update.error.status})`
-                : 'Update failed.'}
-            </p>
+          {/* Outcome feedback panel. Shown once the server
+              confirms the outcome; the lifecycle is rendered
+              below it. */}
+          {phase === 'answered' && outcome ? (
+            <ReviewOutcomeFeedback result={outcome} />
           ) : null}
 
-          {record.isError ? (
-            <p
-              className={styles.errorMeta}
-              role="alert"
-              data-testid="review-attempt-error"
-            >
-              {record.error instanceof ApiError
-                ? `Attempt failed: ${record.error.code} (${record.error.status})`
-                : 'Could not record attempt.'}
-            </p>
-          ) : null}
-
-          {update.isSuccess && data.state === 'completed' ? (
-            <p
-              className={styles.successMeta}
-              role="status"
-              data-testid="review-update-success"
-            >
-              Marked as completed.
-            </p>
-          ) : null}
+          <ReviewLifecyclePanel reviewId={id} />
 
           <p className={styles.footnote}>
             <a

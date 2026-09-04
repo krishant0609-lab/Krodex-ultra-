@@ -121,6 +121,27 @@ export const AttachTestQuestionBody = z.object({
 });
 export type AttachTestQuestionBodyT = z.infer<typeof AttachTestQuestionBody>;
 
+/**
+ * Phase 10: `POST /tests/from-errors` body.
+ *
+ * Composes a deterministic custom test from a set of ErrorEntry
+ * ids. The (sorted) set of ids is the pool signature — a test
+ * with the same signature is never created twice for the same
+ * user (`isNew` is false on the second call).
+ *
+ * `questionsPerError` (default 1) is only used to set
+ * `test_definitions.intended_count`; the actual question count
+ * is the deduplicated, stable-sorted list of question ids
+ * pulled from the error entries.
+ */
+export const FromErrorsTestBody = z.object({
+  errorIds: z.array(Uuid).min(1).max(50),
+  title: optionalString(200),
+  questionsPerError: z.number().int().min(1).max(5).default(1),
+  commandId: optionalString(64),
+});
+export type FromErrorsTestBodyT = z.infer<typeof FromErrorsTestBody>;
+
 export const StartTestAttemptBody = z.object({
   test_id: Uuid,
 });
@@ -225,6 +246,56 @@ export const ListReviewSchedulesQuery = z.object({
   due_before: IsoTimestamp.optional(),
   ...CursorPagination.shape,
 });
+
+// --- Phase 10: review session flow ------------------------------------
+//
+// `POST /reviews/:id/start`            — start a review session
+// `POST /reviews/:id/outcome`          — record the outcome of the
+//                                        verification question
+// `GET  /reviews/:id/verification-question`
+//                                      — re-fetch the most recent
+//                                        verification question for
+//                                        the active session
+// `GET  /reviews/:id/lifecycle`        — read the immutable error
+//                                        lifecycle history for the
+//                                        error this review is on
+
+/**
+ * Body for `POST /reviews/:id/start`.
+ *
+ * The optional `commandId` is used as the Idempotency-Key header
+ * value when present; the route reads the header, not the body, for
+ * the canonical Idempotency-Key. Kept here so the request shape is
+ * documented and stable.
+ */
+export const StartReviewBody = z.object({
+  commandId: optionalString(64),
+});
+export type StartReviewBodyT = z.infer<typeof StartReviewBody>;
+
+/**
+ * Body for `POST /reviews/:id/outcome`.
+ *
+ * `questionId` is the verification question the student actually
+ * answered (NOT the original wrong question; that one produced the
+ * error entry). `outcome` matches the persisted `review_attempts`
+ * enum: 'correct' | 'incorrect' | 'partial'.
+ */
+export const RecordReviewOutcomeBody = z.object({
+  questionId: Uuid,
+  outcome: z.enum(['correct', 'incorrect', 'partial']),
+  selectedOptionIds: z.array(Uuid).max(20).default([]),
+  freeText: optionalString(8_000),
+  durationMs: z
+    .number()
+    .int()
+    .min(0)
+    .max(24 * 60 * 60 * 1000)
+    .nullable()
+    .optional(),
+  commandId: optionalString(64),
+});
+export type RecordReviewOutcomeBodyT = z.infer<typeof RecordReviewOutcomeBody>;
 
 // --- planner -----------------------------------------------------------
 
@@ -401,3 +472,70 @@ export const AdminStudentModelRecomputeBody = z.object({
   window_days: z.coerce.number().int().min(1).max(90).optional(),
 });
 export type AdminStudentModelRecomputeBodyT = z.infer<typeof AdminStudentModelRecomputeBody>;
+
+// --- Phase 11: planner automation ------------------------------------
+
+/**
+ * `POST /planner/check-missed` body.
+ *
+ * - `scan_before` — optional ISO timestamp; defaults to now.
+ *   Lets the admin replay a scan for a specific moment.
+ */
+export const CheckMissedPlannerTasksBody = z.object({
+  scan_before: IsoTimestamp.optional(),
+});
+export type CheckMissedPlannerTasksBodyT = z.infer<typeof CheckMissedPlannerTasksBody>;
+
+/**
+ * `POST /planner/tasks/:id/partial` body.
+ *
+ * - `actual_duration_minutes` — student-reported actual minutes.
+ *   Stored on the task; informational only. Schema Ready §4
+ *   says "Track completion separately from planned schedule."
+ * - `reason` — free-form text from the client.
+ */
+export const MarkPartialBody = z.object({
+  actual_duration_minutes: z.number().int().min(0).max(24 * 60).nullable().optional(),
+  reason: optionalString(500),
+});
+export type MarkPartialBodyT = z.infer<typeof MarkPartialBody>;
+
+/**
+ * `POST /planner/tasks/:id/reschedule` body.
+ *
+ * - `new_due_at` — required ISO timestamp for the new task.
+ * - `reason` — free-form text from the client.
+ */
+export const RescheduleTaskBody = z.object({
+  new_due_at: IsoTimestamp,
+  reason: optionalString(500),
+});
+export type RescheduleTaskBodyT = z.infer<typeof RescheduleTaskBody>;
+
+/**
+ * `POST /planner/backlog/recover/:id` body (Phase 11).
+ *
+ * Distinct from the older `RecoverBacklogItemBody` used by
+ * `POST /backlog/:id/recover` (plan_date/notes shape). The
+ * planner automation route carries a richer action union.
+ *
+ * - `action` — one of 'reschedule' | 'complete' | 'dismiss' | 'split'.
+ * - `new_due_at` — required when action='reschedule'.
+ * - `reason` — optional free-form text.
+ */
+export const RecoverPlannerBacklogItemBody = z.object({
+  action: z.enum(['reschedule', 'complete', 'dismiss', 'split']),
+  new_due_at: IsoTimestamp.optional(),
+  reason: optionalString(500),
+});
+export type RecoverPlannerBacklogItemBodyT = z.infer<typeof RecoverPlannerBacklogItemBody>;
+
+/**
+ * `GET /planner/backlog/recovery-suggestions` query.
+ *
+ * - `limit` — max items to return. Defaults to 20; clamped at 100.
+ */
+export const RecoverySuggestionsQuery = z.object({
+  limit: z.coerce.number().int().min(1).max(100).optional(),
+});
+export type RecoverySuggestionsQueryT = z.infer<typeof RecoverySuggestionsQuery>;

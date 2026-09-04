@@ -16,7 +16,9 @@
  *  - from(table).select().order().eq().eq() etc.
  *  - rpc(name, params)
  *
- * Not supported: subscriptions, auth, storage, .range(), .or().
+ * Not supported: subscriptions, auth (other than the service-role
+ * data fixtures), .range(), .or(). Storage is stubbed at a
+ * minimal level: see `FakeStorageBucket` below.
  * Add them as tests need them.
  */
 
@@ -64,11 +66,17 @@ export interface FakeSupabaseOptions {
 export interface FakeSupabase {
   from: (table: string) => FakeQueryBuilder;
   rpc: (name: string, params: Record<string, unknown>) => Promise<Awaitable<unknown>>;
+  storage: {
+    from: (bucket: string) => FakeStorageBucket;
+  };
   __rows: (table: string) => Row[];
+  __storage: (bucket: string) => Map<string, Uint8Array>;
   __reset: () => void;
   __setError: (msg: string | null) => void;
+  __setStorageError: (msg: string | null) => void;
   __defaultUserId: string | undefined;
   __errorOn: string | null;
+  __storageErrorOn: string | null;
   __uniqueConstraints: Record<string, readonly (readonly string[])[]>;
   __rpcImpls: Record<
     string,
@@ -315,6 +323,59 @@ class FakeQueryBuilder {
 }
 
 /**
+ * Minimal stub of the Supabase Storage bucket surface. The real
+ * client returns a fluent chain with `.upload(path, body, opts)`
+ * and `.createSignedUrl(path, ttlSeconds)`. We only model the two
+ * methods the Phase 9 evidence pipeline actually calls, plus
+ * `.remove([path])` for soft-delete. Errors flow through the
+ * `__storageErrorOn` hook so tests can simulate upload failures
+ * without a live Supabase.
+ */
+class FakeStorageBucket {
+  constructor(
+    private readonly bucket: string,
+    private readonly client: FakeSupabase,
+  ) {}
+
+  async upload(
+    path: string,
+    body: Uint8Array,
+    _opts?: { contentType?: string; upsert?: boolean; cacheControl?: string },
+  ): Promise<{ data: { path: string } | null; error: { message: string } | null }> {
+    if (this.client.__storageErrorOn) {
+      return { data: null, error: { message: this.client.__storageErrorOn } };
+    }
+    const store = this.client.__storage(this.bucket);
+    store.set(path, body);
+    return { data: { path }, error: null };
+  }
+
+  async createSignedUrl(
+    path: string,
+    ttlSeconds: number,
+  ): Promise<{ data: { signedUrl: string } | null; error: { message: string } | null }> {
+    if (this.client.__storageErrorOn) {
+      return { data: null, error: { message: this.client.__storageErrorOn } };
+    }
+    const store = this.client.__storage(this.bucket);
+    if (!store.has(path)) {
+      return { data: null, error: { message: 'object not found' } };
+    }
+    const url = `https://fake.example/storage/v1/object/sign/${this.bucket}/${path}?token=fake&expires_in=${ttlSeconds}`;
+    return { data: { signedUrl: url }, error: null };
+  }
+
+  async remove(paths: readonly string[]): Promise<{ data: readonly string[] | null; error: { message: string } | null }> {
+    const store = this.client.__storage(this.bucket);
+    const removed: string[] = [];
+    for (const p of paths) {
+      if (store.delete(p)) removed.push(p);
+    }
+    return { data: removed, error: null };
+  }
+}
+
+/**
  * Build a fake supabase-js client. Returned as a `SupabaseClient`
  * so it can be passed directly into the service layer. The real
  * service code is exercised; only the I/O is stubbed.
@@ -326,6 +387,7 @@ export function makeFakeSupabase(
   for (const [k, v] of Object.entries(opts.tables ?? {})) {
     tables[k] = [...v];
   }
+  const storage: Record<string, Map<string, Uint8Array>> = {};
   const client: FakeSupabase = {
     from(table: string): FakeQueryBuilder {
       return new FakeQueryBuilder(table, client);
@@ -336,19 +398,34 @@ export function makeFakeSupabase(
       if (impl) return await impl(params);
       return { data: { rpc: name }, error: null };
     },
+    storage: {
+      from(bucket: string): FakeStorageBucket {
+        return new FakeStorageBucket(bucket, client);
+      },
+    },
     __rows(table) {
       if (!tables[table]) tables[table] = [];
       return tables[table];
     },
+    __storage(bucket) {
+      if (!storage[bucket]) storage[bucket] = new Map();
+      return storage[bucket];
+    },
     __reset() {
       for (const k of Object.keys(tables)) delete tables[k];
+      for (const k of Object.keys(storage)) delete storage[k];
       client.__errorOn = opts.errorOn ?? null;
+      client.__storageErrorOn = null;
     },
     __setError(msg) {
       client.__errorOn = msg;
     },
+    __setStorageError(msg: string | null) {
+      client.__storageErrorOn = msg;
+    },
     __defaultUserId: opts.defaultUserId,
     __errorOn: opts.errorOn ?? null,
+    __storageErrorOn: null,
     __uniqueConstraints: opts.uniqueConstraints ?? {},
     __rpcImpls: opts.rpcImpls ?? {},
   };

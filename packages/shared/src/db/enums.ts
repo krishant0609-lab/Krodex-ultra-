@@ -127,8 +127,36 @@ export type AiConversationState = 'active' | 'closed';
 // --- ai_messages.role
 export type AiMessageRole = 'user' | 'assistant' | 'system' | 'tool';
 
+// --- error_evidence.classification_status (Phase 9)
+export type ClassificationStatus =
+  | 'pending'
+  | 'suggested'
+  | 'confirmed'
+  | 'student_override';
+
 // --- captured_questions.state
 export type CapturedQuestionState = 'captured' | 'linked' | 'rejected' | 'failed';
+
+// --- evidence_assets.status (Phase 9)
+export type EvidenceAssetStatus = 'pending' | 'available' | 'failed' | 'deleted';
+
+// --- error_lifecycle_events.trigger (Phase 9, TRD §11)
+export type LifecycleTrigger =
+  | 'student_review'
+  | 'ai_suggestion'
+  | 'manual'
+  | 'system';
+
+// --- error_lifecycle.* event types (Phase 9, TRD §11)
+// Mirror of the matching EventType literals; kept as a separate
+// export so service code can switch on the to_status without
+// having to know the EventType union structure.
+export type ErrorLifecycleEventType =
+  | 'error.lifecycle.active'
+  | 'error.lifecycle.in_review'
+  | 'error.lifecycle.resolved'
+  | 'error.lifecycle.reopened'
+  | 'error.lifecycle.archived';
 
 // --- progress_evidence.dimension (exemplar; not CHECK-constrained in SQL yet)
 export type ProgressDimension =

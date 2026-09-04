@@ -1,40 +1,42 @@
 'use client';
 
 /**
- * KRODEX web — attempt detail page (distraction-free mode).
+ * KRODEX web — attempt detail page.
  *
  *   /attempts/[id]
  *
- * Phase 7.6 visual layer:
- *  - The page is a focused, single-question reader. Header is
- *    minimal: state, test id, attempt id — no navigation chrome.
- *  - One question is shown at a time (a "step" is a question that
- *    hasn't been answered yet). Each step has its own question id,
- *    display_order, and a row of recorded answer placeholders.
- *  - The user can type a free-text answer and submit it via the
- *    `useAnswerTestQuestion` mutation. On success, the next
- *    question advances into view.
- *  - When all questions are answered, the "Submit attempt" action
- *    becomes enabled. The user submits, and the success state
- *    surfaces a calm summary.
- *  - 7-state contract honored: loading, empty, error, populated,
- *    success.
+ * Reads the authoritative attempt, its recorded answers, and the
+ * authoritative question list for the test the attempt is bound
+ * to. The user types a free-text answer per question; on submit,
+ * the answer is POSTed to /tests/attempts/:id/answers with the
+ * authoritative `question_id` returned by the test's question
+ * list — never a client-generated id.
+ *
+ * Authoritative id source: `GET /tests/:test_id/questions` returns
+ * `TestQuestionRow[]`, each with a real `question_id` and
+ * `display_order`. The current step's id is the entry at
+ * index `recordedAnswers.length` in the list sorted by
+ * `display_order` ascending. If that index is past the end of
+ * the list, or the list is still loading, or the query failed,
+ * the form is rendered disabled and an honest inline error is
+ * shown — we never invent an id to fill the gap.
+ *
+ * Visual contract (Phase 7.6 / attempt mode):
+ *  - distraction-free
+ *  - single column
+ *  - no decorative accent
+ *  - no decorative motion
+ *  - no shimmer
+ *  - critical learning actions wait for server acknowledgement.
+ *
+ * 7-state contract honored: loading, empty, error, populated,
+ * success.
  *
  * Constraints honored:
- *  - No fake data. Every value comes from `useTestAttempt`,
- *    `useTestAttemptAnswers`, `useAnswerTestQuestion`,
- *    `useSubmitTestAttempt`.
- *  - The API does not expose a per-question question body on the
- *    attempt endpoint; we render the question_id as a stable
- *    handle. The user types a free-text answer (the API's primary
- *    writable field) and submits.
- *  - We never invent per-question outcomes. The answer list grows
- *    monotonically as the user answers.
- *
- * Out of scope (Phase 7.6): a real "question reader" with stems,
- *  options, multiple-choice, etc. The attempt view is a focused
- *  one-question-at-a-time reader against the answerable surface
- *  the API exposes today.
+ *  - No fake data. Every value comes from a Phase 6 hook.
+ *  - No client-generated entity identifiers.
+ *  - No "focus mode" product behavior beyond a clean
+ *    single-question reader.
  */
 
 import { use } from '../../../../lib/react-async';
@@ -46,6 +48,7 @@ import {
   useSubmitTestAttempt,
   useTestAttempt,
   useTestAttemptAnswers,
+  useTestQuestions,
 } from '../../../../hooks/use-tests';
 import { ApiError } from '../../../../lib/api-client';
 import styles from './attempt.module.css';
@@ -63,6 +66,8 @@ export default function AttemptDetailPage({
   const answers = useTestAttemptAnswers(id);
   const answer = useAnswerTestQuestion(id);
   const submit = useSubmitTestAttempt(id);
+  const testId = attempt.data?.test_id;
+  const questions = useTestQuestions(testId ?? null);
 
   const isLoading = attempt.isLoading;
   const isError = attempt.isError;
@@ -85,6 +90,16 @@ export default function AttemptDetailPage({
       ? remaining === 0
       : false;
 
+  // Authoritative question list, sorted by display_order. We
+  // only have a query for this list once the attempt is loaded
+  // (testId is non-null). Until then, the page renders with the
+  // form disabled and an honest loading/error state.
+  const orderedQuestions = (questions.data ?? [])
+    .slice()
+    .sort((a, b) => a.display_order - b.display_order);
+  const currentStepQuestionId =
+    orderedQuestions[recordedAnswers.length]?.question_id ?? null;
+
   const handleSubmitAttempt = (): void => {
     submit.mutate(undefined, {
       onSuccess: () => {
@@ -97,7 +112,17 @@ export default function AttemptDetailPage({
 
   return (
     <PageShell
-      title={isInProgress ? 'Attempt in progress' : 'Attempt'}
+      title={
+        isInProgress
+          ? 'Attempt in progress'
+          : attemptState === 'submitted'
+            ? 'Submitted attempt'
+            : attemptState === 'timed_out'
+              ? 'Timed-out attempt'
+              : attemptState === 'abandoned'
+                ? 'Abandoned attempt'
+                : 'Attempt'
+      }
       eyebrow="Attempt"
       description={
         attempt.data
@@ -148,7 +173,7 @@ export default function AttemptDetailPage({
                 data-testid="attempt-title"
               >
                 {isInProgress
-                  ? 'Focus mode'
+                  ? 'Attempt in progress'
                   : attemptState === 'submitted'
                     ? 'Submitted'
                     : attemptState === 'timed_out'
@@ -176,10 +201,12 @@ export default function AttemptDetailPage({
 
           <div className={styles.body}>
             {isInProgress && remaining > 0 ? (
-              <FocusStep
-                attemptId={id}
+              <NextQuestionStep
+                testId={testId ?? null}
                 questionIndex={recordedAnswers.length}
                 totalQuestions={attempt.data.total_questions}
+                questionsQuery={questions}
+                authoritativeQuestionId={currentStepQuestionId}
                 isAnswerPending={answer.isPending}
                 isAnswerError={answer.isError}
                 answerError={answer.error}
@@ -315,31 +342,58 @@ export default function AttemptDetailPage({
   );
 }
 
-interface FocusStepProps {
-  attemptId: string;
+interface NextQuestionStepProps {
+  testId: string | null;
   questionIndex: number;
   totalQuestions: number;
+  // We pass the whole useQuery result so the form can render a
+  // honest loading / error state for the questions list. We
+  // never substitute a synthesized id if the query is
+  // unresolved.
+  questionsQuery: {
+    isLoading: boolean;
+    isError: boolean;
+    error: unknown;
+  };
+  authoritativeQuestionId: string | null;
   isAnswerPending: boolean;
   isAnswerError: boolean;
   answerError: unknown;
   onSubmit: (body: { question_id: string; free_text: string }) => void;
 }
 
-function FocusStep({
-  attemptId,
+function NextQuestionStep({
+  testId,
   questionIndex,
   totalQuestions,
+  questionsQuery,
+  authoritativeQuestionId,
   isAnswerPending,
   isAnswerError,
   answerError,
   onSubmit,
-}: FocusStepProps): JSX.Element {
-  // We use the question_index as the question_id placeholder
-  // because the API exposes answers by question_id, not by
-  // display_order. This keeps the answer record keyed to a stable
-  // value the API can resolve. The questions are 1-indexed for
-  // human display.
+}: NextQuestionStepProps): JSX.Element {
   const stepLabel = `Question ${questionIndex + 1} of ${totalQuestions}`;
+
+  // We render the form always, but disable submission until the
+  // authoritative id is present. The user can still see the
+  // prompt; the gate is the submit button, which is the
+  // critical learning action that must wait for the server.
+  //
+  // The page also surfaces an honest inline error when the
+  // questions query failed or when the test has fewer attached
+  // questions than the attempt claims — both conditions mean we
+  // cannot submit a trustworthy id and the form must remain
+  // disabled.
+  const questionsAvailable =
+    !questionsQuery.isLoading &&
+    !questionsQuery.isError &&
+    authoritativeQuestionId !== null;
+
+  const outOfRange =
+    !questionsQuery.isLoading &&
+    !questionsQuery.isError &&
+    authoritativeQuestionId === null;
 
   return (
     <section
@@ -348,10 +402,48 @@ function FocusStep({
       aria-label={stepLabel}
     >
       <p className={styles.focusEyebrow}>{stepLabel}</p>
+      {testId === null ? (
+        <p
+          className={styles.errorMeta}
+          role="alert"
+          data-testid="attempt-focus-no-test"
+        >
+          This attempt is not bound to a test. Answering is disabled until
+          the attempt is associated with a test definition.
+        </p>
+      ) : null}
+      {questionsQuery.isLoading ? (
+        <p className={styles.muted} data-testid="attempt-focus-loading">
+          Loading the question list…
+        </p>
+      ) : null}
+      {questionsQuery.isError ? (
+        <p
+          className={styles.errorMeta}
+          role="alert"
+          data-testid="attempt-focus-questions-error"
+        >
+          {questionsQuery.error instanceof ApiError
+            ? `Could not load the question list: ${questionsQuery.error.code} (${questionsQuery.error.status})`
+            : 'Could not load the question list.'}
+        </p>
+      ) : null}
+      {outOfRange ? (
+        <p
+          className={styles.errorMeta}
+          role="alert"
+          data-testid="attempt-focus-no-id"
+        >
+          The next question cannot be identified: the test has fewer attached
+          questions than this attempt claims. Answering is disabled until
+          the test definition is corrected.
+        </p>
+      ) : null}
       <form
         className={styles.focusForm}
         onSubmit={(e) => {
           e.preventDefault();
+          if (!authoritativeQuestionId) return;
           const form = e.currentTarget;
           const data = new FormData(form);
           const freeTextRaw = data.get('free_text');
@@ -359,7 +451,7 @@ function FocusStep({
             typeof freeTextRaw === 'string' ? freeTextRaw.trim() : '';
           if (!freeText) return;
           onSubmit({
-            question_id: `${attemptId}-q${questionIndex + 1}`,
+            question_id: authoritativeQuestionId,
             free_text: freeText,
           });
           form.reset();
@@ -381,7 +473,7 @@ function FocusStep({
           <button
             type="submit"
             className={styles.focusSubmit}
-            disabled={isAnswerPending}
+            disabled={isAnswerPending || !questionsAvailable}
             data-testid="attempt-focus-submit"
           >
             {isAnswerPending

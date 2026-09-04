@@ -1,17 +1,23 @@
 // KRODEX web — Vitest config.
 // React Testing Library needs a DOM environment; we use jsdom.
-// @vitejs/plugin-react handles JSX. Tests live under src/**/__tests__.
+// @vitejs/plugin-react handles JSX with the automatic runtime
+// (so we never need to `import React` in test files). Tests
+// live under src/**/__tests__.
 
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react({ jsxRuntime: 'automatic' })],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+  },
+  esbuild: {
+    jsx: 'automatic',
+    jsxImportSource: 'react',
   },
   test: {
     environment: 'jsdom',

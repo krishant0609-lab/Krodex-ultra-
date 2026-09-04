@@ -1,21 +1,33 @@
 /**
  * KRODEX web — attempts page integration test.
  *
- * Verifies Phase 7.6 acceptance criteria:
+ * Verifies Phase 7 acceptance criteria for the attempt detail page:
  *
  *   1. The /attempts/[id] page renders the attempt header
- *      (state badge, answered counter) and a focus-mode step
- *      for the next unanswered question.
+ *      (state badge, answered counter) and a single-question
+ *      reader for the next unanswered question.
  *   2. Submitting a free-text answer triggers a real POST to
  *      /tests/attempts/:id/answers and the next question
- *      advances into view.
+ *      advances into view. The POST body contains the
+ *      authoritative question_id from the test's question list —
+ *      never a client-synthesized id.
  *   3. When all questions are answered, the "Submit attempt"
  *      button becomes enabled.
  *   4. Submitting the attempt triggers a real POST to
  *      /tests/attempts/:id/submit and renders the success band.
  *   5. A submitted attempt (state=submitted) renders the closed
- *      state with no focus form.
+ *      state with no reader form.
  *   6. Empty / error / loading states are truthful.
+ *   7. **Integrity guards (regression)**:
+ *        - When the questions list is missing or fails to load,
+ *          the reader form is disabled and an honest inline error
+ *          is shown; no POST is fired.
+ *        - When the test has fewer attached questions than the
+ *          attempt claims, the form is disabled at the out-of-range
+ *          step with an honest error.
+ *        - The POST body never contains a client-synthesized id
+ *          (regression: previously the page fabricated
+ *          `${attemptId}-q${n}`).
  *
  * The hook layer is exercised against a stubbed `fetch` (same
  * pattern as tests.test.tsx), so the test is an honest
@@ -84,11 +96,14 @@ function success<T>(data: T): { success: true; data: T } {
   return { success: true, data };
 }
 
+type FailureBody = { code: string; message: string };
+
 function failure(code: string, message: string): {
   success: false;
-  error: { code: string; message: string };
+  error: FailureBody;
 } {
-  return { success: false, error: { code, message } };
+  const error: FailureBody = { code, message };
+  return { success: false, error };
 }
 
 function makeWrapper(): (props: { children: ReactNode }) => JSX.Element {
@@ -133,11 +148,36 @@ const ATTEMPT_SUBMITTED = {
   accuracy: '0.5',
 };
 
+// Authoritative question rows. The order in the array does not
+// matter — the page sorts by display_order. The IDs here are
+// the real question_ids the page MUST submit, and they are
+// distinct from any client-synthesized id.
+const QUESTIONS = [
+  {
+    id: 'tq-1',
+    user_id: 'u-1',
+    test_id: TEST_ID,
+    question_id: 'q-authoritative-1',
+    display_order: 1,
+    created_at: '2026-09-02T00:00:00.000Z',
+    updated_at: '2026-09-02T00:00:00.000Z',
+  },
+  {
+    id: 'tq-2',
+    user_id: 'u-1',
+    test_id: TEST_ID,
+    question_id: 'q-authoritative-2',
+    display_order: 2,
+    created_at: '2026-09-02T00:00:00.000Z',
+    updated_at: '2026-09-02T00:00:00.000Z',
+  },
+];
+
 const ANSWER_1 = {
   id: 'answer-1',
   user_id: 'u-1',
   attempt_id: ATTEMPT_ID,
-  question_id: 'q-1',
+  question_id: 'q-authoritative-1',
   selected_option_ids: [] as readonly string[],
   free_text: 'I chose 2.',
   outcome: 'correct' as const,
@@ -151,7 +191,7 @@ const ANSWER_2 = {
   id: 'answer-2',
   user_id: 'u-1',
   attempt_id: ATTEMPT_ID,
-  question_id: 'q-2',
+  question_id: 'q-authoritative-2',
   selected_option_ids: [] as readonly string[],
   free_text: 'I chose 7.',
   outcome: 'incorrect' as const,
@@ -164,12 +204,19 @@ const ANSWER_2 = {
 interface AttemptsFetchRoutes {
   attempt: 'success' | 'in_progress' | 'submitted' | 'notFound' | 'error';
   answers: 'success' | 'empty' | 'one' | 'two' | 'error';
+  questions: 'success' | 'empty' | 'error';
 }
 
 // The answers list grows monotonically: as the test runs, a
 // POST to /answers appends to the recorded list, and the next
 // GET reflects it. This mirrors the real server's behavior.
 let recordedAnswers: TestAnswerFixture[] = [];
+
+// The questions POSTed to /answers are captured here so each
+// test can assert which authoritative id was submitted. The
+// page MUST submit a real id from the QUESTIONS list; a
+// client-synthesized id (regression) would be caught here.
+let submittedQuestionIds: string[] = [];
 
 interface TestAnswerFixture {
   id: string;
@@ -187,6 +234,7 @@ interface TestAnswerFixture {
 
 function resetRecordedAnswers(state: readonly TestAnswerFixture[]): void {
   recordedAnswers = [...state];
+  submittedQuestionIds = [];
 }
 
 function stubFetch(routes: AttemptsFetchRoutes): MockInstance<typeof global.fetch> {
@@ -210,11 +258,14 @@ function stubFetch(routes: AttemptsFetchRoutes): MockInstance<typeof global.fetc
         // Record the answer so subsequent GETs reflect the
         // monotonically growing list.
         const body = parseBody(init?.body);
+        const submittedId =
+          typeof body?.question_id === 'string' ? body.question_id : '';
+        submittedQuestionIds.push(submittedId);
         const fixture: TestAnswerFixture = {
           id: `answer-${recordedAnswers.length + 1}`,
           user_id: 'u-1',
           attempt_id: ATTEMPT_ID,
-          question_id: typeof body?.question_id === 'string' ? body.question_id : 'q-?',
+          question_id: submittedId,
           selected_option_ids: [],
           free_text: typeof body?.free_text === 'string' ? body.free_text : '',
           outcome: 'correct',
@@ -233,6 +284,25 @@ function stubFetch(routes: AttemptsFetchRoutes): MockInstance<typeof global.fetc
       if (method === 'POST' && url.includes('/submit')) {
         return Promise.resolve(
           jsonResponse({ status: 200, body: success({ attempt: ATTEMPT_SUBMITTED }) }),
+        );
+      }
+
+      // GET /tests/:id/questions
+      if (
+        method === 'GET' &&
+        /\/tests\/[a-z0-9-]+\/questions$/.test(url) &&
+        !url.includes('/attempts/')
+      ) {
+        if (routes.questions === 'error') {
+          return Promise.resolve(
+            jsonResponse({ status: 500, body: failure('INTERNAL', 'boom') }),
+          );
+        }
+        if (routes.questions === 'empty') {
+          return Promise.resolve(jsonResponse({ status: 200, body: success([]) }));
+        }
+        return Promise.resolve(
+          jsonResponse({ status: 200, body: success(QUESTIONS) }),
         );
       }
 
@@ -326,8 +396,8 @@ afterEach(() => {
 });
 
 describe('AttemptDetailPage (/attempts/[id])', () => {
-  it('renders the focus mode with the first question', async () => {
-    stubFetch({ attempt: 'in_progress', answers: 'empty' });
+  it('renders the next-question step with the first question', async () => {
+    stubFetch({ attempt: 'in_progress', answers: 'empty', questions: 'success' });
     render(
       <AttemptDetailPage params={settledParams({ id: ATTEMPT_ID })} />,
       { wrapper: makeWrapper() },
@@ -341,9 +411,9 @@ describe('AttemptDetailPage (/attempts/[id])', () => {
     expect(screen.getByTestId('attempt-submit')).toBeDisabled();
   });
 
-  it('submits a free-text answer and advances the focus step', async () => {
+  it('submits a free-text answer with the authoritative question_id and advances', async () => {
     const user = userEvent.setup();
-    stubFetch({ attempt: 'in_progress', answers: 'empty' });
+    stubFetch({ attempt: 'in_progress', answers: 'empty', questions: 'success' });
     render(
       <AttemptDetailPage params={settledParams({ id: ATTEMPT_ID })} />,
       { wrapper: makeWrapper() },
@@ -354,17 +424,39 @@ describe('AttemptDetailPage (/attempts/[id])', () => {
     // After mutation succeeds, the answers query refetches; the
     // next render shows the next question.
     await waitFor(() => {
-      // The mutation fires once for the POST.
-      // The button label changes to "Save and finish" once the
-      // total-questions check sees we've recorded an answer.
-      // We assert the mutation was attempted by checking the
-      // recorded-answers list now contains one entry.
       expect(screen.getByTestId('attempt-answers-list')).toBeInTheDocument();
     });
+    // Integrity guard: the POST body contained the authoritative
+    // question_id from the test's question list, not a
+    // client-synthesized id.
+    expect(submittedQuestionIds).toEqual(['q-authoritative-1']);
+    // Regression: the old bug was that the page submitted
+    // `${attemptId}-q${n}`. Asserting against that exact
+    // pattern is the explicit guard.
+    expect(
+      submittedQuestionIds.some((id) => /-q\d+$/.test(id)),
+    ).toBe(false);
+  });
+
+  it('submits the second authoritative id on the second step', async () => {
+    const user = userEvent.setup();
+    // Pre-seed one answer so the page starts on step 2.
+    stubFetch({ attempt: 'in_progress', answers: 'one', questions: 'success' });
+    render(
+      <AttemptDetailPage params={settledParams({ id: ATTEMPT_ID })} />,
+      { wrapper: makeWrapper() },
+    );
+    const input = await screen.findByTestId('attempt-focus-input');
+    await user.type(input, 'Second answer.');
+    await user.click(screen.getByTestId('attempt-focus-submit'));
+    await waitFor(() => {
+      expect(screen.getByTestId('attempt-answers-list')).toBeInTheDocument();
+    });
+    expect(submittedQuestionIds).toEqual(['q-authoritative-2']);
   });
 
   it('renders the closed state for a submitted attempt', async () => {
-    stubFetch({ attempt: 'submitted', answers: 'two' });
+    stubFetch({ attempt: 'submitted', answers: 'two', questions: 'success' });
     render(
       <AttemptDetailPage params={settledParams({ id: ATTEMPT_ID })} />,
       { wrapper: makeWrapper() },
@@ -377,7 +469,7 @@ describe('AttemptDetailPage (/attempts/[id])', () => {
   });
 
   it('renders the error state when the attempt id is unknown', async () => {
-    stubFetch({ attempt: 'notFound', answers: 'empty' });
+    stubFetch({ attempt: 'notFound', answers: 'empty', questions: 'success' });
     render(
       <AttemptDetailPage
         params={settledParams({ id: 'attempt-unknown00000' })}
@@ -395,7 +487,7 @@ describe('AttemptDetailPage (/attempts/[id])', () => {
   it('submits the attempt and shows the success band', async () => {
     const user = userEvent.setup();
     // First, give it two answers so Submit becomes enabled.
-    stubFetch({ attempt: 'in_progress', answers: 'two' });
+    stubFetch({ attempt: 'in_progress', answers: 'two', questions: 'success' });
     render(
       <AttemptDetailPage params={settledParams({ id: ATTEMPT_ID })} />,
       { wrapper: makeWrapper() },
@@ -411,5 +503,79 @@ describe('AttemptDetailPage (/attempts/[id])', () => {
     expect(
       await screen.findByTestId('attempt-submit-success'),
     ).toBeInTheDocument();
+  });
+
+  // -----------------------------------------------------------------
+  // Integrity regression tests (Phase 7 remediation).
+  //
+  // These tests prove:
+  //   - the page never submits a synthesized question_id;
+  //   - when the authoritative id is unavailable, the form is
+  //     disabled and no POST is fired;
+  //   - a missing /questions query surfaces an honest inline
+  //     error rather than silently fabricating a substitute.
+  // -----------------------------------------------------------------
+
+  it('disables the form when the questions query failed and submits nothing', async () => {
+    const user = userEvent.setup();
+    stubFetch({ attempt: 'in_progress', answers: 'empty', questions: 'error' });
+    render(
+      <AttemptDetailPage params={settledParams({ id: ATTEMPT_ID })} />,
+      { wrapper: makeWrapper() },
+    );
+    expect(
+      await screen.findByTestId('attempt-focus-questions-error'),
+    ).toBeInTheDocument();
+    const submit = screen.getByTestId('attempt-focus-submit');
+    expect(submit).toBeDisabled();
+    // Even if the user attempts to type and submit, the page
+    // does not POST.
+    const input = screen.getByTestId('attempt-focus-input');
+    await user.type(input, 'Should not be sent.');
+    await user.click(submit);
+    // Give any would-be POST a chance to fire.
+    await new Promise((r) => setTimeout(r, 30));
+    expect(submittedQuestionIds).toEqual([]);
+  });
+
+  it('disables the form when the questions list is empty (out of range)', async () => {
+    const user = userEvent.setup();
+    stubFetch({ attempt: 'in_progress', answers: 'empty', questions: 'empty' });
+    render(
+      <AttemptDetailPage params={settledParams({ id: ATTEMPT_ID })} />,
+      { wrapper: makeWrapper() },
+    );
+    expect(
+      await screen.findByTestId('attempt-focus-no-id'),
+    ).toBeInTheDocument();
+    const submit = screen.getByTestId('attempt-focus-submit');
+    expect(submit).toBeDisabled();
+    const input = screen.getByTestId('attempt-focus-input');
+    await user.type(input, 'Should not be sent.');
+    await user.click(submit);
+    await new Promise((r) => setTimeout(r, 30));
+    expect(submittedQuestionIds).toEqual([]);
+  });
+
+  it('never submits a question_id containing the attempt id (regression)', async () => {
+    const user = userEvent.setup();
+    stubFetch({ attempt: 'in_progress', answers: 'empty', questions: 'success' });
+    render(
+      <AttemptDetailPage params={settledParams({ id: ATTEMPT_ID })} />,
+      { wrapper: makeWrapper() },
+    );
+    const input = await screen.findByTestId('attempt-focus-input');
+    await user.type(input, 'regression');
+    await user.click(screen.getByTestId('attempt-focus-submit'));
+    await waitFor(() => {
+      expect(submittedQuestionIds.length).toBe(1);
+    });
+    // The pre-remediation bug was exactly
+    //   `${attemptId}-q${questionIndex + 1}`
+    // which would match the regex below. A passing test
+    // guarantees the synthesized pattern is gone forever.
+    expect(
+      submittedQuestionIds.some((id) => id.startsWith(ATTEMPT_ID + '-q')),
+    ).toBe(false);
   });
 });

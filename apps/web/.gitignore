@@ -5,3 +5,7 @@ out/
 *.tsbuildinfo
 .env
 .env.local
+
+# Playwright test outputs (visual artifacts, HTML reports)
+test-results/
+playwright-report/

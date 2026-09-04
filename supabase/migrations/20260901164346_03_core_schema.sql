@@ -719,3 +719,99 @@ create trigger trg_student_model_features_updated_at before update on public.stu
 drop trigger if exists trg_student_model_features_user_id_immutable on public.student_model_features;
 create trigger trg_student_model_features_user_id_immutable before update on public.student_model_features
   for each row execute function public.prevent_user_id_mutation();
+
+-- =============================================================
+-- Phase 9 — Capture / Evidence Pipeline (TRD §9–13)
+--
+-- Three new tables:
+--   error_evidence             — per-attempt historical evidence record
+--   evidence_assets            — snapshot binary metadata (join-owned)
+--   error_lifecycle_events     — immutable lifecycle history (join-owned)
+--
+-- The two join-owned tables (evidence_assets, error_lifecycle_events)
+-- cannot use the simple `user_id = auth.uid()` owner template because
+-- the ownership predicate must JOIN through a parent table. RLS
+-- policies for these are explicit CREATE POLICY statements in
+-- migration 04; for the user_id-bearing error_evidence the simple
+-- DO-block template is used.
+-- =============================================================
+
+-- error_evidence — per-attempt evidence record. One row per
+-- submitted attempt that was graded incorrect. Snapshot/AI
+-- classification are async and may fail without erasing the
+-- evidence (TRD §9 atomicity).
+create table if not exists public.error_evidence (
+  id                          uuid primary key default extensions.gen_random_uuid(),
+  user_id                     uuid not null references public.users(id) on delete cascade,
+  attempt_id                  uuid references public.attempts(id) on delete set null,
+  error_entry_id              uuid references public.error_entries(id) on delete set null,
+  classification_status       text not null default 'pending'
+                              check (classification_status in (
+                                'pending','suggested','confirmed','student_override'
+                              )),
+  classification_category     text check (classification_category in (
+                                'concept','calculation','misread',
+                                'time_pressure','careless','method','unknown'
+                              )),
+  classification_source       text not null default 'ai'
+                              check (classification_source in ('ai','student','system')),
+  student_answer              text,
+  expected_answer             text,
+  question_snapshot_url       text,   -- internal ref; never a permanent public URL
+  metadata                    jsonb not null default '{}'::jsonb,
+  created_at                  timestamptz not null default now(),
+  updated_at                  timestamptz not null default now()
+);
+create index if not exists idx_error_evidence_user
+  on public.error_evidence(user_id);
+create index if not exists idx_error_evidence_error
+  on public.error_evidence(error_entry_id);
+create unique index if not exists idx_error_evidence_attempt
+  on public.error_evidence(attempt_id);
+drop trigger if exists trg_error_evidence_updated_at on public.error_evidence;
+create trigger trg_error_evidence_updated_at before update on public.error_evidence
+  for each row execute function public.set_updated_at();
+drop trigger if exists trg_error_evidence_user_id_immutable on public.error_evidence;
+create trigger trg_error_evidence_user_id_immutable before update on public.error_evidence
+  for each row execute function public.prevent_user_id_mutation();
+
+-- evidence_assets — metadata for each snapshot binary in Supabase
+-- Storage. Join-owned via error_evidence.user_id; RLS lives in
+-- migration 04.
+create table if not exists public.evidence_assets (
+  id              uuid primary key default extensions.gen_random_uuid(),
+  evidence_id     uuid not null references public.error_evidence(id) on delete cascade,
+  storage_bucket  text not null,
+  storage_key     text not null,
+  mime_type       text not null,
+  byte_size       bigint not null check (byte_size >= 0),
+  sha256          text,
+  status          text not null default 'available'
+                  check (status in ('pending','available','failed','deleted')),
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now()
+);
+create index if not exists idx_evidence_assets_evidence
+  on public.evidence_assets(evidence_id);
+drop trigger if exists trg_evidence_assets_updated_at on public.evidence_assets;
+create trigger trg_evidence_assets_updated_at before update on public.evidence_assets
+  for each row execute function public.set_updated_at();
+
+-- error_lifecycle_events — immutable append-only history of error
+-- state transitions. Join-owned via error_entries.user_id; RLS lives
+-- in migration 04. No UPDATE/DELETE triggers (append-only by design).
+create table if not exists public.error_lifecycle_events (
+  id              uuid primary key default extensions.gen_random_uuid(),
+  error_entry_id  uuid not null references public.error_entries(id) on delete cascade,
+  from_status     text,
+  to_status       text not null
+                  check (to_status in ('active','in_review','resolved','reopened','archived')),
+  trigger         text not null,   -- 'student_review', 'ai_suggestion', 'manual', 'system'
+  reason          text,
+  review_id       uuid references public.reviews(id) on delete set null,
+  created_at      timestamptz not null default now()
+);
+create index if not exists idx_error_lifecycle_error
+  on public.error_lifecycle_events(error_entry_id);
+create index if not exists idx_error_lifecycle_created
+  on public.error_lifecycle_events(created_at desc);

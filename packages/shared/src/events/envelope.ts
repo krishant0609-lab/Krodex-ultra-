@@ -15,7 +15,7 @@
 
 import type { Json } from '../db/types';
 
-/** The 13 domain event types from TRD §8 plus one derived type. */
+/** The 13 domain event types from TRD §8 plus Phase 9 additions. */
 export type EventType =
   | 'attempt.submitted'
   | 'attempt.analyzed'
@@ -31,7 +31,27 @@ export type EventType =
   | 'syllabus.node_archived'
   | 'notification.created'
   /** Synthetic event emitted by scheduled jobs for audit-trail symmetry. */
-  | 'system.tick';
+  | 'system.tick'
+  /** Phase 9 — evidence pipeline */
+  | 'evidence.captured'
+  | 'evidence.snapshot_created'
+  | 'evidence.snapshot_failed'
+  /** Phase 9 — error lifecycle */
+  | 'error.lifecycle.active'
+  | 'error.lifecycle.in_review'
+  | 'error.lifecycle.resolved'
+  | 'error.lifecycle.reopened'
+  | 'error.lifecycle.archived'
+  /** Phase 10 — review / retest engine */
+  | 'review.verification_question_used'
+  /** Phase 11 — planner / backlog automation */
+  | 'task.partial'
+  | 'task.rescheduled'
+  | 'backlog.item_created'
+  | 'backlog.item_recovered'
+  | 'progress.planner_completed'
+  | 'progress.planner_missed'
+  | 'progress.error_resolved';
 
 /** Per-event payload shapes. */
 export interface EventPayloadMap {
@@ -49,6 +69,22 @@ export interface EventPayloadMap {
   'syllabus.node_archived': SyllabusNodeArchivedPayload;
   'notification.created': NotificationCreatedPayload;
   'system.tick': SystemTickPayload;
+  'evidence.captured': EvidenceCapturedPayload;
+  'evidence.snapshot_created': EvidenceSnapshotCreatedPayload;
+  'evidence.snapshot_failed': EvidenceSnapshotFailedPayload;
+  'error.lifecycle.active': ErrorLifecyclePayload;
+  'error.lifecycle.in_review': ErrorLifecyclePayload;
+  'error.lifecycle.resolved': ErrorLifecyclePayload;
+  'error.lifecycle.reopened': ErrorLifecyclePayload;
+  'error.lifecycle.archived': ErrorLifecyclePayload;
+  'review.verification_question_used': ReviewVerificationQuestionUsedPayload;
+  'task.partial': TaskPartialPayload;
+  'task.rescheduled': TaskRescheduledPayload;
+  'backlog.item_created': BacklogItemCreatedPayload;
+  'backlog.item_recovered': BacklogItemRecoveredPayload;
+  'progress.planner_completed': ProgressPlannerPayload;
+  'progress.planner_missed': ProgressPlannerPayload;
+  'progress.error_resolved': ProgressErrorResolvedPayload;
 }
 
 export interface AttemptSubmittedPayload {
@@ -154,6 +190,87 @@ export interface SystemTickPayload {
   job_name: string;
   ran_at: string;
   emitted_event_count: number;
+}
+
+export interface EvidenceCapturedPayload {
+  evidence_id: string;
+  error_entry_id: string | null;
+  attempt_id: string | null;
+  classification_status: string;
+}
+
+export interface EvidenceSnapshotCreatedPayload {
+  evidence_id: string;
+  asset_id: string;
+  storage_bucket: string;
+  storage_key: string;
+  byte_size: string;
+  sha256: string | null;
+}
+
+export interface EvidenceSnapshotFailedPayload {
+  evidence_id: string;
+  asset_id: string;
+  reason: string;
+}
+
+export interface ErrorLifecyclePayload {
+  error_id: string;
+  from_status: string | null;
+  to_status: string;
+  trigger: string;
+  reason: string | null;
+  review_id: string | null;
+}
+
+// --- Phase 10 payload types ----------------------------------
+
+export interface ReviewVerificationQuestionUsedPayload {
+  schedule_id: string;
+  error_id: string;
+  question_id: string;
+}
+
+// --- Phase 11 payload types ----------------------------------
+
+export interface TaskPartialPayload {
+  task_id: string;
+  plan_date: string;
+  subject_id: string | null;
+  actual_minutes: number | null;
+  planned_minutes: number | null;
+}
+
+export interface TaskRescheduledPayload {
+  task_id: string;
+  previous_due_at: string | null;
+  new_due_at: string;
+  reason: string | null;
+  new_task_id: string | null;
+}
+
+export interface BacklogItemCreatedPayload {
+  backlog_item_id: string;
+  source_task_id: string;
+  reason: string;
+}
+
+export interface BacklogItemRecoveredPayload {
+  backlog_item_id: string;
+  recovery_type: 'reschedule' | 'split' | 'downgraded' | 'completed' | 'dismissed';
+  recovered_task_id: string | null;
+}
+
+export interface ProgressPlannerPayload {
+  user_id: string;
+  task_id: string;
+  observed_at: string;
+}
+
+export interface ProgressErrorResolvedPayload {
+  user_id: string;
+  error_id: string;
+  observed_at: string;
 }
 
 /** The envelope. Matches TRD §8 fields verbatim. */

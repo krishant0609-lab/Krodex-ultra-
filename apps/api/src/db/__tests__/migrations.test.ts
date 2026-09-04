@@ -28,6 +28,8 @@ import {
   BACKLOG_RECOVERY_STATE_VALUES,
   BACKLOG_STATE_VALUES,
   CAPTURED_QUESTION_STATE_VALUES,
+  CLASSIFICATION_STATUS_VALUES,
+  EVIDENCE_ASSET_STATUS_VALUES,
   COVERAGE_STATE_VALUES,
   DIFFICULTY_VALUES,
   ERROR_ENTRY_STATUS_VALUES,
@@ -74,6 +76,14 @@ const EXPECTED_MIGRATION_FILES = [
   // RPC that the TypeScript orchestrator hands the seven-feature
   // payload to.
   '20260901164346_13_student_model_recompute.sql',
+  // Phase 9: error_evidence, evidence_assets,
+  // error_lifecycle_events tables, error-evidence Storage bucket,
+  // capture_sources seed row.
+  '20260901164346_14_error_capture_pipeline.sql',
+  // Phase 10 + 11: verification_questions, planner_task_events,
+  // backlog_recovery_events, planner_tasks.partial_count,
+  // planner_tasks.source_task_id.
+  '20260901164346_15_review_and_planner_history.sql',
 ] as const;
 
 const MIGRATION_NAMING_PATTERN =
@@ -105,6 +115,12 @@ const USER_SCOPED_TABLES = [
   'progress_snapshots',
   'student_model_snapshots',
   'student_model_features',
+  // Phase 9: per-attempt evidence record (TRD §9).
+  'error_evidence',
+  // Phase 9: storage-asset metadata (TRD §10).
+  'evidence_assets',
+  // Phase 9: lifecycle event history (TRD §11).
+  'error_lifecycle_events',
 ] as const;
 
 // Global (shared-across-users, read-public) tables per Schema-Ready §4.
@@ -125,6 +141,15 @@ const GLOBAL_TABLES = [
 // policy column is `id` / `user_id` respectively — same shape, just
 // spelled out for clarity in the migration.
 const EXPLICIT_OWNER_TABLES = ['users', 'profiles'] as const;
+
+// Phase 9 tables whose ownership predicate is a JOIN through a
+// parent table (no direct `user_id` column). They are owned via
+// explicit CREATE POLICY statements in migration 14 and are
+// skipped by the simple DO-block assertion above.
+const JOIN_OWNED_TABLES: ReadonlySet<string> = new Set([
+  'evidence_assets',     // owner: error_evidence.user_id
+  'error_lifecycle_events', // owner: error_entries.user_id
+]);
 
 // All tables in the core schema, used to confirm we did not drop one.
 const ALL_TABLES = [
@@ -167,6 +192,8 @@ const ENUM_MIRRORS: ReadonlyArray<{
   { unionName: 'AiConversationState',       values: AI_CONVERSATION_STATE_VALUES },
   { unionName: 'AiMessageRole',             values: AI_MESSAGE_ROLE_VALUES },
   { unionName: 'CapturedQuestionState',     values: CAPTURED_QUESTION_STATE_VALUES },
+  { unionName: 'ClassificationStatus',      values: CLASSIFICATION_STATUS_VALUES },
+  { unionName: 'EvidenceAssetStatus',       values: EVIDENCE_ASSET_STATUS_VALUES },
 ];
 
 // ----- helpers ----------------------------------------------------------
@@ -181,8 +208,8 @@ function readMigration(name: string): string {
 
 // ----- the actual tests --------------------------------------------------
 
-describe('Phase 1+3+4 migration set — file presence', () => {
-  it('contains the expected 12 migration files', () => {
+describe('Phase 1+3+4+9 migration set — file presence', () => {
+  it('contains the expected 14 migration files', () => {
     const onDisk = readdirSync(migrationsDir)
       .filter((f) => f.endsWith('.sql'))
       .sort();
@@ -214,9 +241,16 @@ describe('Phase 1 migration set — core schema coverage', () => {
     expect(core, `core schema is missing CREATE TABLE public.${t}`).toMatch(re);
   });
 
-  it.each(USER_SCOPED_TABLES)('user-scoped table %s has a user_id column and immutability trigger', (t) => {
+  it.each(
+    USER_SCOPED_TABLES.filter((t) => !JOIN_OWNED_TABLES.has(t as string)),
+  )('user-scoped table %s has a user_id column and immutability trigger', (t) => {
     // The user_id column is part of the CREATE TABLE block; the
     // immutability trigger is a separate CREATE TRIGGER in the same file.
+    //
+    // Join-owned tables (evidence_assets, error_lifecycle_events) are
+    // skipped: their ownership is via a parent-table JOIN, not a
+    // direct user_id column. They are verified separately in the
+    // "JOIN-based owner policies" assertion against migration 04.
     expect(core).toMatch(
       new RegExp(`create table if not exists public\\.${t}[\\s\\S]+?user_id\\s+uuid`, 'i'),
     );
@@ -225,8 +259,15 @@ describe('Phase 1 migration set — core schema coverage', () => {
     );
   });
 
-  it('every table has an updated_at trigger', () => {
+  it('every table that should be mutable has an updated_at trigger', () => {
+    // error_lifecycle_events is append-only by design (TRD §11: "no
+    // UPDATE/DELETE"); it intentionally has no updated_at column, so
+    // the trigger is not required. All other tables must have it.
+    const TABLES_WITH_UPDATED_AT: ReadonlySet<string> = new Set([
+      'error_lifecycle_events',
+    ]);
     for (const t of ALL_TABLES) {
+      if (TABLES_WITH_UPDATED_AT.has(t)) continue;
       expect(
         core,
         `core schema is missing set_updated_at trigger for ${t}`,
@@ -264,10 +305,16 @@ describe('Phase 1 migration set — RLS coverage', () => {
     // literally, so we verify the table name appears in the DO block's
     // `tables text[] := array[...]` and the format templates for both
     // ALTER and FORCE are present.
+    //
+    // Join-owned tables (evidence_assets, error_lifecycle_events) are
+    // skipped: their policies live outside the DO block because the
+    // ownership predicate is a JOIN. They are verified separately by
+    // the "JOIN-based owner policies" test below.
     const doBlockMatch = rls.match(/tables\s+text\[\]\s*:=\s*array\[([\s\S]*?)\]/i);
     expect(doBlockMatch, 'migration 04 must declare a `tables text[] := array[...]` DO block').not.toBeNull();
     const doBlock = doBlockMatch?.[1] ?? '';
     for (const t of USER_SCOPED_TABLES) {
+      if (JOIN_OWNED_TABLES.has(t as string)) continue;
       expect(
         doBlock,
         `User-scoped table ${t} is missing from the RLS DO block's tables array`,
@@ -336,10 +383,16 @@ describe('Phase 1 migration set — RLS coverage', () => {
     // the file. We instead verify that (a) the table name appears in the
     // DO block's `tables text[]`, and (b) the format template that
     // produces the policy exists.
+    //
+    // EXCEPTION: tables whose ownership predicate is a JOIN (rather
+    // than a direct `user_id` column) cannot use the simple DO-block
+    // template. They are listed in JOIN_OWNED_TABLES and verified
+    // separately by a JOIN-based policy assertion below.
     const doBlockMatch = rls.match(/tables\s+text\[\]\s*:=\s*array\[([\s\S]*?)\]/i);
     expect(doBlockMatch, 'migration 04 must declare a `tables text[] := array[...]` DO block').not.toBeNull();
     const doBlock = doBlockMatch?.[1] ?? '';
     for (const t of USER_SCOPED_TABLES) {
+      if (JOIN_OWNED_TABLES.has(t as string)) continue;
       expect(
         doBlock,
         `User-scoped table ${t} is not present in the RLS DO block's tables array`,
@@ -348,6 +401,15 @@ describe('Phase 1 migration set — RLS coverage', () => {
     // The policy template must be present exactly once (it's a single
     // format(...) call inside the loop).
     expect(rls).toMatch(/create policy\s+%I_owner_all\s+on\s+public\.%I/i);
+  });
+
+  it('declares JOIN-based owner policies for join-owned tables', () => {
+    // evidence_assets joins through error_evidence.user_id;
+    // error_lifecycle_events joins through error_entries.user_id.
+    // Both have explicit CREATE POLICY statements in migration 14
+    // because the simple user_id = auth.uid() template does not fit.
+    expect(rls).toMatch(/create policy\s+evidence_assets_owner_all\b/i);
+    expect(rls).toMatch(/create policy\s+error_lifecycle_owner_select\b/i);
   });
 
   it('uses auth_uid() in every owner policy (no hard-coded auth.uid())', () => {

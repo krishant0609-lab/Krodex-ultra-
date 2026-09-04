@@ -75,7 +75,7 @@ const seedPopulated = {
   '/syllabus/sub-topics': { items: [], nextCursor: null },
 };
 
-function dataFor(path, method) {
+async function dataFor(path, method, req) {
   // Specialised endpoints.
   if (path === '/auth/dev-token' && method === 'POST') return null; // handled inline
   if (path === '/users/me') return ok({ id: 'user-fixture', display_name: 'Fixture User', timezone: 'UTC' });
@@ -143,8 +143,196 @@ function dataFor(path, method) {
     }
     return err('NOT_FOUND', 'Error not found', 404);
   }
+  // Phase 11: per-task GET under seed=phase11-planner.
+  if (/^\/planner\/tasks\/[a-z0-9-]+$/.test(path) && method === 'GET') {
+    const id = path.split('/').pop();
+    if (currentSeed() === 'phase11-planner' && id === 'task-phase11-overdue') {
+      return ok({
+        id,
+        user_id: 'user-fixture',
+        template_id: null,
+        source_task_id: null,
+        plan_date: '2026-08-30',
+        title: 'Review Algebra Chapter 3',
+        description: 'Recap quadratic equations',
+        state: 'planned',
+        subject_id: null,
+        topic_id: null,
+        sub_topic_id: null,
+        planned_minutes: 30,
+        actual_minutes: null,
+        started_at: null,
+        completed_at: null,
+        partial_count: 0,
+        metadata: {},
+        created_at: '2026-08-29T00:00:00.000Z',
+        updated_at: '2026-08-29T00:00:00.000Z',
+      });
+    }
+    return err('NOT_FOUND', 'Task not found', 404);
+  }
+  // Phase 11: per-task history under seed=phase11-planner.
+  if (/^\/planner\/tasks\/[a-z0-9-]+\/history$/.test(path) && method === 'GET') {
+    return ok([]);
+  }
   if (/^\/review\/schedules\/[a-z0-9-]+$/.test(path) && method === 'GET') {
+    // Phase 10: under seed=phase10-review, the synthetic schedule
+    // id `phase10-review-001` is returned as a populated row in
+    // state `due` with a known error_id. Other ids still 404.
+    if (currentSeed() === 'phase10-review') {
+      const id = path.split('/').pop();
+      if (id === 'phase10-review-001') {
+        return ok({
+          id,
+          user_id: 'user-fixture',
+          error_id: 'err-phase10-001',
+          state: 'due',
+          due_at: '2026-09-05T00:00:00.000Z',
+          scheduled_at: '2026-08-30T00:00:00.000Z',
+          completed_at: null,
+          outcome: null,
+          strategy: 'spaced',
+          metadata: {},
+          created_at: '2026-08-30T00:00:00.000Z',
+          updated_at: '2026-08-30T00:00:00.000Z',
+        });
+      }
+    }
     return err('NOT_FOUND', 'Review schedule not found', 404);
+  }
+
+  // Phase 10: POST /reviews/:id/start
+  // Under seed=phase10-review, only `phase10-review-001` is real.
+  // Returns a deterministic verification question and a state
+  // transition.
+  if (/^\/reviews\/[a-z0-9-]+\/start$/.test(path) && method === 'POST') {
+    if (currentSeed() === 'phase10-review' &&
+        path.split('/')[2] === 'phase10-review-001') {
+      return ok({
+        schedule: {
+          id: 'phase10-review-001',
+          user_id: 'user-fixture',
+          error_id: 'err-phase10-001',
+          state: 'in_progress',
+          due_at: '2026-09-05T00:00:00.000Z',
+          scheduled_at: '2026-08-30T00:00:00.000Z',
+          completed_at: null,
+          outcome: null,
+          strategy: 'spaced',
+          metadata: {},
+          created_at: '2026-08-30T00:00:00.000Z',
+          updated_at: '2026-09-04T12:00:00.000Z',
+        },
+        errorTransition: { fromStatus: 'active', toStatus: 'in_review' },
+        verification: {
+          kind: 'found',
+          questionId: 'q-fresh-phase10-01',
+          difficulty: 3,
+        },
+      });
+    }
+    return err('NOT_FOUND', 'Review schedule not found', 404);
+  }
+
+  // Phase 10: POST /reviews/:id/outcome
+  // Returns the appropriate transition based on the outcome in body.
+  if (/^\/reviews\/[a-z0-9-]+\/outcome$/.test(path) && method === 'POST') {
+    if (currentSeed() === 'phase10-review' &&
+        path.split('/')[2] === 'phase10-review-001') {
+      const body = await readJsonBody(req);
+      const outcome = body?.outcome;
+      if (outcome === 'correct') {
+        return ok({
+          outcomeId: 'out-phase10-001',
+          errorTransition: { fromStatus: 'in_review', toStatus: 'resolved' },
+          nextReviewScheduled: false,
+          nextReview: null,
+          terminalOutcome: 'correct',
+        });
+      }
+      if (outcome === 'incorrect' || outcome === 'partial') {
+        return ok({
+          outcomeId: 'out-phase10-001',
+          errorTransition: { fromStatus: 'in_review', toStatus: 'active' },
+          nextReviewScheduled: true,
+          nextReview: {
+            dueAt: '2026-09-11T00:00:00.000Z',
+            reasonCode: 'spaced',
+            reasonText: '7 days from now, spaced policy',
+            confidence: 0.55,
+            requiresConfirmation: true,
+          },
+          terminalOutcome: outcome,
+        });
+      }
+      return err('INVALID_OUTCOME', `unknown outcome: ${outcome}`, 400);
+    }
+    return err('NOT_FOUND', 'Review schedule not found', 404);
+  }
+
+  // Phase 10: GET /reviews/:id/verification-question (idempotent read)
+  if (/^\/reviews\/[a-z0-9-]+\/verification-question$/.test(path) && method === 'GET') {
+    if (currentSeed() === 'phase10-review' &&
+        path.split('/')[2] === 'phase10-review-001') {
+      return ok({
+        kind: 'found',
+        questionId: 'q-fresh-phase10-01',
+        difficulty: 3,
+      });
+    }
+    return err('NOT_FOUND', 'Review schedule not found', 404);
+  }
+
+  // Phase 10: GET /reviews/:id/lifecycle
+  if (/^\/reviews\/[a-z0-9-]+\/lifecycle$/.test(path) && method === 'GET') {
+    if (currentSeed() === 'phase10-review' &&
+        path.split('/')[2] === 'phase10-review-001') {
+      return ok([
+        {
+          id: 'ev-phase10-001',
+          from_status: null,
+          to_status: 'active',
+          trigger: 'system',
+          reason: 'created',
+          review_id: null,
+          created_at: '2026-08-30T00:00:00.000Z',
+        },
+        {
+          id: 'ev-phase10-002',
+          from_status: 'active',
+          to_status: 'in_review',
+          trigger: 'student_review',
+          reason: 'start',
+          review_id: 'phase10-review-001',
+          created_at: '2026-09-04T12:00:00.000Z',
+        },
+      ]);
+    }
+    return err('NOT_FOUND', 'Review schedule not found', 404);
+  }
+
+  // Phase 10: GET /errors/err-phase10-001 (under phase10-review seed)
+  if (/^\/errors\/[a-z0-9-]+$/.test(path) && method === 'GET') {
+    const id = path.split('/').pop();
+    if (currentSeed() === 'phase10-review' && id === 'err-phase10-001') {
+      return ok({
+        id,
+        user_id: 'user-fixture',
+        question_id: 'q-original-001',
+        status: 'active',
+        mistake_type: 'misread',
+        remark: 'I misread the prompt on a proportion question.',
+        source_attempt_id: null,
+        first_seen_at: '2026-08-30T00:00:00.000Z',
+        last_seen_at: '2026-08-30T00:00:00.000Z',
+        resolved_at: null,
+        recurrence_count: 1,
+        metadata: {},
+        created_at: '2026-08-30T00:00:00.000Z',
+        updated_at: '2026-08-30T00:00:00.000Z',
+      });
+    }
+    // fall through to default handling below
   }
 
   // Phase 8: POST /errors/:id/classification-suggest
@@ -334,6 +522,81 @@ function dataFor(path, method) {
         nextCursor: null,
       });
     }
+    // Phase 10: under seed=phase10-review, the /review/schedules
+    // list returns the synthetic `phase10-review-001` row so the
+    // index page has a clickable link into the detail page.
+    if (path === '/review/schedules' && currentSeed() === 'phase10-review') {
+      return ok({
+        items: [
+          {
+            id: 'phase10-review-001',
+            user_id: 'user-fixture',
+            error_id: 'err-phase10-001',
+            state: 'due',
+            due_at: '2026-09-05T00:00:00.000Z',
+            scheduled_at: '2026-08-30T00:00:00.000Z',
+            completed_at: null,
+            outcome: null,
+            strategy: 'spaced',
+            metadata: {},
+            created_at: '2026-08-30T00:00:00.000Z',
+            updated_at: '2026-08-30T00:00:00.000Z',
+          },
+        ],
+        nextCursor: null,
+      });
+    }
+    // Phase 11: under seed=phase11-planner, /planner/tasks
+    // returns one overdue task (state=planned, plan_date in
+    // the past) so the TaskMissBanner appears and the
+    // "Mark missed" + "Reschedule" + "Mark partial" actions
+    // can be exercised.
+    if (path === '/planner/tasks' && currentSeed() === 'phase11-planner') {
+      return ok({
+        items: [
+          {
+            id: 'task-phase11-overdue',
+            user_id: 'user-fixture',
+            template_id: null,
+            source_task_id: null,
+            plan_date: '2026-08-30',
+            title: 'Review Algebra Chapter 3',
+            description: 'Recap quadratic equations',
+            state: 'planned',
+            subject_id: null,
+            topic_id: null,
+            sub_topic_id: null,
+            planned_minutes: 30,
+            actual_minutes: null,
+            started_at: null,
+            completed_at: null,
+            partial_count: 0,
+            metadata: {},
+            created_at: '2026-08-29T00:00:00.000Z',
+            updated_at: '2026-08-29T00:00:00.000Z',
+          },
+        ],
+        nextCursor: null,
+      });
+    }
+    // Phase 11: under seed=phase11-planner, /backlog returns
+    // one open backlog item so the recovery panel renders.
+    if (path === '/backlog' && currentSeed() === 'phase11-planner') {
+      return ok({
+        items: [
+          {
+            id: 'backlog-phase11-001',
+            user_id: 'user-fixture',
+            source_task_id: 'task-phase11-overdue',
+            reason: 'missed',
+            state: 'open',
+            created_at: '2026-08-30T00:00:00.000Z',
+            updated_at: '2026-08-30T00:00:00.000Z',
+          },
+        ],
+        nextCursor: null,
+      });
+    }
     return ok(emptyPage());
   }
 
@@ -418,7 +681,7 @@ async function handler(req, res) {
   }
 
   // Per-endpoint route.
-  const result = dataFor(path, method);
+  const result = await dataFor(path, method, req);
   if (result && 'status' in result) {
     res.setHeader('Content-Type', 'application/json');
     res.statusCode = result.status;

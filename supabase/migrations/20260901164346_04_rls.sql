@@ -116,7 +116,15 @@ declare
     'progress_evidence',
     'progress_snapshots',
     'student_model_snapshots',
-    'student_model_features'
+    'student_model_features',
+    -- Phase 9 (TRD §9): per-attempt evidence record has a direct
+    -- user_id column and uses the standard owner template.
+    'error_evidence'
+    -- Phase 9 tables `evidence_assets` and `error_lifecycle_events`
+    -- are NOT in this DO block on purpose: their ownership predicate
+    -- is a JOIN through error_evidence / error_entries, so the
+    -- simple `user_id = auth.uid()` template does not fit. Explicit
+    -- CREATE POLICY statements follow below.
   ];
 begin
   foreach t in array tables loop
@@ -130,3 +138,124 @@ begin
       t, t);
   end loop;
 end$$;
+
+-- -------------------------------------------------------------
+-- Phase 9 join-owned tables (explicit CREATE POLICY)
+--
+-- The two tables below do NOT have a direct `user_id` column.
+-- Their ownership is determined by JOINing through a parent
+-- table that DOES carry user_id, so the simple DO-block
+-- template above does not fit. Both tables get RLS enabled
+-- and forced here, with an explicit policy whose USING
+-- expression performs the parent-table lookup.
+-- -------------------------------------------------------------
+
+alter table public.evidence_assets enable row level security;
+alter table public.evidence_assets force  row level security;
+
+create policy evidence_assets_owner_all on public.evidence_assets
+  for all
+  using (
+    exists (
+      select 1 from public.error_evidence ee
+      where ee.id = evidence_assets.evidence_id
+        and (ee.user_id = public.auth_uid() or public.is_service_role())
+    )
+    or public.is_service_role()
+  )
+  with check (
+    exists (
+      select 1 from public.error_evidence ee
+      where ee.id = evidence_assets.evidence_id
+        and (ee.user_id = public.auth_uid() or public.is_service_role())
+    )
+    or public.is_service_role()
+  );
+
+alter table public.error_lifecycle_events enable row level security;
+alter table public.error_lifecycle_events force  row level security;
+
+-- Owner can read their own lifecycle history. The lifecycle
+-- history is INSERT-only via the service role; controllers
+-- MUST go through the service, not raw SQL. UPDATE/DELETE
+-- are intentionally not granted to anyone (append-only audit).
+create policy error_lifecycle_owner_select on public.error_lifecycle_events
+  for select
+  using (
+    exists (
+      select 1 from public.error_entries ee
+      where ee.id = error_lifecycle_events.error_entry_id
+        and (ee.user_id = public.auth_uid() or public.is_service_role())
+    )
+    or public.is_service_role()
+  );
+
+-- INSERT is restricted to the service role because controllers
+-- always go through ErrorLifecycleService. This keeps the
+-- history table append-only from the API's point of view.
+create policy error_lifecycle_insert_service on public.error_lifecycle_events
+  for insert
+  with check (public.is_service_role());
+
+-- -------------------------------------------------------------
+-- Phase 10: verification_questions
+--
+-- No direct user_id; ownership is via the error_entries join.
+-- The table is INSERT-only via the service role; SELECT goes
+-- through the error_entries ownership check.
+-- -------------------------------------------------------------
+alter table public.verification_questions enable row level security;
+alter table public.verification_questions force  row level security;
+
+create policy verification_questions_owner_select on public.verification_questions
+  for select
+  using (
+    exists (
+      select 1 from public.error_entries ee
+      where ee.id = verification_questions.error_id
+        and (ee.user_id = public.auth_uid() or public.is_service_role())
+    )
+    or public.is_service_role()
+  );
+
+create policy verification_questions_insert_service on public.verification_questions
+  for insert
+  with check (public.is_service_role());
+
+-- -------------------------------------------------------------
+-- Phase 11: planner_task_events (append-only history)
+--
+-- No direct user_id; ownership is via the planner_tasks join.
+-- INSERT via service role only (append-only audit trail).
+-- -------------------------------------------------------------
+alter table public.planner_task_events enable row level security;
+alter table public.planner_task_events force  row level security;
+
+create policy planner_task_events_owner_select on public.planner_task_events
+  for select
+  using (
+    exists (
+      select 1 from public.planner_tasks pt
+      where pt.id = planner_task_events.task_id
+        and (pt.user_id = public.auth_uid() or public.is_service_role())
+    )
+    or public.is_service_role()
+  );
+
+create policy planner_task_events_insert_service on public.planner_task_events
+  for insert
+  with check (public.is_service_role());
+
+-- -------------------------------------------------------------
+-- Phase 11: backlog_recovery_events (per-user)
+-- -------------------------------------------------------------
+alter table public.backlog_recovery_events enable row level security;
+alter table public.backlog_recovery_events force  row level security;
+
+create policy backlog_recovery_owner_select on public.backlog_recovery_events
+  for select
+  using (user_id = public.auth_uid() or public.is_service_role());
+
+create policy backlog_recovery_insert_service on public.backlog_recovery_events
+  for insert
+  with check (user_id = public.auth_uid() or public.is_service_role());

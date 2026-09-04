@@ -15,6 +15,8 @@ pnpm-debug.log*
 # Coverage / test artifacts
 coverage/
 .nyc_output/
+test-results/
+playwright-report/
 
 # Build outputs (per-workspace .gitignore should mirror these, but root wins)
 dist/

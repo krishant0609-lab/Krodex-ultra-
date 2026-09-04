@@ -13,7 +13,13 @@
 
 .formGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  /* `min(20rem, 100%)` lets the floor track shrink on narrow
+   * viewports (e.g. 360px) where the formGrid's content box is
+   * smaller than 20rem (320px). Without it, `minmax(20rem, 1fr)`
+   * forces the track to ≥ 320px and the card overflows the
+   * viewport. At any viewport ≥ 320px the inner `100%` resolves
+   * ≥ 320px so the layout is unchanged. */
+  grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
   gap: var(--kd-space-4);
 }
 

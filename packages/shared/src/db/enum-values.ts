@@ -19,9 +19,11 @@ import type {
   BacklogRecoveryState,
   BacklogState,
   CapturedQuestionState,
+  ClassificationStatus,
   CoverageState,
   Difficulty,
   ErrorEntryStatus,
+  EvidenceAssetStatus,
   MistakeType,
   NotificationChannel,
   NotificationDeliveryState,
@@ -208,4 +210,20 @@ export const CAPTURED_QUESTION_STATE_VALUES: readonly CapturedQuestionState[] = 
   'linked',
   'rejected',
   'failed',
+] as const;
+
+// Phase 9 — error_evidence.classification_status (TRD §9).
+export const CLASSIFICATION_STATUS_VALUES: readonly ClassificationStatus[] = [
+  'pending',
+  'suggested',
+  'confirmed',
+  'student_override',
+] as const;
+
+// Phase 9 — evidence_assets.status (TRD §10).
+export const EVIDENCE_ASSET_STATUS_VALUES: readonly EvidenceAssetStatus[] = [
+  'pending',
+  'available',
+  'failed',
+  'deleted',
 ] as const;

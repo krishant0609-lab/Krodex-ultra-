@@ -1,0 +1,203 @@
+/**
+ * KRODEX web — Verification question card styles.
+ *
+ * Phase 10 component. The card is a single editorial block
+ * (heading, lede, meta, form) that fits the same visual
+ * language as the rest of the review detail page. All
+ * cosmetic values resolve to design tokens.
+ */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-4);
+  padding: var(--kd-space-5);
+  background: var(--kd-color-surface-raised);
+  border: 1px solid var(--kd-color-border-subtle);
+  border-radius: var(--kd-radius-md);
+  max-width: 64ch;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--kd-space-3);
+  flex-wrap: wrap;
+}
+
+.heading {
+  font-size: var(--kd-type-h3-size);
+  line-height: var(--kd-type-h3-leading);
+  font-weight: var(--kd-type-h3-weight);
+  letter-spacing: var(--kd-type-h3-tracking);
+  color: var(--kd-color-text-primary);
+  margin: 0;
+}
+
+.difficulty {
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-text-tertiary);
+}
+
+.lede {
+  font-size: var(--kd-type-body-m-size);
+  line-height: var(--kd-type-body-m-leading);
+  color: var(--kd-color-text-secondary);
+  margin: 0;
+}
+
+.emptyMessage {
+  font-size: var(--kd-type-body-m-size);
+  line-height: var(--kd-type-body-m-leading);
+  color: var(--kd-color-text-tertiary);
+  font-style: italic;
+  margin: 0;
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: minmax(8ch, max-content) 1fr;
+  gap: var(--kd-space-2) var(--kd-space-4);
+  margin: 0;
+}
+
+.meta dt {
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  font-weight: var(--kd-type-caption-weight);
+  letter-spacing: var(--kd-type-caption-tracking);
+  text-transform: uppercase;
+  color: var(--kd-color-text-tertiary);
+}
+
+.meta dd {
+  margin: 0;
+}
+
+.code {
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-text-secondary);
+  background: var(--kd-color-surface-canvas);
+  padding: var(--kd-space-1) var(--kd-space-2);
+  border-radius: var(--kd-radius-sm);
+  display: inline-block;
+  word-break: break-all;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-4);
+}
+
+.fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-2);
+}
+
+.legend {
+  font-size: var(--kd-type-body-m-size);
+  line-height: var(--kd-type-body-m-leading);
+  font-weight: var(--kd-type-body-m-weight);
+  color: var(--kd-color-text-primary);
+  padding: 0;
+}
+
+.fieldsetHint {
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  color: var(--kd-color-text-tertiary);
+  margin: 0;
+}
+
+.outcomeRow {
+  display: flex;
+  gap: var(--kd-space-3);
+  flex-wrap: wrap;
+}
+
+.outcomeOption {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kd-space-2);
+  padding: var(--kd-space-2) var(--kd-space-3);
+  border: 1px solid var(--kd-color-border-default);
+  border-radius: var(--kd-radius-md);
+  background: var(--kd-color-surface-canvas);
+  cursor: pointer;
+  transition: background var(--kd-motion-duration-base)
+    var(--kd-motion-ease-standard);
+}
+
+.outcomeOption:hover {
+  background: var(--kd-color-surface-raised);
+}
+
+.outcomeOption input {
+  margin: 0;
+}
+
+.outcomeLabel {
+  font-size: var(--kd-type-body-s-size);
+  line-height: var(--kd-type-body-s-leading);
+  color: var(--kd-color-text-primary);
+}
+
+.freeTextLabel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-1);
+}
+
+.freeTextTitle {
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  font-weight: var(--kd-type-caption-weight);
+  letter-spacing: var(--kd-type-caption-tracking);
+  text-transform: uppercase;
+  color: var(--kd-color-text-tertiary);
+}
+
+.freeText {
+  font-family: inherit;
+  font-size: var(--kd-type-body-s-size);
+  line-height: var(--kd-type-body-s-leading);
+  color: var(--kd-color-text-primary);
+  background: var(--kd-color-surface-canvas);
+  border: 1px solid var(--kd-color-border-default);
+  border-radius: var(--kd-radius-sm);
+  padding: var(--kd-space-2) var(--kd-space-3);
+  resize: vertical;
+}
+
+.freeText:focus-visible {
+  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
+  outline-offset: var(--kd-focus-ring-offset);
+  border-color: var(--kd-color-border-focus);
+}
+
+.actions {
+  display: flex;
+  gap: var(--kd-space-2);
+  flex-wrap: wrap;
+}
+
+.errorMeta {
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-state-error-fg);
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .outcomeOption {
+    transition: none;
+  }
+}

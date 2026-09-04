@@ -115,6 +115,7 @@ const TASK_PLANNED = {
   actual_minutes: null,
   started_at: null,
   completed_at: null,
+  partial_count: 0,
   metadata: {},
   created_at: '2026-09-01T00:00:00.000Z',
   updated_at: '2026-09-01T00:00:00.000Z',
@@ -135,6 +136,7 @@ const TASK_IN_PROGRESS = {
   actual_minutes: null,
   started_at: '2026-09-02T10:00:00.000Z',
   completed_at: null,
+  partial_count: 1,
   metadata: {},
   created_at: '2026-09-01T00:00:00.000Z',
   updated_at: '2026-09-02T10:00:00.000Z',
@@ -155,6 +157,7 @@ const TASK_COMPLETED = {
   actual_minutes: 32,
   started_at: '2026-09-01T09:00:00.000Z',
   completed_at: '2026-09-01T09:32:00.000Z',
+  partial_count: 0,
   metadata: {},
   created_at: '2026-08-31T00:00:00.000Z',
   updated_at: '2026-09-01T09:32:00.000Z',
@@ -217,6 +220,81 @@ function stubFetch(routes: PlannerFetchRoutes): MockInstance<typeof global.fetch
                 updated_at: '2026-09-02T00:00:00.000Z',
               },
             }),
+          }),
+        );
+      }
+
+      // POST /planner/tasks/:id/partial
+      if (method === 'POST' && /\/planner\/tasks\/[a-z0-9-]+\/partial$/.test(url)) {
+        const idMatch = url.match(/\/planner\/tasks\/([a-z0-9-]+)\/partial$/);
+        const id = idMatch ? idMatch[1] : TASK_PLANNED.id;
+        return Promise.resolve(
+          jsonResponse({
+            status: 200,
+            body: success({
+              task: { ...TASK_PLANNED, id, partial_count: 1 },
+              backlogItem: null,
+            }),
+          }),
+        );
+      }
+
+      // POST /planner/tasks/:id/reschedule
+      if (method === 'POST' && /\/planner\/tasks\/[a-z0-9-]+\/reschedule$/.test(url)) {
+        const idMatch = url.match(/\/planner\/tasks\/([a-z0-9-]+)\/reschedule$/);
+        const id = idMatch ? idMatch[1] : TASK_PLANNED.id;
+        const body = parseBody(init?.body);
+        const newDueAt = (body?.['new_due_at'] as string | undefined) ?? '2026-09-12T00:00:00.000Z';
+        const newTask = {
+          ...TASK_PLANNED,
+          id: 'tsk-dddddddddddd',
+          plan_date: newDueAt.slice(0, 10),
+        };
+        const event = {
+          id: 'pte-111111111111',
+          task_id: id,
+          event_type: 'rescheduled',
+          previous_due_at: TASK_PLANNED.plan_date + 'T00:00:00.000Z',
+          new_due_at: newDueAt,
+          reason: null,
+          created_at: '2026-09-04T00:00:00.000Z',
+        };
+        return Promise.resolve(
+          jsonResponse({
+            status: 200,
+            body: success({
+              originalTask: { ...TASK_PLANNED, id },
+              newTask,
+              event,
+            }),
+          }),
+        );
+      }
+
+      // POST /planner/check-missed
+      if (method === 'POST' && url.includes('/planner/check-missed')) {
+        return Promise.resolve(
+          jsonResponse({
+            status: 200,
+            body: success({
+              scannedAt: '2026-09-04T00:00:00.000Z',
+              newlyMissed: [],
+              alreadyMissed: [],
+              createdBacklogItemIds: [],
+            }),
+          }),
+        );
+      }
+
+      // GET /planner/backlog/recovery-suggestions
+      if (
+        method === 'GET' &&
+        url.includes('/planner/backlog/recovery-suggestions')
+      ) {
+        return Promise.resolve(
+          jsonResponse({
+            status: 200,
+            body: success({ suggestions: [] }),
           }),
         );
       }
@@ -369,5 +447,133 @@ describe('PlannerPage (index)', () => {
       );
       expect(idx).toBeGreaterThanOrEqual(0);
     });
+  });
+});
+
+describe('PlannerPage (Phase 11)', () => {
+  it('renders the partial indicator when a task has been marked partial before', async () => {
+    stubFetch({ list: 'success' });
+    render(<PlannerPage />, { wrapper: makeWrapper() });
+    await screen.findByTestId(`planner-task-${TASK_PLANNED.id}`);
+    const indicator = await screen.findByTestId('task-partial-indicator');
+    expect(indicator.textContent).toMatch(/partial × 1/);
+  });
+
+  it('exposes Mark partial and Reschedule buttons on open tasks', async () => {
+    stubFetch({ list: 'success' });
+    render(<PlannerPage />, { wrapper: makeWrapper() });
+    await screen.findByTestId(`planner-task-${TASK_PLANNED.id}`);
+    expect(
+      screen.getByTestId(`planner-task-partial-${TASK_PLANNED.id}`),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId(`planner-task-reschedule-${TASK_PLANNED.id}`),
+    ).toBeInTheDocument();
+    // Closed task has no actions.
+    expect(
+      screen.queryByTestId(`planner-task-partial-${TASK_COMPLETED.id}`),
+    ).toBeNull();
+  });
+
+  it('submits a partial POST when the user clicks Mark partial', async () => {
+    const user = userEvent.setup();
+    const spy = stubFetch({ list: 'success' });
+    render(<PlannerPage />, { wrapper: makeWrapper() });
+    const button = await screen.findByTestId(
+      `planner-task-partial-${TASK_PLANNED.id}`,
+    );
+    await user.click(button);
+    await waitFor(() => {
+      const calledUrls = spy.mock.calls.map((c) => {
+        const input = c[0];
+        if (typeof input === 'string') return input;
+        if (input instanceof URL) return input.toString();
+        return (input as Request).url;
+      });
+      const calledMethods = spy.mock.calls.map(
+        (c) => (c[1]?.method as string | undefined) ?? 'GET',
+      );
+      const idx = calledUrls.findIndex(
+        (u, i) =>
+          calledMethods[i] === 'POST' &&
+          u.includes(`/planner/tasks/${TASK_PLANNED.id}/partial`),
+      );
+      expect(idx).toBeGreaterThanOrEqual(0);
+    });
+  });
+
+  it('submits a reschedule POST with a YYYY-MM-DD new plan date', async () => {
+    const user = userEvent.setup();
+    const spy = stubFetch({ list: 'success' });
+    const promptSpy = vi
+      .spyOn(window, 'prompt')
+      .mockReturnValue('2026-09-12');
+    render(<PlannerPage />, { wrapper: makeWrapper() });
+    const button = await screen.findByTestId(
+      `planner-task-reschedule-${TASK_PLANNED.id}`,
+    );
+    await user.click(button);
+    await waitFor(() => {
+      const calledUrls = spy.mock.calls.map((c) => {
+        const input = c[0];
+        if (typeof input === 'string') return input;
+        if (input instanceof URL) return input.toString();
+        return (input as Request).url;
+      });
+      const calledMethods = spy.mock.calls.map(
+        (c) => (c[1]?.method as string | undefined) ?? 'GET',
+      );
+      const idx = calledUrls.findIndex(
+        (u, i) =>
+          calledMethods[i] === 'POST' &&
+          u.includes(`/planner/tasks/${TASK_PLANNED.id}/reschedule`),
+      );
+      expect(idx).toBeGreaterThanOrEqual(0);
+      const body = parseBody(spy.mock.calls[idx]?.[1]?.body);
+      expect(body?.['new_due_at']).toBe('2026-09-12T00:00:00.000Z');
+    });
+    promptSpy.mockRestore();
+  });
+
+  it('does not submit reschedule when the prompt is cancelled or invalid', async () => {
+    const user = userEvent.setup();
+    const spy = stubFetch({ list: 'success' });
+    const promptSpy = vi
+      .spyOn(window, 'prompt')
+      .mockReturnValue('not-a-date');
+    const alertSpy = vi
+      .spyOn(window, 'alert')
+      .mockImplementation(() => undefined);
+    render(<PlannerPage />, { wrapper: makeWrapper() });
+    const button = await screen.findByTestId(
+      `planner-task-reschedule-${TASK_PLANNED.id}`,
+    );
+    await user.click(button);
+    // wait a tick then check the spy has no reschedule POST
+    await new Promise((r) => setTimeout(r, 50));
+    const calledUrls = spy.mock.calls.map((c) => {
+      const input = c[0];
+      if (typeof input === 'string') return input;
+      if (input instanceof URL) return input.toString();
+      return (input as Request).url;
+    });
+    const calledMethods = spy.mock.calls.map(
+      (c) => (c[1]?.method as string | undefined) ?? 'GET',
+    );
+    const idx = calledUrls.findIndex(
+      (u, i) =>
+        calledMethods[i] === 'POST' &&
+        u.includes(`/planner/tasks/${TASK_PLANNED.id}/reschedule`),
+    );
+    expect(idx).toBe(-1);
+    promptSpy.mockRestore();
+    alertSpy.mockRestore();
+  });
+
+  it('does not render the miss banner when no task is overdue', async () => {
+    stubFetch({ list: 'success' });
+    render(<PlannerPage />, { wrapper: makeWrapper() });
+    await screen.findByTestId(`planner-task-${TASK_PLANNED.id}`);
+    expect(screen.queryByTestId('task-miss-banner')).toBeNull();
   });
 });

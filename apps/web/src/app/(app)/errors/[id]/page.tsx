@@ -40,6 +40,8 @@ import { ApiError } from '../../../../lib/api-client';
 import { useErrorEntry, useUpdateErrorEntry } from '../../../../hooks/use-errors';
 import { formatShortDate, formatLongDate } from '../../../../lib/format-date';
 import { ClassificationSuggestCard } from './classification-suggest-card';
+import { EvidenceSection } from './components/evidence-section';
+import { LifecycleHistory } from './components/lifecycle-history';
 import styles from './error-detail.module.css';
 
 interface ErrorDetailPageProps {
@@ -273,6 +275,15 @@ export default function ErrorDetailPage({
               ) : null}
             </dl>
           </section>
+
+          {/* Phase 9: per-attempt evidence rows. The list query is
+              cheap (no signed URLs); the per-row snapshot is fetched
+              lazily when the student clicks "view". */}
+          <EvidenceSection errorId={entry.data.id} />
+
+          {/* Phase 9: immutable lifecycle timeline. Newest first;
+              append-only on the server, read-only on the client. */}
+          <LifecycleHistory errorId={entry.data.id} />
 
           {entry.data.status === 'resolved' ||
           entry.data.status === 'archived' ? (

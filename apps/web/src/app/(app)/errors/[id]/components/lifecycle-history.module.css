@@ -1,0 +1,103 @@
+/**
+ * KRODEX web — Lifecycle history styles (Phase 9).
+ *
+ * The history reads as a small, calm timeline. Each event is a
+ * single line on the left rail; the reason (when present) sits
+ * below in a quieter type. No icons, no colored borders — the
+ * trigger and transition labels do the work.
+ */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-3);
+}
+
+.heading {
+  margin: 0;
+  font-size: var(--kd-type-h2-size);
+  line-height: var(--kd-type-h2-leading);
+  font-weight: 600;
+  color: var(--kd-color-text-primary);
+}
+
+.placeholder {
+  margin: 0;
+  font-size: var(--kd-type-body-sm-size);
+  line-height: var(--kd-type-body-sm-leading);
+  color: var(--kd-color-text-tertiary);
+  font-style: italic;
+}
+
+.errorMeta {
+  margin: 0;
+  font-size: var(--kd-type-body-sm-size);
+  line-height: var(--kd-type-body-sm-leading);
+  color: var(--kd-color-state-error-fg);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  position: relative;
+  border-left: var(--kd-border-width-thick) solid
+    var(--kd-color-border-subtle);
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-1);
+  padding: var(--kd-space-2) 0 var(--kd-space-3) var(--kd-space-4);
+  position: relative;
+}
+
+.item::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--kd-border-width-thick) - 3px);
+  top: var(--kd-space-3);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--kd-color-text-link);
+  opacity: 0.5;
+}
+
+.itemHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--kd-space-2);
+  font-size: var(--kd-type-body-sm-size);
+  line-height: var(--kd-type-body-sm-leading);
+}
+
+.trigger {
+  font-weight: 600;
+  color: var(--kd-color-text-primary);
+}
+
+.transition {
+  color: var(--kd-color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.timestamp {
+  margin-left: auto;
+  color: var(--kd-color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+}
+
+.reason {
+  margin: 0;
+  font-size: var(--kd-type-body-sm-size);
+  line-height: var(--kd-type-body-sm-leading);
+  color: var(--kd-color-text-secondary);
+}

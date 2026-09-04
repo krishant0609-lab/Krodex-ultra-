@@ -88,6 +88,11 @@ export function useUpdateErrorEntry(errorId: string) {
     onSuccess: (entry) => {
       qc.setQueryData(queryKeys.errorEntry(errorId), entry);
       qc.invalidateQueries({ queryKey: ['errors'] });
+      // Phase 9: status transitions append a row to the lifecycle
+      // history, so any updated status invalidates the history view.
+      // The evidence list is unrelated but cheap to refresh.
+      qc.invalidateQueries({ queryKey: queryKeys.errorLifecycle(errorId) });
+      qc.invalidateQueries({ queryKey: queryKeys.errorEntryEvidence(errorId) });
     },
   });
 }

@@ -1,0 +1,24 @@
+/**
+ * KRODEX web — Task partial indicator styles.
+ *
+ * A small caption chip that fits inline next to a task title
+ * or in a task row. Renders only when the task has been
+ * marked partial at least once. Tonal treatment matches
+ * the planner editorial vocabulary (champagne tone) — calm,
+ * not punitive.
+ */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kd-space-1);
+  padding: 0 var(--kd-space-2);
+  border: 1px solid var(--kd-color-border-default);
+  border-radius: var(--kd-radius-sm);
+  background: var(--kd-color-surface-default);
+  color: var(--kd-color-text-secondary);
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  line-height: 1.4;
+  white-space: nowrap;
+}

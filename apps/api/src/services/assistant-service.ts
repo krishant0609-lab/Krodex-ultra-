@@ -111,6 +111,17 @@ export class AssistantService {
   private readonly modelReasoning: string;
   private readonly now: () => Date;
 
+  /**
+   * Read-only access to the configured provider. Phase 9's
+   * capture pipeline uses the same provider for background
+   * classification as the foreground assistant service, so it
+   * needs a way to reach the singleton. Read-only — callers
+   * must not reconfigure the provider.
+   */
+  get configuredProvider(): AiProvider {
+    return this.provider;
+  }
+
   constructor(deps: AssistantServiceDeps) {
     this.provider = deps.provider;
     this.env = deps.env;

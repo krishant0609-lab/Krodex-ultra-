@@ -10,6 +10,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install chromium",
+    "test:e2e:fixture": "node tests/e2e/fixture-server.mjs",
     "clean": "rimraf .next *.tsbuildinfo"
   },
   "dependencies": {
@@ -30,6 +33,7 @@
     "axe-core": "^4.13.0",
     "eslint-config-next": "^14.2.15",
     "jsdom": "^25.0.0",
+    "@playwright/test": "^1.48.0",
     "rimraf": "^5.0.10",
     "typescript": "^5.4.5",
     "vitest": "^2.1.1",

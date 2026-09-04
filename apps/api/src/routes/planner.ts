@@ -1,13 +1,19 @@
 /**
  * KRODEX API — /planner routes.
  *
- *   GET    /planner/tasks                 — list tasks
- *   POST   /planner/tasks                 — create a task
- *   GET    /planner/tasks/:id             — read a task
- *   PATCH  /planner/tasks/:id             — update a task
- *   POST   /planner/tasks/:id/missed      — mark missed, create backlog
- *   GET    /planner/templates             — list templates
- *   POST   /planner/templates             — create a template
+ *   GET    /planner/tasks                          — list tasks
+ *   POST   /planner/tasks                          — create a task
+ *   GET    /planner/tasks/:id                      — read a task
+ *   PATCH  /planner/tasks/:id                      — update a task
+ *   POST   /planner/tasks/:id/missed               — mark missed, create backlog
+ *   POST   /planner/check-missed                   — admin / cron: scan for overdue
+ *   POST   /planner/tasks/:id/partial              — mark partial, create backlog
+ *   POST   /planner/tasks/:id/reschedule           — new task linked to original
+ *   GET    /planner/tasks/:id/history              — event history
+ *   GET    /planner/backlog/recovery-suggestions   — stale backlog items
+ *   POST   /planner/backlog/recover/:id            — reschedule/complete/dismiss/split
+ *   GET    /planner/templates                      — list templates
+ *   POST   /planner/templates                      — create a template
  */
 
 import type { FastifyInstance } from 'fastify';
@@ -15,18 +21,31 @@ import type {
   PlannerTaskRow,
   PlannerTemplateRow,
   BacklogItemRow,
+  PlannerTaskEventRow,
 } from '@krodex/shared';
 import { ok, requireAuth } from './_helpers';
 import { parseBody, parseParams, parseQuery } from '../validation/parse';
 import {
+  CheckMissedPlannerTasksBody,
   CreatePlannerTaskBody,
   CreatePlannerTemplateBody,
   IdParam,
   ListPlannerTasksQuery,
+  MarkPartialBody,
+  RecoverPlannerBacklogItemBody,
+  RecoverySuggestionsQuery,
+  RescheduleTaskBody,
   UpdatePlannerTaskBody,
   UpdatePlannerTemplateBody,
 } from '../validation/schemas';
 import * as planner from '../services/planner';
+import {
+  detectMissedTasks,
+  getTaskHistory,
+  markPartial,
+  recoverBacklogItem,
+  rescheduleTask,
+} from '../services/planner-task-automation-service';
 import { NotFoundError } from '../errors';
 
 export function registerPlannerRoutes(app: FastifyInstance): void {
@@ -89,6 +108,165 @@ export function registerPlannerRoutes(app: FastifyInstance): void {
     const result = await planner.markTaskMissed(req.supabaseUser, auth.userId, params.id);
     return ok<{ task: PlannerTaskRow; backlog: BacklogItemRow | null }>(reply, result);
   });
+
+  // --- Phase 11: planner task automation --------------------------------
+
+  /**
+   * Periodic scan: any task whose plan_date is in the past and
+   * which is still in {planned, in_progress} is flipped to
+   * 'missed' and a backlog item is created. The route accepts
+   * an optional `scan_before` ISO timestamp; defaults to now.
+   *
+   * This is the outbox-worker / cron entry point.
+   */
+  app.post(
+    '/planner/check-missed',
+    { preHandler: app.authPreHandler },
+    async (req, reply) => {
+      const auth = requireAuth(req);
+      const body = parseBody(CheckMissedPlannerTasksBody, req.body ?? {});
+      const result = await detectMissedTasks(req.supabaseUser, {
+        userId: auth.userId,
+        ...(body.scan_before ? { scanBefore: body.scan_before } : {}),
+      });
+      return ok(reply, {
+        scannedAt: result.scannedAt,
+        newlyMissed: result.newlyMissed.map((d) => d.task),
+        alreadyMissed: result.alreadyMissed.map((d) => d.task),
+        createdBacklogItemIds: result.createdBacklogItemIds,
+      });
+    },
+  );
+
+  /**
+   * Mark a task as partial. The student worked on it but did
+   * not complete it. We increment `partial_count`, append a
+   * 'partial' history row, and create a backlog item.
+   */
+  app.post(
+    '/planner/tasks/:id/partial',
+    { preHandler: app.authPreHandler },
+    async (req, reply) => {
+      const auth = requireAuth(req);
+      const params = parseParams(IdParam, req.params);
+      const body = parseBody(MarkPartialBody, req.body ?? {});
+      const result = await markPartial(req.supabaseUser, {
+        userId: auth.userId,
+        taskId: params.id,
+        actualDurationMinutes: body.actual_duration_minutes ?? null,
+        reason: body.reason ?? null,
+      });
+      return ok(reply, result);
+    },
+  );
+
+  /**
+   * Reschedule a task by creating a new task linked to the
+   * original. The original is preserved with a 'rescheduled'
+   * event row appended.
+   */
+  app.post(
+    '/planner/tasks/:id/reschedule',
+    { preHandler: app.authPreHandler },
+    async (req, reply) => {
+      const auth = requireAuth(req);
+      const params = parseParams(IdParam, req.params);
+      const body = parseBody(RescheduleTaskBody, req.body);
+      const result = await rescheduleTask(req.supabaseUser, {
+        userId: auth.userId,
+        taskId: params.id,
+        newDueAt: body.new_due_at,
+        reason: body.reason ?? null,
+      });
+      return ok(reply, result);
+    },
+  );
+
+  /**
+   * Read the immutable history for a task.
+   */
+  app.get(
+    '/planner/tasks/:id/history',
+    { preHandler: app.authPreHandler },
+    async (req, reply) => {
+      const auth = requireAuth(req);
+      const params = parseParams(IdParam, req.params);
+      const events = await getTaskHistory(req.supabaseUser, auth.userId, params.id);
+      return ok<readonly PlannerTaskEventRow[]>(reply, events);
+    },
+  );
+
+  /**
+   * Surface backlog items that need recovery action. Returns
+   * the most recent open backlog items for this user, with a
+   * suggested action based on age and miss count.
+   */
+  app.get(
+    '/planner/backlog/recovery-suggestions',
+    { preHandler: app.authPreHandler },
+    async (req, reply) => {
+      const auth = requireAuth(req);
+      const q = parseQuery(RecoverySuggestionsQuery, req.query);
+      const limit = q.limit ?? 20;
+      const { data, error } = await req.supabaseUser
+        .from('backlog_items')
+        .select('*')
+        .eq('user_id', auth.userId)
+        .eq('state', 'open')
+        .order('created_at', { ascending: true })
+        .limit(limit);
+      if (error) throw new Error(`recovery-suggestions failed: ${error.message}`);
+      const items = (data ?? []) as BacklogItemRow[];
+      const now = Date.now();
+      const suggestions = items.map((item) => {
+        const ageDays = Math.max(
+          0,
+          Math.floor((now - new Date(item.created_at).getTime()) / 86_400_000),
+        );
+        let suggestedAction: 'reschedule' | 'dismiss' | 'complete';
+        let reason: string;
+        if (ageDays >= 14) {
+          suggestedAction = 'dismiss';
+          reason = `Backlog item is ${ageDays} days old; consider dismissing.`;
+        } else if (ageDays >= 7) {
+          suggestedAction = 'complete';
+          reason = `Backlog item is ${ageDays} days old; consider completing or dismissing.`;
+        } else {
+          suggestedAction = 'reschedule';
+          reason = `Backlog item is ${ageDays} days old; reschedule to a fresh slot.`;
+        }
+        return {
+          backlogItemId: item.id,
+          reason,
+          suggestedAction,
+          ageDays,
+          sourceTaskId: item.source_task_id ?? null,
+        };
+      });
+      return ok(reply, { suggestions });
+    },
+  );
+
+  /**
+   * Recover a backlog item via the chosen action.
+   */
+  app.post(
+    '/planner/backlog/recover/:id',
+    { preHandler: app.authPreHandler },
+    async (req, reply) => {
+      const auth = requireAuth(req);
+      const params = parseParams(IdParam, req.params);
+      const body = parseBody(RecoverPlannerBacklogItemBody, req.body);
+      const result = await recoverBacklogItem(req.supabaseUser, {
+        userId: auth.userId,
+        backlogItemId: params.id,
+        action: body.action,
+        ...(body.new_due_at ? { newDueAt: body.new_due_at } : {}),
+        reason: body.reason ?? null,
+      });
+      return ok(reply, result);
+    },
+  );
 
   app.get('/planner/templates', { preHandler: app.authPreHandler }, async (req, reply) => {
     const auth = requireAuth(req);

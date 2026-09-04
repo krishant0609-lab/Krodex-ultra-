@@ -31,6 +31,7 @@ export const ROUTES = {
   errorDetail: '/errors/error-notfound',
   errorUnclassified: '/errors/error-unclassified',
   reviewDetail: '/reviews/review-notfound',
+  reviewPhase10: '/reviews/phase10-review-001',
   syllabusLegacy: '/syllabus/no-such-node',
   syllabusSubject: '/syllabus/subject/subject-notfound',
   syllabusTopic: '/syllabus/topic/topic-notfound',

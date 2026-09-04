@@ -37,6 +37,7 @@ const ROUTES = [
   '/tests/test-notfound',
   '/errors/error-notfound',
   '/reviews/review-notfound',
+  '/reviews/phase10-review-001',
   '/syllabus/no-such-node',
   '/syllabus/subject/subject-notfound',
   '/syllabus/topic/topic-notfound',

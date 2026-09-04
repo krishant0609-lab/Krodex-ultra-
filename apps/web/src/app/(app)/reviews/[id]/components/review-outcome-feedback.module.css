@@ -1,0 +1,73 @@
+/**
+ * KRODEX web — Review outcome feedback styles.
+ *
+ * Phase 10. A short editorial block that surfaces the error
+ * transition and the next-review decision (if any). All values
+ * resolve to design tokens.
+ */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-3);
+  padding-top: var(--kd-space-4);
+  border-top: 1px solid var(--kd-color-border-subtle);
+}
+
+.heading {
+  font-size: var(--kd-type-h3-size);
+  line-height: var(--kd-type-h3-leading);
+  font-weight: var(--kd-type-h3-weight);
+  letter-spacing: var(--kd-type-h3-tracking);
+  color: var(--kd-color-text-primary);
+  margin: 0;
+}
+
+.headline {
+  font-size: var(--kd-type-body-m-size);
+  line-height: var(--kd-type-body-m-leading);
+  color: var(--kd-color-text-secondary);
+  margin: 0;
+}
+
+.dl {
+  display: grid;
+  grid-template-columns: minmax(10ch, max-content) 1fr;
+  gap: var(--kd-space-2) var(--kd-space-4);
+  margin: 0;
+}
+
+.dl dt {
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  font-weight: var(--kd-type-caption-weight);
+  letter-spacing: var(--kd-type-caption-tracking);
+  text-transform: uppercase;
+  color: var(--kd-color-text-tertiary);
+  padding-top: var(--kd-space-1);
+}
+
+.dl dd {
+  margin: 0;
+  font-size: var(--kd-type-body-m-size);
+  line-height: var(--kd-type-body-m-leading);
+  color: var(--kd-color-text-primary);
+}
+
+.transition {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kd-space-2);
+  flex-wrap: wrap;
+}
+
+.transitionArrow {
+  color: var(--kd-color-text-tertiary);
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+
+.reason {
+  color: var(--kd-color-text-tertiary);
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+}

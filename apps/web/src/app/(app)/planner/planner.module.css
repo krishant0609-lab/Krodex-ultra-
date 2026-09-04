@@ -158,6 +158,13 @@
   background: var(--kd-color-accent-strong);
 }
 
+.actionError {
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-state-error-fg);
+  align-self: center;
+}
+
 .errorMeta {
   font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
   font-size: var(--kd-type-caption-size);

@@ -1,0 +1,178 @@
+/**
+ * KRODEX web — Backlog recovery panel styles.
+ */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-3);
+  padding: var(--kd-space-4);
+  border: 1px solid var(--kd-color-border-default);
+  border-radius: var(--kd-radius-md);
+  background: var(--kd-color-surface-raised);
+  margin-bottom: var(--kd-space-4);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-1);
+}
+
+.title {
+  font-size: var(--kd-type-body-l-size);
+  line-height: var(--kd-type-body-l-leading);
+  font-weight: var(--kd-type-body-l-weight);
+  color: var(--kd-color-text-primary);
+  margin: 0;
+}
+
+.description {
+  font-size: var(--kd-type-body-s-size);
+  line-height: var(--kd-type-body-s-leading);
+  color: var(--kd-color-text-secondary);
+  margin: 0;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--kd-color-border-subtle);
+}
+
+.item {
+  border-bottom: 1px solid var(--kd-color-border-subtle);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--kd-space-4);
+  align-items: start;
+  padding: var(--kd-space-3) 0;
+}
+
+.rowMain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-2);
+  min-width: 0;
+}
+
+.rowMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--kd-space-2);
+  flex-wrap: wrap;
+}
+
+.rowAge {
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-text-tertiary);
+}
+
+.rowReason {
+  font-size: var(--kd-type-body-s-size);
+  line-height: var(--kd-type-body-s-leading);
+  color: var(--kd-color-text-secondary);
+  margin: 0;
+}
+
+.rowActions {
+  display: flex;
+  align-items: center;
+  gap: var(--kd-space-2);
+}
+
+.actionButton {
+  font-family: inherit;
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  font-weight: var(--kd-type-caption-weight);
+  letter-spacing: var(--kd-type-caption-tracking);
+  text-transform: uppercase;
+  color: var(--kd-color-text-primary);
+  background: transparent;
+  border: 1px solid var(--kd-color-border-default);
+  padding: var(--kd-space-1) var(--kd-space-3);
+  border-radius: var(--kd-radius-md);
+  cursor: pointer;
+  transition: background var(--kd-motion-duration-base)
+    var(--kd-motion-ease-standard);
+}
+
+.actionButton:hover:not(:disabled) {
+  background: var(--kd-color-surface-default);
+}
+
+.actionButton:focus-visible {
+  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
+  outline-offset: var(--kd-focus-ring-offset);
+}
+
+.actionButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.actionButtonPrimary {
+  color: var(--kd-color-text-inverse);
+  background: var(--kd-color-accent);
+  border-color: var(--kd-color-accent);
+}
+
+.actionButtonPrimary:hover:not(:disabled) {
+  background: var(--kd-color-accent-strong);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-2);
+  padding: var(--kd-space-3);
+  background: var(--kd-color-surface-default);
+  border-radius: var(--kd-radius-sm);
+  border: 1px dashed var(--kd-color-border-default);
+}
+
+.formLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--kd-space-2);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-text-secondary);
+}
+
+.formInput {
+  font-family: inherit;
+  font-size: var(--kd-type-body-s-size);
+  padding: var(--kd-space-1) var(--kd-space-2);
+  border: 1px solid var(--kd-color-border-default);
+  border-radius: var(--kd-radius-sm);
+  background: var(--kd-color-surface-default);
+  color: var(--kd-color-text-primary);
+}
+
+.formActions {
+  display: flex;
+  gap: var(--kd-space-2);
+  flex-wrap: wrap;
+}
+
+.errorMeta {
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-state-error-fg);
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actionButton,
+  .actionButtonPrimary {
+    transition: none;
+  }
+}

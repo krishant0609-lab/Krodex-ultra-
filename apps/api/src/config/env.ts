@@ -59,7 +59,9 @@ export interface ApiEnv {
   // Storage
   readonly storageBucketErrorCaptures: string;
   readonly storageBucketQuestionSnapshots: string;
+  readonly storageBucketErrorEvidence: string;
   readonly storageSignedUrlTtlSeconds: number;
+  readonly evidenceSnapshotMaxBytes: number;
 
   // Security
   readonly rateLimitGlobalPerMin: number;
@@ -140,7 +142,10 @@ export function loadEnv(): ApiEnv {
       trim(process.env.STORAGE_BUCKET_ERROR_CAPTURES) || 'error-captures',
     storageBucketQuestionSnapshots:
       trim(process.env.STORAGE_BUCKET_QUESTION_SNAPSHOTS) || 'question-snapshots',
+    storageBucketErrorEvidence:
+      trim(process.env.STORAGE_BUCKET_ERROR_EVIDENCE) || 'error-evidence',
     storageSignedUrlTtlSeconds: num(process.env.STORAGE_SIGNED_URL_TTL_SECONDS, 900),
+    evidenceSnapshotMaxBytes: num(process.env.EVIDENCE_SNAPSHOT_MAX_BYTES, 5_242_880),
 
     rateLimitGlobalPerMin: num(process.env.RATE_LIMIT_GLOBAL_PER_MIN, 120),
     rateLimitAuthPerMin: num(process.env.RATE_LIMIT_AUTH_PER_MIN, 10),

@@ -21,6 +21,8 @@ import { registerProgressRoutes } from './progress';
 import { registerAnalyticsRoutes } from './analytics';
 import { registerStudentModelRoutes } from './student-model';
 import { registerAssistantRoutes } from './assistant';
+import { registerEvidenceRoutes } from './evidence';
+import { registerReviewSessionRoutes } from './review-session';
 
 export function registerAllRoutes(app: FastifyInstance): void {
   registerAuthRoutes(app);
@@ -35,4 +37,6 @@ export function registerAllRoutes(app: FastifyInstance): void {
   registerAnalyticsRoutes(app);
   registerStudentModelRoutes(app);
   registerAssistantRoutes(app);
+  registerEvidenceRoutes(app);
+  registerReviewSessionRoutes(app);
 }

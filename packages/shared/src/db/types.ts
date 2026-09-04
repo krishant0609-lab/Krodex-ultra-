@@ -29,9 +29,12 @@ import type {
   BacklogRecoveryState,
   BacklogState,
   CapturedQuestionState,
+  ClassificationStatus,
   CoverageState,
   Difficulty,
   ErrorEntryStatus,
+  EvidenceAssetStatus,
+  LifecycleTrigger,
   MistakeType,
   NotificationChannel,
   NotificationDeliveryState,
@@ -625,6 +628,10 @@ export interface PlannerTaskRow {
   id: string;
   user_id: string;
   template_id: string | null;
+  /** Phase 11: when this task was created by a backlog recovery
+   *  reschedule, points at the original source task. NULL when
+   *  the task is not derived from another. */
+  source_task_id: string | null;
   plan_date: IsoDate;
   title: string;
   description: string | null;
@@ -636,6 +643,7 @@ export interface PlannerTaskRow {
   actual_minutes: number | null;
   started_at: IsoTimestamp | null;
   completed_at: IsoTimestamp | null;
+  partial_count: number;
   metadata: Json;
   created_at: IsoTimestamp;
   updated_at: IsoTimestamp;
@@ -645,6 +653,7 @@ export interface PlannerTaskInsert {
   id?: string;
   user_id: string;
   template_id?: string | null;
+  source_task_id?: string | null;
   plan_date: IsoDate;
   title: string;
   description?: string | null;
@@ -939,6 +948,213 @@ export interface QuestionSnapshotInsert {
 }
 
 // -------------------------------------------------------------
+// error_evidence (Phase 9 — Capture / Evidence Pipeline)
+//
+// Per-attempt historical record. One row per submitted attempt
+// that was graded incorrect. Created by CaptureOrchestrator
+// immediately after the submit RPC commits; snapshot/classification
+// are async with their own failure modes.
+// -------------------------------------------------------------
+
+export interface ErrorEvidenceRow {
+  id: string;
+  user_id: string;
+  attempt_id: string | null;
+  error_entry_id: string | null;
+  classification_status: ClassificationStatus;
+  classification_category: MistakeType | null;
+  classification_source: 'ai' | 'student' | 'system' | null;
+  student_answer: string | null;
+  expected_answer: string | null;
+  question_snapshot_url: string | null;
+  metadata: Json;
+  created_at: IsoTimestamp;
+  updated_at: IsoTimestamp;
+}
+
+export interface ErrorEvidenceInsert {
+  id?: string;
+  user_id: string;
+  attempt_id?: string | null;
+  error_entry_id?: string | null;
+  classification_status?: ClassificationStatus;
+  classification_category?: MistakeType | null;
+  classification_source?: 'ai' | 'student' | 'system' | null;
+  student_answer?: string | null;
+  expected_answer?: string | null;
+  question_snapshot_url?: string | null;
+  metadata?: Json;
+}
+
+export interface ErrorEvidenceUpdate {
+  classification_status?: ClassificationStatus;
+  classification_category?: MistakeType | null;
+  classification_source?: 'ai' | 'student' | 'system' | null;
+  question_snapshot_url?: string | null;
+  metadata?: Json;
+}
+
+// -------------------------------------------------------------
+// evidence_assets (Phase 9)
+//
+// Metadata for each snapshot binary stored in Supabase Storage.
+// -------------------------------------------------------------
+
+export interface EvidenceAssetRow {
+  id: string;
+  evidence_id: string;
+  storage_bucket: string;
+  storage_key: string;
+  mime_type: string;
+  byte_size: string; // bigint → string
+  sha256: string | null;
+  status: EvidenceAssetStatus;
+  created_at: IsoTimestamp;
+  updated_at: IsoTimestamp;
+}
+
+export interface EvidenceAssetInsert {
+  id?: string;
+  evidence_id: string;
+  storage_bucket: string;
+  storage_key: string;
+  mime_type: string;
+  byte_size: string | number;
+  sha256?: string | null;
+  status?: EvidenceAssetStatus;
+}
+
+export interface EvidenceAssetUpdate {
+  status?: EvidenceAssetStatus;
+  storage_key?: string;
+  byte_size?: string | number;
+  sha256?: string | null;
+}
+
+// -------------------------------------------------------------
+// error_lifecycle_events (Phase 9)
+//
+// Immutable append-only history of error state transitions.
+// -------------------------------------------------------------
+
+export interface ErrorLifecycleEventRow {
+  id: string;
+  error_entry_id: string;
+  from_status: ErrorEntryStatus | null;
+  to_status: ErrorEntryStatus;
+  trigger: LifecycleTrigger;
+  reason: string | null;
+  review_id: string | null;
+  created_at: IsoTimestamp;
+}
+
+export interface ErrorLifecycleEventInsert {
+  id?: string;
+  error_entry_id: string;
+  from_status?: ErrorEntryStatus | null;
+  to_status: ErrorEntryStatus;
+  trigger: LifecycleTrigger;
+  reason?: string | null;
+  review_id?: string | null;
+}
+
+// -------------------------------------------------------------
+// verification_questions (Phase 10)
+//
+// Tracks which questions have been used as verification items for
+// a given error entry. Used by FreshQuestionSelector to exclude
+// already-asked questions when selecting a fresh verification
+// question. The same question can appear for multiple errors
+// (different topics); uniqueness is (question_id, error_id).
+// -------------------------------------------------------------
+
+export interface VerificationQuestionRow {
+  id: string;
+  question_id: string;
+  error_id: string;
+  difficulty: number | null;
+  verified_at: IsoTimestamp;
+  created_at: IsoTimestamp;
+}
+
+export interface VerificationQuestionInsert {
+  id?: string;
+  question_id: string;
+  error_id: string;
+  difficulty?: number | null;
+  verified_at?: IsoTimestamp;
+}
+
+// -------------------------------------------------------------
+// planner_task_events (Phase 11)
+//
+// Immutable append-only history of planner task state transitions.
+// Each state change (created/rescheduled/completed/missed/partial/
+// skipped/recovered/escalated) appends one row. History is never
+// updated or deleted.
+// -------------------------------------------------------------
+
+export interface PlannerTaskEventRow {
+  id: string;
+  task_id: string;
+  event_type: PlannerTaskEventType;
+  previous_due_at: IsoTimestamp | null;
+  new_due_at: IsoTimestamp | null;
+  reason: string | null;
+  created_at: IsoTimestamp;
+}
+
+export type PlannerTaskEventType =
+  | 'created'
+  | 'rescheduled'
+  | 'partial'
+  | 'completed'
+  | 'missed'
+  | 'skipped'
+  | 'recovered'
+  | 'escalated';
+
+export interface PlannerTaskEventInsert {
+  id?: string;
+  task_id: string;
+  event_type: PlannerTaskEventType;
+  previous_due_at?: IsoTimestamp | null;
+  new_due_at?: IsoTimestamp | null;
+  reason?: string | null;
+}
+
+// -------------------------------------------------------------
+// backlog_recovery_events (Phase 11)
+//
+// Records recovery actions taken on backlog items that originated
+// from missed or partial planner tasks.
+// -------------------------------------------------------------
+
+export interface BacklogRecoveryEventRow {
+  id: string;
+  user_id: string;
+  backlog_item_id: string | null;
+  task_id: string | null;
+  recovery_type: BacklogRecoveryEventType;
+  created_at: IsoTimestamp;
+}
+
+export type BacklogRecoveryEventType =
+  | 'rescheduled'
+  | 'split'
+  | 'downgraded'
+  | 'completed'
+  | 'dismissed';
+
+export interface BacklogRecoveryEventInsert {
+  id?: string;
+  user_id: string;
+  backlog_item_id?: string | null;
+  task_id?: string | null;
+  recovery_type: BacklogRecoveryEventType;
+}
+
+// -------------------------------------------------------------
 // progress + student model (per-user)
 // -------------------------------------------------------------
 
@@ -1106,4 +1322,25 @@ export interface StudentModelFeaturePersistenceRow {
   feature_value: StudentModelFeatureValue;
   evidence_count: number;
   computed_at: IsoTimestamp;
+}
+
+// -------------------------------------------------------------
+// Phase 9 — capture / evidence pipeline
+// -------------------------------------------------------------
+
+/**
+ * Sanitized input to the snapshot renderer. Per TRD §26, the
+ * renderer accepts only this DTO — never arbitrary DOM state.
+ * Same DTO always renders to identical binary (no I/O, no clock).
+ */
+export interface EvidenceSnapshot {
+  questionId: string;
+  questionBody: string;
+  options?: Array<{ body: string; isCorrect: boolean }>;
+  studentAnswer: string;
+  expectedAnswer: string;
+  topicName?: string;
+  attemptId: string;
+  timestamp: string;
+  sourceIds?: string[];
 }

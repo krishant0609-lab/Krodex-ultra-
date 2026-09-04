@@ -1,0 +1,137 @@
+{
+  "captured_at": "2026-09-04T09:44:29.564Z",
+  "method": "app.inject (in-process, no network)",
+  "iterations_per_endpoint": 20,
+  "note": "Baseline snapshot. Phase 15 does not set pass/fail thresholds; this is a measurement. Authed endpoints may return 401 in the no-Supabase test profile; the 401 path is recorded as the realistic response under that profile.",
+  "dev_token_minted": true,
+  "endpoints": [
+    {
+      "label": "health",
+      "method": "GET",
+      "path": "/health",
+      "iterations": 20,
+      "p50_ms": 1.61,
+      "p95_ms": 2.86,
+      "p99_ms": 2.86,
+      "max_ms": 2.86,
+      "avg_ms": 1.59,
+      "status_counts": {
+        "200": 20
+      },
+      "authed_request": false,
+      "token_provided": true
+    },
+    {
+      "label": "syllabus_subjects",
+      "method": "GET",
+      "path": "/syllabus/subjects",
+      "iterations": 20,
+      "p50_ms": 0.7,
+      "p95_ms": 1.53,
+      "p99_ms": 1.53,
+      "max_ms": 1.53,
+      "avg_ms": 0.8,
+      "status_counts": {
+        "401": 20
+      },
+      "authed_request": true,
+      "token_provided": true
+    },
+    {
+      "label": "syllabus_topics",
+      "method": "GET",
+      "path": "/syllabus/topics",
+      "iterations": 20,
+      "p50_ms": 0.56,
+      "p95_ms": 1.01,
+      "p99_ms": 1.01,
+      "max_ms": 1.01,
+      "avg_ms": 0.59,
+      "status_counts": {
+        "401": 20
+      },
+      "authed_request": true,
+      "token_provided": true
+    },
+    {
+      "label": "syllabus_progress",
+      "method": "GET",
+      "path": "/syllabus/progress",
+      "iterations": 20,
+      "p50_ms": 0.52,
+      "p95_ms": 1.16,
+      "p99_ms": 1.16,
+      "max_ms": 1.16,
+      "avg_ms": 0.55,
+      "status_counts": {
+        "401": 20
+      },
+      "authed_request": true,
+      "token_provided": true
+    },
+    {
+      "label": "errors_list",
+      "method": "GET",
+      "path": "/errors",
+      "iterations": 20,
+      "p50_ms": 0.61,
+      "p95_ms": 1.09,
+      "p99_ms": 1.09,
+      "max_ms": 1.09,
+      "avg_ms": 0.63,
+      "status_counts": {
+        "401": 20
+      },
+      "authed_request": true,
+      "token_provided": true
+    },
+    {
+      "label": "notifications_list",
+      "method": "GET",
+      "path": "/notifications",
+      "iterations": 20,
+      "p50_ms": 0.47,
+      "p95_ms": 0.78,
+      "p99_ms": 0.78,
+      "max_ms": 0.78,
+      "avg_ms": 0.5,
+      "status_counts": {
+        "401": 20
+      },
+      "authed_request": true,
+      "token_provided": true
+    },
+    {
+      "label": "analytics_dimensions",
+      "method": "GET",
+      "path": "/analytics/dimensions",
+      "iterations": 20,
+      "p50_ms": 0.54,
+      "p95_ms": 1.89,
+      "p99_ms": 1.89,
+      "max_ms": 1.89,
+      "avg_ms": 0.63,
+      "status_counts": {
+        "401": 20
+      },
+      "authed_request": true,
+      "token_provided": true
+    },
+    {
+      "label": "analytics_overview",
+      "method": "GET",
+      "path": "/analytics/dashboards/overview",
+      "iterations": 20,
+      "p50_ms": 0.61,
+      "p95_ms": 1.33,
+      "p99_ms": 1.33,
+      "max_ms": 1.33,
+      "avg_ms": 0.7,
+      "status_counts": {
+        "401": 20
+      },
+      "authed_request": true,
+      "token_provided": true
+    }
+  ]
+}

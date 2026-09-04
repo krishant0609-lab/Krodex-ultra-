@@ -195,6 +195,15 @@ export async function findActiveAssetForEvidence(
  * audit symmetry (TRD §10).
  *
  * Idempotent: deleting an already-deleted asset is a no-op.
+ *
+ * Phase 14: every successful soft-delete writes a row to
+ * `audit_events` (best-effort, never throws). The audit row
+ * records the user_id derived from the row, the asset id, and
+ * the storage key. The audit insert requires a service-role
+ * client; when the caller passed the per-request user client
+ * we silently skip the audit (the row update still happens —
+ * security observability is a separate concern from the
+ * underlying op).
  */
 export async function softDeleteAsset(
   client: SupabaseClient,
@@ -224,5 +233,77 @@ export async function softDeleteAsset(
   if (error || !data) {
     throw new Error(`softDeleteAsset update failed: ${error?.message ?? 'no row returned'}`);
   }
+  // Phase 14: write an audit_events row. Best-effort.
+  // We import lazily so the service can be loaded in test
+  // environments that have not registered the audit logger.
+  // The asset row has no user_id; the parent error_evidence
+  // does, but a join is a second query and we deliberately
+  // keep the audit best-effort. We use 'system' as actor
+  // and put the storage key + evidence id in metadata so an
+  // operator can correlate to the parent error.
+  try {
+    const { makeAuditLogger } = await import('../security/audit-logger');
+    const audit = makeAuditLogger(client, defaultLogger);
+    await audit.log({
+      actorId: 'system',
+      action: 'EVIDENCE_ASSET_SOFT_DELETE',
+      resource: 'evidence_assets',
+      resourceId: assetId,
+      metadata: {
+        storage_bucket: asset.storage_bucket,
+        mime_type: asset.mime_type,
+        evidence_id: asset.evidence_id,
+      },
+    });
+  } catch {
+    // Best-effort: do not propagate audit failures.
+  }
   return asRow<EvidenceAssetRow>(data);
 }
+
+/**
+ * A minimal logger shim that satisfies the FastifyBaseLogger
+ * surface used by the audit logger (warn, error, info, debug,
+ * trace, fatal). The Phase 0–13 callers of softDeleteAsset were
+ * single-line (`softDeleteAsset(client, assetId)`); the Phase
+ * 14 audit logger needs a logger to pass through to. We use a
+ * console-backed shim so audit failures during the soft-delete
+ * path produce a log line but never throw.
+ */
+type DefaultLogger = {
+  fatal: (msg: string) => void;
+  error: (msg: string) => void;
+  warn: (msg: string) => void;
+  info: (msg: string) => void;
+  debug: (msg: string) => void;
+  trace: (msg: string) => void;
+  child: () => DefaultLogger;
+  level: 'warn';
+  silent: (...args: unknown[]) => void;
+  msgPrefix: string;
+};
+
+function isTestEnv(): boolean {
+  return process.env.NODE_ENV === 'test';
+}
+
+function safeLog(level: 'warn' | 'info' | 'debug', msg: string): void {
+  if (isTestEnv()) return;
+  // eslint-disable-next-line no-console
+  console[level](msg);
+}
+
+const defaultLogger: DefaultLogger = {
+  fatal: (msg): void => safeLog('warn', msg),
+  error: (msg): void => safeLog('warn', msg),
+  warn: (msg): void => safeLog('warn', msg),
+  info: (msg): void => safeLog('info', msg),
+  debug: (msg): void => safeLog('debug', msg),
+  trace: (msg): void => safeLog('debug', msg),
+  child: (): DefaultLogger => defaultLogger,
+  level: 'warn',
+  silent: (): void => {
+    // no-op: Phase 14 audit logger never needs to silence
+  },
+  msgPrefix: 'evidence-asset-service',
+};

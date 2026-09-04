@@ -142,10 +142,23 @@ Artifact: `scripts/out/migration-rehearsal.json`:
 }
 ```
 
+> **Correction (post-commit, 2026-09-04):** the original transcript
+> above claimed `present_migration_count: 18` and "18 migration files
+> are present, named correctly, and in the right order." The
+> `git ls-tree --name-only -r bcff8c0 -- supabase/migrations/`
+> at the v1.0 commit lists **16** `.sql` files (01..16) plus a
+> `.gitkeep` placeholder. The `expected_migration_count: 18` is a
+> forward-looking value that describes a hypothetical post-Phase-14+15
+> state with `17_security_audit_log.sql` and `18_perf_indexes.sql`,
+> neither of which is committed in v1.0. See `docs/RELEASE_CONTRACTS_v1.0.md`
+> §1 for the corrected 16-migration list.
+
 **Exit code: 0.** Path (c) was selected: no `supabase` CLI, no `psql`,
-no `docker` on this host. The 18 migration files are present, named
-correctly, and in the right order. The offline vitest
-`migrations.test.ts` passes.
+no `docker` on this host. The 16 v1.0 migration files (01..16) are
+present in the v1.0 commit, named correctly, and in the right order.
+Two additional migrations (17, 18) authored during Phase 14+15 exist
+on disk in the working tree but are NOT part of the v1.0 contract.
+The offline vitest `migrations.test.ts` passes.
 
 **Verdict:** M3 PASS for the structural rehearsal. The live-DB apply
 path (a/b) is **deferred** to a CI run with a reachable DB; the
@@ -314,8 +327,8 @@ This cross-walk verifies that every M1–M10 deliverable listed in
 |---|---|---|---|
 | M1 | 7 merge-blocking CI stages in `.github/workflows/ci.yml` | `4738636` (`.github/workflows/ci.yml`) | ✅ |
 | M2 | `scripts/audit-env.mjs` exit 0 on complete, exit 1 on stripped | §2.1 (exit 0 on `.env.example`, exit 1 on missing `.env`) | ✅ |
-| M3 | `bash scripts/migration-rehearsal.sh` applies 18 migrations cleanly; row-count + FK assertions; prints "OK" or specific failure | §2.2 (path (c) selected; offline test passed; verdict `OK_STRUCTURAL_ONLY`; artifact written) | ✅ (structural) |
-| M4 | `docs/RELEASE_CONTRACTS_v1.0.md` contains (a) 18 migration filenames + SHAs, (b) EventType union, (c) API route list | `docs/RELEASE_CONTRACTS_v1.0.md` (Step 2 of plan) | ✅ |
+| M3 | `bash scripts/migration-rehearsal.sh` applies the v1.0 migration set cleanly; row-count + FK assertions; prints "OK" or specific failure | §2.2 (path (c) selected; offline test passed; verdict `OK_STRUCTURAL_ONLY`; artifact written); **v1.0 set is 16 files, not 18** | ✅ (structural) |
+| M4 | `docs/RELEASE_CONTRACTS_v1.0.md` contains (a) the v1.0 migration filenames + SHAs, (b) EventType union, (c) API route list | `docs/RELEASE_CONTRACTS_v1.0.md` (Step 2 of plan); **corrected on 2026-09-04 to reflect the 16 / 33 / 67 actual state** | ✅ (corrected) |
 | M5 | `docs/ROLLBACK.md` contains a procedure for each of (a) migration reversal, (b) env var revert, (c) dependency version revert, (d) build rollback, (e) secret rotation. Each has owner + verification step. | `b91a811` (`docs/ROLLBACK.md`) | ✅ |
 | M6 | `docs/RUNBOOK.md` contains a section for each of the 8 TRD §39 alert categories with: alert definition, recovery procedure, owner, verification step. | `b91a811` (`docs/RUNBOOK.md`) | ✅ |
 | M7 | `apps/web/playwright.smoke.config.ts` boots `apps/api` + Supabase local + `apps/web`; 22 PRD Appendix A scenarios mapped to Playwright specs; smoke run exits 0 | `4f3f276` (smoke config + 22-scenario matrix); §2.3 (exit 0, 24 skipped with marker) | ✅ (PARTIAL fallback) |
@@ -335,17 +348,29 @@ new env vars.
 | Contract | Pre-Phase-16 | Post-Phase-16 | Delta |
 |---|---|---|---|
 | `assertOwned` call sites | 83 | 83 | 0 |
-| `EventType` union members | 34 | 34 | 0 |
-| Migration files on disk | 18 | 18 | 0 |
-| API routes | 74 (in `apps/api/src/routes/*.ts`) + `/health` | 75 + `/health` | +1 (M8, service-role only) |
-| Vendor dependencies | (Phase 14/15 baseline) | (Phase 14/15 baseline) | 0 |
-| Mandatory env vars | (Phase 14/15 baseline) | (Phase 14/15 baseline) | 0 |
+| `EventType` union members | **33** (actual at `bcff8c0`) | **33** (actual at `bcff8c0`) | 0 |
+| Migration files on disk | **16** (actual at `bcff8c0`) | **16** (actual at `bcff8c0`) | 0 |
+| API routes | **67** (in `apps/api/src/routes/*.ts` at `bcff8c0`) + `/health` | **67** + `/health` + 1 (M8) = **69** total | +1 (M8, service-role only) |
+| Vendor dependencies | (Phase 0–15 baseline) | (Phase 0–15 baseline) | 0 |
+| Mandatory env vars | (Phase 0–15 baseline) | (Phase 0–15 baseline) | 0 |
 | Optional env vars (additive) | n/a | `KRODEX_RELEASE_TAG`, `KRODEX_STAGING_BASE_URL` | +2 (both optional) |
 | Notification dedup logic | (Phase 12 baseline) | (Phase 12 baseline) | 0 |
 | RLS policies | (Phase 7 baseline) | (Phase 7 baseline) | 0 |
 | Service signatures | (Phase 0–15 baseline) | (Phase 0–15 baseline) | 0 |
 | Route request/response shapes | (Phase 0–15 baseline) | (Phase 0–15 baseline) + 1 new | 1 new (M8, additive) |
 | Lint errors (pre-existing) | 9 (frozen) | 9 (frozen) | 0 |
+
+> **Correction (post-commit, 2026-09-04):** the original table above
+> claimed 34 `EventType` members, 18 migration files on disk, and 74
+> routes in `apps/api/src/routes/*.ts` at `bcff8c0`. All three numbers
+> are wrong against the actual on-disk state at the v1.0 commit. The
+> corrected values are 33 / 16 / 67. The cause is a pre-existing
+> documentation defect in the v1.0 sign-off message
+> (commit `bcff8c0` body) and the contract doc draft
+> (`docs/RELEASE_CONTRACTS_v1.0.md`); both are forward-looking
+> descriptions of a hypothetical post-Phase-14+15 state, not the v1.0
+> state. The corrected freeze lives in `docs/RELEASE_CONTRACTS_v1.0.md`
+> as rewritten on 2026-09-04.
 
 **Verdict:** Frozen boundary preserved. All Phase 0–15 contracts are
 intact. Phase 16 is purely additive (1 new route, 0 new migrations, 0

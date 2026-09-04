@@ -94,7 +94,11 @@ export default function ErrorDetailPage({
   };
 
   const handleReopen = (): void => {
-    update.mutate({ status: 'active' });
+    // The error state machine allows `resolved -> reopened` only
+    // (reopened is the canonical "I saw this mistake again" state
+    // and drives a `error.lifecycle.reopened` event + notification).
+    // Sending `active` would be illegal and the API would 400.
+    update.mutate({ status: 'reopened' });
   };
 
   const handleArchive = (): void => {

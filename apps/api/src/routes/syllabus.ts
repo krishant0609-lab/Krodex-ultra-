@@ -24,7 +24,7 @@ import type {
   TopicRow,
   CoverageState,
 } from '@krodex/shared';
-import { ok, okPage, requireAuth } from './_helpers';
+import { ok, okPage, requireAuth, setNoStore, setPrivateCache } from './_helpers';
 import { parseBody, parseParams, parseQuery } from '../validation/parse';
 import {
   IdParam,
@@ -39,6 +39,7 @@ import * as syllabus from '../services/syllabus';
 export function registerSyllabusRoutes(app: FastifyInstance): void {
   app.get('/syllabus/subjects', { preHandler: app.authPreHandler }, async (req, reply) => {
     const items = await syllabus.listSubjects(req.supabaseUser);
+    setPrivateCache(reply, 300);
     return ok<readonly SubjectRow[]>(reply, items);
   });
 
@@ -48,12 +49,14 @@ export function registerSyllabusRoutes(app: FastifyInstance): void {
       ...(q.subject_id ? { subject_id: q.subject_id } : {}),
       ...(q.parent_topic_id !== undefined ? { parent_topic_id: q.parent_topic_id } : {}),
     });
+    setPrivateCache(reply, 300);
     return ok<readonly TopicRow[]>(reply, items);
   });
 
   app.get('/syllabus/sub-topics', { preHandler: app.authPreHandler }, async (req, reply) => {
     const q = parseQuery(ListSubTopicsQuery, req.query);
     const items = await syllabus.listSubTopics(req.supabaseUser, q.topic_id);
+    setPrivateCache(reply, 300);
     return ok<readonly SubTopicRow[]>(reply, items);
   });
 
@@ -68,6 +71,7 @@ export function registerSyllabusRoutes(app: FastifyInstance): void {
       ...(q.cursor !== undefined ? { cursor: q.cursor } : {}),
       ...(q.limit !== undefined ? { limit: q.limit } : {}),
     });
+    setPrivateCache(reply, 60);
     return okPage<QuestionRow>(reply, page);
   });
 
@@ -85,6 +89,7 @@ export function registerSyllabusRoutes(app: FastifyInstance): void {
         display_order: o.display_order,
         body: o.body,
       }));
+      setPrivateCache(reply, 300);
       return ok<readonly { id: string; display_order: number; body: string }[]>(reply, display);
     },
   );
@@ -99,6 +104,7 @@ export function registerSyllabusRoutes(app: FastifyInstance): void {
       q.cursor ?? null,
       q.limit ?? 25,
     );
+    setNoStore(reply);
     return okPage<SyllabusProgressRow>(reply, page);
   });
 

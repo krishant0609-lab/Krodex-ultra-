@@ -26,6 +26,7 @@ import { dbHealth, loadEnv } from './db';
 import { installErrorHandler } from './errors/error-handler';
 import { installAuthPreHandler } from './auth/prehandler';
 import { installRequestDecorations } from './server-decorations';
+import { installSecurity } from './security/install-security';
 import { registerAllRoutes } from './routes';
 import { ok } from './routes/_helpers';
 import { buildEventBus, type EventBus, type EventBusStatus } from './events/event-bus';
@@ -79,6 +80,13 @@ export async function buildServerWithEventBus(): Promise<BuildServerResult> {
   installRequestDecorations(app, env);
   installErrorHandler(app);
   installAuthPreHandler(app, env);
+  // Phase 14: rate-limit + helmet + under-pressure + request-id
+  // echo. Skipped in test mode so per-route test harnesses
+  // (which build their own Fastify and register only one route
+  // group) do not hit the global limit during a single test
+  // file. The dedicated security test installs it explicitly
+  // with low ceilings to exercise the 429 path.
+  await installSecurity(app, env);
 
   // Build (do not start) the event bus so /health can read its
   // status even when the bus is disabled. main() starts it.
@@ -94,6 +102,7 @@ export async function buildServerWithEventBus(): Promise<BuildServerResult> {
   app.get('/health', async (request, reply) => {
     const db = await dbHealth(env);
     const bus: EventBusStatus = eventBus.status();
+    const sec = app.krodexSecurity;
     return ok(reply, {
       // The API itself is up and answering. The event bus status
       // is its own sub-field; clients who care (k8s probes,
@@ -110,6 +119,16 @@ export async function buildServerWithEventBus(): Promise<BuildServerResult> {
         worker: bus.worker,
         scheduler: bus.scheduler,
       },
+      // Phase 14: surface the security policy so operators
+      // and k8s probes can confirm the rate-limit / helmet /
+      // under-pressure plugins are live.
+      security: sec
+        ? {
+            installed: sec.installed,
+            policy: sec.policy,
+            load_shedding: sec.loadShedding,
+          }
+        : null,
     });
   });
 

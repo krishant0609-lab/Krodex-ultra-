@@ -16,7 +16,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { NotificationRow, ProgressEvidenceRow } from '@krodex/shared';
 import type { NotificationPreferences } from '../services/notification-preferences-service';
-import { ok, requireAuth } from './_helpers';
+import { ok, requireAuth, setNoStore } from './_helpers';
 import { parseBody, parseParams, parseQuery } from '../validation/parse';
 import {
   DispatchTickBody,
@@ -38,6 +38,7 @@ export function registerProgressRoutes(app: FastifyInstance): void {
       ...(q.until ? { until: q.until } : {}),
       ...(q.limit !== undefined ? { limit: q.limit } : {}),
     });
+    setNoStore(reply);
     return ok<readonly ProgressEvidenceRow[]>(reply, items);
   });
 
@@ -50,6 +51,7 @@ export function registerProgressRoutes(app: FastifyInstance): void {
       ...(q.kind ? { kind: q.kind } : {}),
       ...(q.limit !== undefined ? { limit: q.limit } : {}),
     });
+    setNoStore(reply);
     return ok<readonly NotificationRow[]>(reply, items);
   });
 
@@ -57,6 +59,7 @@ export function registerProgressRoutes(app: FastifyInstance): void {
     const auth = requireAuth(req);
     const params = parseParams(IdParam, req.params);
     const row = await progress.getNotification(req.supabaseUser, auth.userId, params.id);
+    setNoStore(reply);
     return ok<NotificationRow>(reply, row);
   });
 
@@ -76,6 +79,7 @@ export function registerProgressRoutes(app: FastifyInstance): void {
   app.get('/notifications/preferences', { preHandler: app.authPreHandler }, async (req, reply) => {
     const auth = requireAuth(req);
     const prefs = await progress.getNotificationPreferences(req.supabaseUser, auth.userId);
+    setNoStore(reply);
     return ok<NotificationPreferences>(reply, prefs);
   });
 

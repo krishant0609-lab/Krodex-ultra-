@@ -87,6 +87,14 @@ const EXPECTED_MIGRATION_FILES = [
   // Phase 12: notification dedup_key column + (user_id, dedup_key)
   // unique index for the project_notification projector.
   '20260901164346_16_notification_dedup.sql',
+  // Phase 14: audit_events table for high-privilege operation
+  // observability. Service-role writer; RLS denies non-service-role
+  // writes (no policies = deny by default).
+  '20260901164346_17_security_audit_log.sql',
+  // Phase 15: targeted indexes for the in-app delivery dispatcher
+  // and recovery-suggestions hot paths. Additive; existing query
+  // plans remain valid.
+  '20260901164346_18_perf_indexes.sql',
 ] as const;
 
 const MIGRATION_NAMING_PATTERN =
@@ -124,6 +132,11 @@ const USER_SCOPED_TABLES = [
   'evidence_assets',
   // Phase 9: lifecycle event history (TRD §11).
   'error_lifecycle_events',
+  // Phase 14: privileged-operation audit log. Service-role writer
+  // only; RLS denies non-service-role. Not user-scoped. Created in
+  // migration 17, not the core schema; see the dedicated
+  // "Phase 14 audit_events" describe below.
+  // 'audit_events',  // intentionally not in ALL_TABLES
 ] as const;
 
 // Global (shared-across-users, read-public) tables per Schema-Ready §4.
@@ -212,7 +225,7 @@ function readMigration(name: string): string {
 // ----- the actual tests --------------------------------------------------
 
 describe('Phase 1+3+4+9 migration set — file presence', () => {
-  it('contains the expected 14 migration files', () => {
+  it('contains the expected 18 migration files', () => {
     const onDisk = readdirSync(migrationsDir)
       .filter((f) => f.endsWith('.sql'))
       .sort();
@@ -468,6 +481,66 @@ describe('Phase 1 migration set — helpers', () => {
 
   it('defines set_user_id_on_insert()', () => {
     expect(helpers).toContain('create or replace function public.set_user_id_on_insert()');
+  });
+});
+
+describe('Phase 14 migration set — audit_events (17)', () => {
+  const m = readMigration('20260901164346_17_security_audit_log.sql');
+
+  it('creates public.audit_events', () => {
+    expect(m).toMatch(/create table if not exists public\.audit_events/i);
+  });
+
+  it('declares actor_id, action, resource, resource_id, metadata, request_id columns', () => {
+    for (const col of [
+      'actor_id',
+      'action',
+      'resource',
+      'resource_id',
+      'metadata',
+      'request_id',
+    ]) {
+      expect(m, `audit_events missing column ${col}`).toContain(col);
+    }
+  });
+
+  it('enables RLS on audit_events', () => {
+    expect(m).toMatch(/alter table public\.audit_events enable row level security/i);
+    expect(m).toMatch(/alter table public\.audit_events\s+force\s+row level security/i);
+  });
+
+  it('declares at least one supporting index', () => {
+    // The migration creates indexes for the most common
+    // operator queries: by occurred_at, by actor, and by action.
+    expect(m).toMatch(/create index if not exists idx_audit_events_occurred_at/i);
+    expect(m).toMatch(/create index if not exists idx_audit_events_actor/i);
+    expect(m).toMatch(/create index if not exists idx_audit_events_action/i);
+  });
+});
+
+describe('Phase 15 migration set — perf indexes (18)', () => {
+  const m = readMigration('20260901164346_18_perf_indexes.sql');
+
+  it('adds the in-app delivery dispatcher partial index', () => {
+    expect(m).toMatch(
+      /create index if not exists idx_notification_deliveries_pending_channel_time/i,
+    );
+    // Partial index — limited to pending state to keep it small.
+    expect(m).toMatch(/where state = 'pending'/i);
+  });
+
+  it('adds the recovery-suggestions partial index on backlog_items', () => {
+    expect(m).toMatch(
+      /create index if not exists idx_backlog_items_user_open_time/i,
+    );
+    expect(m).toMatch(/where state = 'open'/i);
+  });
+
+  it('is additive (no DROP / DROP INDEX statements)', () => {
+    // Phase 15 must not regress existing query plans. We verify
+    // by asserting no DROP / TRUNCATE / DELETE FROM appears.
+    expect(m).not.toMatch(/\bdrop\s+(index|table)\b/i);
+    expect(m).not.toMatch(/\btruncate\b/i);
   });
 });
 

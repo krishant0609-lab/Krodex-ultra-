@@ -102,6 +102,19 @@ export function registerStudentModelRoutes(app: FastifyInstance): void {
       ...(body.window_days !== undefined ? { windowDays: body.window_days } : {}),
       logger: req.log,
     });
+    // Phase 14: audit log entry for every privileged recompute.
+    const { makeAuditLogger } = await import('../security/audit-logger');
+    const audit = makeAuditLogger(service, req.log);
+    await audit.log({
+      actorId: 'service_role',
+      action: 'STUDENT_MODEL_ADMIN_RECOMPUTE',
+      resource: 'student_model',
+      resourceId: body.user_id,
+      metadata: {
+        window_days: body.window_days ?? 28,
+      },
+      requestId: typeof req.id === 'string' ? req.id : undefined,
+    });
     return ok(reply, result);
   });
 }

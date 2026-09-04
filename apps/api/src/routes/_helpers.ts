@@ -26,6 +26,30 @@ export function ok<T>(reply: FastifyReply, data: T, status = 200): ApiSuccessEnv
   return env;
 }
 
+/**
+ * Phase 15: short private cache for global, read-only tree routes
+ * (subjects / topics / sub-topics / questions / question options).
+ * The tree is the same for every authenticated user; a 60-second
+ * window lets the in-app client amortize the warmup cost without
+ * exposing the data to a shared cache. The envelope's
+ * `requestId` + `timestamp` keep the response non-replayable across
+ * users; the cache is `private` so intermediaries do not share it.
+ */
+export function setPrivateCache(reply: FastifyReply, maxAgeSeconds: number): void {
+  reply.header('Cache-Control', `private, max-age=${maxAgeSeconds}`);
+}
+
+/**
+ * Phase 15: explicit no-store for per-user dynamic routes
+ * (notifications, progress, errors, attempt history, dashboard
+ * rollups). The data is shaped by the auth.userId; we do not
+ * want a stale value replayed even within the same browser
+ * session.
+ */
+export function setNoStore(reply: FastifyReply): void {
+  reply.header('Cache-Control', 'no-store');
+}
+
 export function okPage<T>(
   reply: FastifyReply,
   page: CursorPage<T>,

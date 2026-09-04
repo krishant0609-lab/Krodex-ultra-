@@ -129,6 +129,25 @@ export function registerPlannerRoutes(app: FastifyInstance): void {
         userId: auth.userId,
         ...(body.scan_before ? { scanBefore: body.scan_before } : {}),
       });
+      // Phase 14: audit log entry. check-missed is a
+      // privileged op (writes to planner_tasks + backlog_items);
+      // an attacker with a valid user JWT could otherwise call
+      // it as a side-effect of any cron tick.
+      const { makeAuditLogger } = await import('../security/audit-logger');
+      const { getServiceClient } = await import('../db/supabase');
+      const audit = makeAuditLogger(getServiceClient(app.krodexEnv), req.log);
+      await audit.log({
+        actorId: auth.userId,
+        action: 'PLANNER_CHECK_MISSED',
+        resource: 'planner_tasks',
+        resourceId: auth.userId,
+        metadata: {
+          newly_missed: result.newlyMissed.length,
+          already_missed: result.alreadyMissed.length,
+          backlog_created: result.createdBacklogItemIds.length,
+        },
+        requestId: typeof req.id === 'string' ? req.id : undefined,
+      });
       return ok(reply, {
         scannedAt: result.scannedAt,
         newlyMissed: result.newlyMissed.map((d) => d.task),

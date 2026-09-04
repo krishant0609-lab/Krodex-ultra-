@@ -27,7 +27,7 @@
 
 import type { FastifyInstance } from 'fastify';
 import type { ProgressEvidenceRow } from '@krodex/shared';
-import { ok, requireAuth } from './_helpers';
+import { ok, requireAuth, setNoStore, setPrivateCache } from './_helpers';
 import { parseBody, parseParams, parseQuery } from '../validation/parse';
 import {
   AdminRecomputeBody,
@@ -51,6 +51,9 @@ export function registerAnalyticsRoutes(app: FastifyInstance): void {
    * version + the KRODEX server build version. No DB read.
    */
   app.get('/analytics/dimensions', { preHandler: app.authPreHandler }, async (_req, reply) => {
+    // Catalog is global + versioned. Safe to share across users
+    // via a private cache. (No auth.userId in the body.)
+    setPrivateCache(reply, 300);
     return ok(reply, getAnalyticsDimensions());
   });
 
@@ -72,6 +75,7 @@ export function registerAnalyticsRoutes(app: FastifyInstance): void {
       }),
       getAnalyticsFreshness(req.supabaseUser, auth.userId),
     ]);
+    setNoStore(reply);
     return ok<{ items: readonly ProgressEvidenceRow[]; freshness: typeof freshness }>(reply, {
       items,
       freshness,
@@ -88,6 +92,7 @@ export function registerAnalyticsRoutes(app: FastifyInstance): void {
   app.get('/analytics/dashboards/overview', { preHandler: app.authPreHandler }, async (req, reply) => {
     const auth = requireAuth(req);
     const overview = await getAnalyticsOverview(req.supabaseUser, auth.userId);
+    setNoStore(reply);
     return ok(reply, overview);
   });
 
@@ -107,6 +112,7 @@ export function registerAnalyticsRoutes(app: FastifyInstance): void {
       const auth = requireAuth(req);
       const params = parseParams(DimensionKeyParam, req.params);
       const dash = await getDimensionDashboard(req.supabaseUser, auth.userId, params.key);
+      setNoStore(reply);
       return ok(reply, dash);
     },
   );
@@ -125,6 +131,7 @@ export function registerAnalyticsRoutes(app: FastifyInstance): void {
       const auth = requireAuth(req);
       const params = parseParams(DimensionKeyParam, req.params);
       const explainBlock = await getDimensionExplain(req.supabaseUser, auth.userId, params.key);
+      setNoStore(reply);
       return ok(reply, explainBlock);
     },
   );
@@ -170,6 +177,23 @@ export function registerAnalyticsRoutes(app: FastifyInstance): void {
       ...(body.since ? { since: new Date(body.since) } : {}),
       ...(body.until ? { until: new Date(body.until) } : {}),
       logger: req.log,
+    });
+    // Phase 14: record a security audit row for every admin
+    // recompute. The audit logger is best-effort — a failed
+    // insert does not roll back the recompute.
+    const { makeAuditLogger } = await import('../security/audit-logger');
+    const audit = makeAuditLogger(service, req.log);
+    await audit.log({
+      actorId: 'service_role',
+      action: 'ANALYTICS_ADMIN_RECOMPUTE',
+      resource: 'analytics_rollup',
+      resourceId: body.user_id,
+      metadata: {
+        rows: result.rowsRecomputed ?? 0,
+        ...(body.since ? { since: body.since } : {}),
+        ...(body.until ? { until: body.until } : {}),
+      },
+      requestId: typeof req.id === 'string' ? req.id : undefined,
     });
     return ok(reply, result);
   });

@@ -10,9 +10,11 @@
 # instead run the TypeScript source directly with `tsx` (see Procfile), which
 # performs the resolution the test suite relies on.
 
+[providers]
+node = "22"
+
 [phases.setup]
 aptPkgs = ["python3", "build-essential"]
-nixpkgs = ["nodejs-22_x"]
 
 [phases.install]
 cmds = ["npm ci --no-audit --no-fund --include=dev"]

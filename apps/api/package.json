@@ -12,7 +12,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "clean": "rimraf dist *.tsbuildinfo coverage"
+    "clean": "rimraf dist *.tsbuildinfo coverage",
+    "postinstall": "node ./scripts/patch-realtime-js.mjs"
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",

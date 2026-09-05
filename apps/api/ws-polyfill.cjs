@@ -36,4 +36,24 @@ globalThis.WebSocket = WebSocket;
 if (typeof global !== 'undefined' && typeof global.WebSocket === 'undefined') {
   global.WebSocket = WebSocket;
 }
-process.stderr.write('[ws-polyfill] globalThis.WebSocket before=' + before + ' after=' + typeof globalThis.WebSocket + ' global.WebSocket=' + (typeof global !== 'undefined' ? typeof global.WebSocket : 'no-global') + '\n');
+process.stderr.write('[ws-polyfill] before=' + before + ' after=' + typeof globalThis.WebSocket + ' global=' + (typeof global !== 'undefined' ? typeof global.WebSocket : 'n/a') + '\n');
+
+// Also pre-emptively load the realtime-js CJS module so any module-level
+// detection that runs at import time is satisfied. We then replace the
+// detectEnvironment() static method to always return our polyfill WS,
+// bypassing the unreliable lexical/globalThis checks under tsx ESM.
+try {
+  const rj = require('@supabase/realtime-js');
+  process.stderr.write('[ws-polyfill] realtime-js loaded; keys=' + Object.keys(rj).join(',') + '\n');
+  if (rj.WebSocketFactory && typeof rj.WebSocketFactory.getWebSocketConstructor === 'function') {
+    const orig = rj.WebSocketFactory.getWebSocketConstructor.bind(rj.WebSocketFactory);
+    rj.WebSocketFactory.getWebSocketConstructor = function () {
+      return WebSocket;
+    };
+    process.stderr.write('[ws-polyfill] patched CJS WebSocketFactory.getWebSocketConstructor\n');
+  } else {
+    process.stderr.write('[ws-polyfill] no WebSocketFactory on realtime-js CJS export\n');
+  }
+} catch (err) {
+  process.stderr.write('[ws-polyfill] realtime-js pre-load skipped: ' + err.message + '\n');
+}

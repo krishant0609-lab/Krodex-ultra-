@@ -1,0 +1,45 @@
+/**
+ * KRODEX web — Badge primitive.
+ *
+ * Small inline label with semantic or accent tint. Pill-shaped.
+ * Renders as <span> by default; can be a button via `as="button"`.
+ *
+ * Tone: neutral | info | success | warning | danger |
+ *       lavender | sapphire | emerald | rose | amber | champagne
+ * Size: sm | md
+ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kd-space-2);
+  font-family: var(--kd-font-sans);
+  font-weight: 500;
+  letter-spacing: var(--kd-type-caption-tracking);
+  border-radius: var(--kd-radius-full);
+  border: 1px solid var(--_tint-border, var(--kd-color-border-default));
+  background: var(--_tint-bg, var(--kd-color-surface-sunken));
+  color: var(--_tint-fg, var(--kd-color-text-secondary));
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.sizeSm {
+  font-size: var(--kd-type-caption-size);
+  padding: 0.25rem var(--kd-space-2);
+  min-height: 1.25rem;
+}
+
+.sizeMd {
+  font-size: var(--kd-type-body-s-size);
+  padding: 0.3rem var(--kd-space-3);
+  min-height: 1.5rem;
+}
+
+.dot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--kd-radius-full);
+  background: currentColor;
+}

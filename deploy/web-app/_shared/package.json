@@ -1,0 +1,26 @@
+{
+  "name": "@krodex/shared",
+  "version": "0.1.0-phase1",
+  "private": true,
+  "description": "KRODEX — shared TypeScript types and utilities. Source of cross-app contract.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rimraf dist *.tsbuildinfo"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.10",
+    "typescript": "^5.4.5"
+  }
+}

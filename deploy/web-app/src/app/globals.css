@@ -1,0 +1,179 @@
+/**
+ * KRODEX web — global stylesheet.
+ *
+ * Phase 7: introduces the design-system layer on top of the
+ * minimal Phase 6 baseline. All cosmetic values are semantic
+ * tokens defined in styles/tokens.css. No raw colors in
+ * component styles.
+ *
+ * Per Phase 7 plan §G (accessibility): focus visible at all
+ * times, prefers-reduced-motion honored.
+ */
+
+@import "../styles/tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--kd-font-sans);
+  background: var(--kd-color-surface-background);
+  color: var(--kd-color-text-primary);
+  line-height: var(--kd-type-body-l-leading);
+  font-size: var(--kd-type-body-l-size);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Theme transition: very fast, only on the major surface;
+   * components that opt out set transition: none. */
+  transition:
+    background-color var(--kd-motion-duration-base) var(--kd-motion-ease-standard),
+    color var(--kd-motion-duration-base) var(--kd-motion-ease-standard);
+}
+
+a {
+  color: var(--kd-color-text-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  background: var(--kd-color-surface-raised);
+  border: var(--kd-border-width-hairline) solid var(--kd-color-border-default);
+  border-radius: var(--kd-radius-sm);
+  padding: var(--kd-space-2) var(--kd-space-3);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible {
+  outline: var(--kd-focus-ring-width) solid var(--kd-focus-ring-color);
+  outline-offset: var(--kd-focus-ring-offset);
+  /* Remove default focus ring; we paint our own. */
+  box-shadow: none;
+}
+
+/* Code */
+code,
+pre,
+kbd,
+samp {
+  font-family: var(--kd-font-mono);
+  font-size: var(--kd-type-code-size);
+  line-height: var(--kd-type-code-leading);
+}
+
+pre {
+  margin: 0;
+  padding: var(--kd-space-3);
+  background: var(--kd-color-surface-sunken);
+  border-radius: var(--kd-radius-sm);
+  overflow-x: auto;
+}
+
+/* Tables */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  text-align: left;
+  padding: var(--kd-space-2) var(--kd-space-3);
+  border-bottom: var(--kd-border-width-hairline) solid var(--kd-color-border-subtle);
+}
+
+th {
+  font-weight: var(--kd-type-heading-s-weight);
+  font-size: var(--kd-type-label-size);
+  color: var(--kd-color-text-secondary);
+}
+
+/* Headings — editorial defaults */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  color: var(--kd-color-text-primary);
+  font-weight: 600;
+}
+
+h1 {
+  font-size: var(--kd-type-heading-l-size);
+  line-height: var(--kd-type-heading-l-leading);
+  letter-spacing: var(--kd-type-heading-l-tracking);
+}
+
+h2 {
+  font-size: var(--kd-type-heading-m-size);
+  line-height: var(--kd-type-heading-m-leading);
+}
+
+h3 {
+  font-size: var(--kd-type-heading-s-size);
+  line-height: var(--kd-type-heading-s-leading);
+}
+
+p {
+  margin: 0;
+}
+
+/* Lists inside content */
+ul, ol {
+  margin: 0;
+  padding-left: var(--kd-space-6);
+}
+
+/* Selection */
+::selection {
+  background: var(--kd-color-accent-lavender-subtle);
+  color: var(--kd-color-text-primary);
+}
+
+/* ============================================================
+ * Reduced motion — per Implementation Plan §298 + PRD §1211
+ * ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Visually-hidden helper for screen-reader-only text */
+.kd-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

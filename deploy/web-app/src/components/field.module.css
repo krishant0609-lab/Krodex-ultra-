@@ -1,0 +1,69 @@
+/**
+ * KRODEX web — Field primitive.
+ *
+ * Wraps a single form control (Input, Textarea, Select) with
+ * label, optional helper text, and an inline error message.
+ * Does not own the control — pass children. The error styling
+ * is opt-in via the `invalid` prop and aria-invalid on the
+ * child control.
+ *
+ * Layout: vertical stack with consistent gap, label above the
+ * control, helper/error below.
+ */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-2);
+  width: 100%;
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kd-space-3);
+}
+
+.label {
+  font-size: var(--kd-type-label-size);
+  line-height: var(--kd-type-label-leading);
+  font-weight: var(--kd-type-label-weight);
+  color: var(--kd-color-text-primary);
+}
+
+.required {
+  color: var(--kd-color-state-error-fg);
+  font-size: var(--kd-type-label-size);
+  line-height: var(--kd-type-label-leading);
+}
+
+.optional {
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  color: var(--kd-color-text-tertiary);
+}
+
+.helper {
+  font-size: var(--kd-type-body-s-size);
+  line-height: var(--kd-type-body-s-leading);
+  color: var(--kd-color-text-tertiary);
+  margin: 0;
+}
+
+.error {
+  font-size: var(--kd-type-body-s-size);
+  line-height: var(--kd-type-body-s-leading);
+  color: var(--kd-color-state-error-fg);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--kd-space-2);
+}
+
+.errorIcon {
+  display: inline-block;
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
+}

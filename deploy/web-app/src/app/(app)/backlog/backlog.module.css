@@ -1,0 +1,151 @@
+/**
+ * KRODEX web — Backlog editorial styles.
+ *
+ * Phase 7.9 visual layer. The backlog is a quiet recovery
+ * space: one row per missed item, the source task id as a
+ * mono link, the reason as a small label, the open date on
+ * the right, and a recover/drop action pair.
+ *
+ * All cosmetic values resolve to design tokens. No raw
+ * colors, no hardcoded spacing.
+ */
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--kd-color-border-subtle);
+}
+
+.item {
+  border-bottom: 1px solid var(--kd-color-border-subtle);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--kd-space-4);
+  align-items: start;
+  padding: var(--kd-space-4) 0;
+  color: inherit;
+  transition: background var(--kd-motion-duration-base)
+    var(--kd-motion-ease-standard);
+}
+
+.row:hover {
+  background: var(--kd-color-surface-raised);
+}
+
+.rowMain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-2);
+  min-width: 0;
+}
+
+.rowMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--kd-space-2);
+  flex-wrap: wrap;
+}
+
+.rowTask {
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-text-secondary);
+}
+
+.rowReason {
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  color: var(--kd-color-text-tertiary);
+  text-transform: lowercase;
+}
+
+.rowAside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--kd-space-1);
+}
+
+.rowLabel {
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  font-weight: var(--kd-type-caption-weight);
+  letter-spacing: var(--kd-type-caption-tracking);
+  text-transform: uppercase;
+  color: var(--kd-color-text-tertiary);
+}
+
+.rowDate {
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-text-secondary);
+}
+
+.actionsRow {
+  display: flex;
+  gap: var(--kd-space-2);
+  flex-wrap: wrap;
+  margin-top: var(--kd-space-2);
+}
+
+.actionButton {
+  font-family: inherit;
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  font-weight: var(--kd-type-caption-weight);
+  letter-spacing: var(--kd-type-caption-tracking);
+  text-transform: uppercase;
+  color: var(--kd-color-text-primary);
+  background: transparent;
+  border: 1px solid var(--kd-color-border-default);
+  padding: var(--kd-space-1) var(--kd-space-3);
+  border-radius: var(--kd-radius-md);
+  cursor: pointer;
+  transition: background var(--kd-motion-duration-base)
+    var(--kd-motion-ease-standard);
+}
+
+.actionButton:hover:not(:disabled) {
+  background: var(--kd-color-surface-raised);
+}
+
+.actionButton:focus-visible {
+  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
+  outline-offset: var(--kd-focus-ring-offset);
+}
+
+.actionButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.actionButtonPrimary {
+  color: var(--kd-color-text-inverse);
+  background: var(--kd-color-accent);
+  border-color: var(--kd-color-accent);
+}
+
+.actionButtonPrimary:hover:not(:disabled) {
+  background: var(--kd-color-accent-strong);
+}
+
+.errorMeta {
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-state-error-fg);
+  margin: var(--kd-space-3) 0 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row,
+  .actionButton,
+  .actionButtonPrimary {
+    transition: none;
+  }
+}

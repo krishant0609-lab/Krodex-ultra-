@@ -1,0 +1,121 @@
+/**
+ * KRODEX web — Card primitive.
+ *
+ * Editorial surface wrapper. Renders a section by default; can
+ * be rendered as a <button> (interactive) or <a> (link). All
+ * values resolve to design tokens.
+ *
+ * Tone: raised (default) or sunken (for nested/embedded).
+ * Padding: none / sm / md / lg.
+ * Interactive: adds hover/focus styles + role=button.
+ */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-3);
+  background: var(--kd-color-surface-raised);
+  border: 1px solid var(--kd-color-border-subtle);
+  border-radius: var(--kd-radius-lg);
+  transition:
+    border-color var(--kd-motion-duration-base) var(--kd-motion-ease-standard),
+    background-color var(--kd-motion-duration-base) var(--kd-motion-ease-standard),
+    transform var(--kd-motion-duration-quick) var(--kd-motion-ease-standard);
+}
+
+/* Tones */
+.toneRaised {
+  background: var(--kd-color-surface-raised);
+  border-color: var(--kd-color-border-subtle);
+}
+.toneSunken {
+  background: var(--kd-color-surface-sunken);
+  border-color: var(--kd-color-border-subtle);
+}
+.toneOutline {
+  background: transparent;
+  border-color: var(--kd-color-border-default);
+}
+
+/* Padding */
+.paddingNone {
+  padding: 0;
+}
+.paddingSm {
+  padding: var(--kd-space-3);
+}
+.paddingMd {
+  padding: var(--kd-space-5);
+}
+.paddingLg {
+  padding: var(--kd-space-6);
+}
+
+/* Interactive cards (as button / link) */
+.interactive {
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  width: 100%;
+}
+.interactive:hover {
+  border-color: var(--kd-color-border-strong);
+  background: var(--kd-color-surface-raised);
+}
+.interactive:focus-visible {
+  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
+  outline-offset: var(--kd-focus-ring-offset);
+}
+.interactive:active {
+  transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .interactive {
+    transition: none;
+  }
+}
+
+/* Card subcomponents for consistent structure. */
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--kd-space-3);
+}
+
+.cardEyebrow {
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  font-weight: var(--kd-type-caption-weight);
+  letter-spacing: var(--kd-type-caption-tracking);
+  text-transform: uppercase;
+  color: var(--kd-color-text-tertiary);
+  margin: 0;
+}
+
+.cardTitle {
+  font-size: var(--kd-type-heading-m-size);
+  line-height: var(--kd-type-heading-m-leading);
+  font-weight: var(--kd-type-heading-m-weight);
+  color: var(--kd-color-text-primary);
+  margin: 0;
+}
+
+.cardBody {
+  font-size: var(--kd-type-body-m-size);
+  line-height: var(--kd-type-body-m-leading);
+  color: var(--kd-color-text-secondary);
+  margin: 0;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--kd-space-3);
+  padding-top: var(--kd-space-3);
+  border-top: 1px solid var(--kd-color-border-subtle);
+}

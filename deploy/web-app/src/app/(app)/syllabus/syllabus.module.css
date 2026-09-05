@@ -1,0 +1,412 @@
+/**
+ * KRODEX web — syllabus editorial styles.
+ *
+ * Phase 7.5 visual layer. The syllabus page is a quiet, two-level
+ * tree of subjects (top-level) and their topics (under each
+ * subject). Sub-topics are revealed on the typed deep link.
+ *
+ * The tree is a column of SubjectGroup blocks. Each block has:
+ *
+ *   - A subject header (eyebrow + name + meta row)
+ *   - A topics list (3-state: loading, empty, populated)
+ *
+ * The "Today" / "active" badges are intentional restraint:
+ * coverage_state and last_activity_at are real data; the count
+ * of sub-topics is real. We do not invent totals.
+ *
+ * All cosmetic values resolve to design tokens. No raw colors,
+ * no hardcoded spacing.
+ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-10);
+  padding: var(--kd-space-8) var(--kd-space-6);
+  width: 100%;
+  max-width: var(--kd-content-wide-max-width);
+  margin: 0 auto;
+}
+
+.heroStrip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--kd-space-6);
+  align-items: end;
+  padding-bottom: var(--kd-space-6);
+  border-bottom: 1px solid var(--kd-color-border-subtle);
+}
+
+@media (max-width: 720px) {
+  .heroStrip {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+}
+
+.heroDate {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-1);
+}
+
+.heroEyebrow {
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  font-weight: var(--kd-type-caption-weight);
+  letter-spacing: var(--kd-type-caption-tracking);
+  text-transform: uppercase;
+  color: var(--kd-color-text-tertiary);
+  margin: 0;
+}
+
+.heroTitle {
+  font-size: var(--kd-type-display-m-size);
+  line-height: var(--kd-type-display-m-leading);
+  font-weight: var(--kd-type-display-m-weight);
+  letter-spacing: var(--kd-type-display-m-tracking);
+  color: var(--kd-color-text-primary);
+  margin: 0;
+}
+
+.heroSubtitle {
+  font-size: var(--kd-type-body-m-size);
+  line-height: var(--kd-type-body-m-leading);
+  color: var(--kd-color-text-secondary);
+  margin: 0;
+  max-width: 56ch;
+}
+
+/* ----- Subject group ----- */
+
+.subjectGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-3);
+}
+
+.subjectHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--kd-space-3);
+  flex-wrap: wrap;
+  padding-bottom: var(--kd-space-2);
+  border-bottom: 1px solid var(--kd-color-border-subtle);
+}
+
+.subjectHeaderTitles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-1);
+  min-width: 0;
+}
+
+.subjectEyebrow {
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  font-weight: var(--kd-type-caption-weight);
+  letter-spacing: var(--kd-type-caption-tracking);
+  text-transform: uppercase;
+  color: var(--kd-color-text-tertiary);
+  margin: 0;
+}
+
+.subjectName {
+  font-size: var(--kd-type-heading-m-size);
+  line-height: var(--kd-type-heading-m-leading);
+  font-weight: var(--kd-type-heading-m-weight);
+  letter-spacing: var(--kd-type-heading-m-tracking);
+  color: var(--kd-color-text-primary);
+  margin: 0;
+}
+
+.subjectNameLink {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--kd-motion-duration-base)
+    var(--kd-motion-ease-standard);
+}
+
+.subjectNameLink:hover {
+  color: var(--kd-color-text-link);
+}
+
+.subjectNameLink:focus-visible {
+  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
+  outline-offset: var(--kd-focus-ring-offset);
+  border-radius: var(--kd-radius-sm);
+}
+
+.subjectMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--kd-space-2);
+  flex-wrap: wrap;
+}
+
+.subjectCode {
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-text-tertiary);
+}
+
+/* ----- Topic list under a subject ----- */
+
+.topicList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--kd-space-3);
+}
+
+@media (max-width: 720px) {
+  .topicList {
+    grid-template-columns: 1fr;
+  }
+}
+
+.topicRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kd-space-3);
+  padding: var(--kd-space-3) var(--kd-space-4);
+  background: var(--kd-color-surface-raised);
+  border: 1px solid var(--kd-color-border-subtle);
+  border-radius: var(--kd-radius-md);
+  text-decoration: none;
+  color: inherit;
+  transition:
+    border-color var(--kd-motion-duration-base) var(--kd-motion-ease-standard),
+    background-color var(--kd-motion-duration-base) var(--kd-motion-ease-standard);
+}
+
+.topicRow:hover {
+  border-color: var(--kd-color-border-strong);
+}
+
+.topicRow:focus-visible {
+  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
+  outline-offset: var(--kd-focus-ring-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topicRow {
+    transition: none;
+  }
+}
+
+.topicTitle {
+  font-size: var(--kd-type-body-m-size);
+  line-height: var(--kd-type-body-m-leading);
+  font-weight: var(--kd-type-body-m-weight);
+  color: var(--kd-color-text-primary);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.topicMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--kd-space-2);
+  flex-shrink: 0;
+}
+
+/* ----- Topic loading / empty states ----- */
+
+.stateBand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-2);
+  padding: var(--kd-space-4);
+  background: var(--kd-color-surface-sunken);
+  border: 1px dashed var(--kd-color-border-default);
+  border-radius: var(--kd-radius-md);
+}
+
+.stateBandTitle {
+  font-size: var(--kd-type-body-s-size);
+  font-weight: var(--kd-type-heading-s-weight);
+  color: var(--kd-color-text-primary);
+  margin: 0;
+}
+
+.stateBandBody {
+  font-size: var(--kd-type-body-s-size);
+  line-height: var(--kd-type-body-s-leading);
+  color: var(--kd-color-text-secondary);
+  margin: 0;
+}
+
+.skeletonLine {
+  height: var(--kd-type-body-m-size);
+  background: var(--kd-color-surface-sunken);
+  border-radius: var(--kd-radius-sm);
+  animation: syllabusPulse var(--kd-motion-duration-slow)
+    var(--kd-motion-ease-standard) infinite alternate;
+}
+
+.skeletonLineShort {
+  width: 60%;
+}
+
+@keyframes syllabusPulse {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonLine {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+
+/* ----- Node detail (subject / topic / sub-topic) ----- */
+
+.nodeHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-2);
+  padding-bottom: var(--kd-space-6);
+  border-bottom: 1px solid var(--kd-color-border-subtle);
+}
+
+.nodeBreadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--kd-space-2);
+  flex-wrap: wrap;
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-text-tertiary);
+  margin: 0;
+}
+
+.nodeBreadcrumbsLink {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--kd-motion-duration-base)
+    var(--kd-motion-ease-standard);
+}
+
+.nodeBreadcrumbsLink:hover {
+  color: var(--kd-color-text-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.nodeBreadcrumbsLink:focus-visible {
+  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
+  outline-offset: var(--kd-focus-ring-offset);
+  border-radius: var(--kd-radius-sm);
+}
+
+.nodeBreadcrumbsSep {
+  color: var(--kd-color-text-tertiary);
+}
+
+.nodeBreadcrumbsCurrent {
+  color: var(--kd-color-text-secondary);
+  font-weight: var(--kd-type-body-m-weight);
+}
+
+.nodeEyebrow {
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  font-weight: var(--kd-type-caption-weight);
+  letter-spacing: var(--kd-type-caption-tracking);
+  text-transform: uppercase;
+  color: var(--kd-color-text-tertiary);
+  margin: 0;
+}
+
+.nodeTitle {
+  font-size: var(--kd-type-display-s-size);
+  line-height: var(--kd-type-display-s-leading);
+  font-weight: var(--kd-type-display-s-weight);
+  letter-spacing: var(--kd-type-display-s-tracking);
+  color: var(--kd-color-text-primary);
+  margin: 0;
+}
+
+.nodeSubtitle {
+  font-size: var(--kd-type-body-m-size);
+  line-height: var(--kd-type-body-m-leading);
+  color: var(--kd-color-text-secondary);
+  margin: 0;
+  max-width: 64ch;
+}
+
+.nodeContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-5);
+}
+
+/* ----- Sub-topic list (under a topic) ----- */
+
+.subTopicList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.subTopicRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--kd-space-3);
+  align-items: center;
+  padding: var(--kd-space-3) 0;
+  border-bottom: 1px solid var(--kd-color-border-subtle);
+  text-decoration: none;
+  color: inherit;
+  transition: color var(--kd-motion-duration-base)
+    var(--kd-motion-ease-standard);
+}
+
+.subTopicRow:last-child {
+  border-bottom: 0;
+}
+
+.subTopicRow:hover {
+  color: var(--kd-color-text-link);
+}
+
+.subTopicRow:focus-visible {
+  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
+  outline-offset: var(--kd-focus-ring-offset);
+}
+
+.subTopicTitle {
+  font-size: var(--kd-type-body-m-size);
+  line-height: var(--kd-type-body-m-leading);
+  color: var(--kd-color-text-primary);
+  font-weight: var(--kd-type-body-m-weight);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.subTopicMeta {
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-text-tertiary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .subTopicRow,
+  .nodeBreadcrumbsLink,
+  .subjectNameLink {
+    transition: none;
+  }
+}

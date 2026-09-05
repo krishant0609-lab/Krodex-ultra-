@@ -1,0 +1,229 @@
+/**
+ * KRODEX web — Classification Suggestion card styles.
+ *
+ * Phase 8 visual layer for the AI suggestion card on
+ * the Error detail page. The card mirrors the editorial
+ * aesthetic of the rest of the detail page: a soft raised
+ * surface, eyebrow + heading + subtitle, and a single
+ * primary action with a quiet secondary. All cosmetic
+ * values resolve to design tokens.
+ */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-3);
+  padding: var(--kd-space-5);
+  background: var(--kd-color-surface-raised);
+  border: 1px solid var(--kd-color-border-subtle);
+  border-radius: var(--kd-radius-lg);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-1);
+}
+
+.eyebrow {
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  font-weight: var(--kd-type-caption-weight);
+  letter-spacing: var(--kd-type-caption-tracking);
+  text-transform: uppercase;
+  color: var(--kd-color-text-tertiary);
+  margin: 0;
+}
+
+.title {
+  font-size: var(--kd-type-h3-size);
+  line-height: var(--kd-type-h3-leading);
+  font-weight: var(--kd-type-h3-weight);
+  letter-spacing: var(--kd-type-h3-tracking);
+  color: var(--kd-color-text-primary);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: var(--kd-type-body-s-size);
+  line-height: var(--kd-type-body-s-leading);
+  color: var(--kd-color-text-secondary);
+  margin: 0;
+  max-width: 56ch;
+}
+
+.loading {
+  font-size: var(--kd-type-body-s-size);
+  line-height: var(--kd-type-body-s-leading);
+  color: var(--kd-color-text-tertiary);
+  font-style: italic;
+  margin: 0;
+}
+
+.unavailable {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-3);
+}
+
+.unavailableText {
+  font-size: var(--kd-type-body-s-size);
+  line-height: var(--kd-type-body-s-leading);
+  color: var(--kd-color-text-secondary);
+  margin: 0;
+}
+
+.suggestion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-3);
+}
+
+.suggestionRow {
+  display: grid;
+  grid-template-columns: minmax(10ch, max-content) 1fr;
+  gap: var(--kd-space-2) var(--kd-space-4);
+}
+
+.suggestionLabel {
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  font-weight: var(--kd-type-caption-weight);
+  letter-spacing: var(--kd-type-caption-tracking);
+  text-transform: uppercase;
+  color: var(--kd-color-text-tertiary);
+  padding-top: var(--kd-space-1);
+}
+
+.suggestionValue {
+  font-size: var(--kd-type-body-m-size);
+  line-height: var(--kd-type-body-m-leading);
+  color: var(--kd-color-text-primary);
+  margin: 0;
+}
+
+.confidence {
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-accent-strong);
+  background: var(--kd-color-accent-soft, var(--kd-color-surface-raised));
+  padding: var(--kd-space-1) var(--kd-space-2);
+  border-radius: var(--kd-radius-sm);
+  width: max-content;
+}
+
+.actions {
+  display: flex;
+  gap: var(--kd-space-2);
+  flex-wrap: wrap;
+  padding-top: var(--kd-space-2);
+}
+
+.primaryAction {
+  font-family: inherit;
+  font-size: var(--kd-type-body-s-size);
+  line-height: var(--kd-type-body-s-leading);
+  font-weight: var(--kd-type-body-s-weight);
+  color: var(--kd-color-text-inverse);
+  background: var(--kd-color-accent);
+  border: 1px solid var(--kd-color-accent);
+  padding: var(--kd-space-2) var(--kd-space-4);
+  border-radius: var(--kd-radius-md);
+  cursor: pointer;
+  transition: background var(--kd-motion-duration-base)
+    var(--kd-motion-ease-standard);
+}
+
+.primaryAction:hover:not(:disabled) {
+  background: var(--kd-color-accent-strong);
+}
+
+.primaryAction:focus-visible {
+  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
+  outline-offset: var(--kd-focus-ring-offset);
+}
+
+.primaryAction:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.secondaryAction {
+  font-family: inherit;
+  font-size: var(--kd-type-body-s-size);
+  line-height: var(--kd-type-body-s-leading);
+  font-weight: var(--kd-type-body-s-weight);
+  color: var(--kd-color-text-primary);
+  background: transparent;
+  border: 1px solid var(--kd-color-border-default);
+  padding: var(--kd-space-2) var(--kd-space-4);
+  border-radius: var(--kd-radius-md);
+  cursor: pointer;
+  transition: background var(--kd-motion-duration-base)
+    var(--kd-motion-ease-standard);
+}
+
+.secondaryAction:hover:not(:disabled) {
+  background: var(--kd-color-surface-raised);
+}
+
+.secondaryAction:focus-visible {
+  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
+  outline-offset: var(--kd-focus-ring-offset);
+}
+
+.manualFieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-3);
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.manualLegend {
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  font-weight: var(--kd-type-caption-weight);
+  letter-spacing: var(--kd-type-caption-tracking);
+  text-transform: uppercase;
+  color: var(--kd-color-text-tertiary);
+  padding: 0;
+}
+
+.radioRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16ch, 1fr));
+  gap: var(--kd-space-2);
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--kd-space-2);
+  font-size: var(--kd-type-body-s-size);
+  line-height: var(--kd-type-body-s-leading);
+  color: var(--kd-color-text-primary);
+  cursor: pointer;
+}
+
+.accepted {
+  font-size: var(--kd-type-body-m-size);
+  line-height: var(--kd-type-body-m-leading);
+  color: var(--kd-color-state-success-fg);
+  margin: 0;
+}
+
+.errorMeta {
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-state-error-fg);
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primaryAction,
+  .secondaryAction {
+    transition: none;
+  }
+}

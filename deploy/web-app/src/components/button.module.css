@@ -1,0 +1,153 @@
+/**
+ * KRODEX web — Button primitive.
+ *
+ * Editorial primary surface (lavender on light, slightly desaturated
+ * on dark) with a calm secondary ghost and a destructive danger.
+ * Sizes: sm / md / lg. Loading state replaces label with spinner
+ * + label, keeps width stable.
+ *
+ * All values resolve to design tokens. No raw colors.
+ */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kd-space-2);
+  font-family: var(--kd-font-sans);
+  font-weight: 500;
+  letter-spacing: 0;
+  border-radius: var(--kd-radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition:
+    background-color var(--kd-motion-duration-base) var(--kd-motion-ease-standard),
+    border-color var(--kd-motion-duration-base) var(--kd-motion-ease-standard),
+    color var(--kd-motion-duration-base) var(--kd-motion-ease-standard),
+    transform var(--kd-motion-duration-quick) var(--kd-motion-ease-standard);
+}
+
+.button:disabled,
+.button[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.button:focus-visible {
+  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
+  outline-offset: var(--kd-focus-ring-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+}
+
+/* -------- Sizes -------- */
+
+.sizeSm {
+  font-size: var(--kd-type-body-s-size);
+  line-height: var(--kd-type-body-s-leading);
+  padding: var(--kd-space-2) var(--kd-space-3);
+  min-height: 2rem;
+}
+
+.sizeMd {
+  font-size: var(--kd-type-body-m-size);
+  line-height: var(--kd-type-body-m-leading);
+  padding: var(--kd-space-2) var(--kd-space-4);
+  min-height: 2.5rem;
+}
+
+.sizeLg {
+  font-size: var(--kd-type-body-l-size);
+  line-height: var(--kd-type-body-l-leading);
+  padding: var(--kd-space-3) var(--kd-space-5);
+  min-height: 3rem;
+}
+
+/* -------- Variants -------- */
+
+/* Primary: lavender fill, inverse text. Calm default. */
+.variantPrimary {
+  background: var(--kd-color-accent-lavender);
+  color: var(--kd-color-accent-lavender-text);
+  border-color: var(--kd-color-accent-lavender);
+}
+.variantPrimary:hover:not(:disabled) {
+  background: var(--kd-color-accent-lavender-strong);
+  border-color: var(--kd-color-accent-lavender-strong);
+}
+.variantPrimary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* Secondary: surface fill, brand border, brand text. */
+.variantSecondary {
+  background: var(--kd-color-surface-raised);
+  color: var(--kd-color-accent-lavender-strong);
+  border-color: var(--kd-color-accent-lavender);
+}
+.variantSecondary:hover:not(:disabled) {
+  background: var(--kd-color-accent-lavender-subtle);
+  border-color: var(--kd-color-accent-lavender-strong);
+}
+
+/* Ghost: transparent fill, secondary text. */
+.variantGhost {
+  background: transparent;
+  color: var(--kd-color-text-secondary);
+  border-color: transparent;
+}
+.variantGhost:hover:not(:disabled) {
+  background: var(--kd-color-surface-sunken);
+  color: var(--kd-color-text-primary);
+}
+
+/* Danger: rose fill, inverse text. */
+.variantDanger {
+  background: var(--kd-color-state-error-fg);
+  color: var(--kd-color-accent-rose-text);
+  border-color: var(--kd-color-state-error-fg);
+}
+.variantDanger:hover:not(:disabled) {
+  background: var(--kd-color-accent-rose-strong);
+  border-color: var(--kd-color-accent-rose-strong);
+}
+
+/* -------- Block / width -------- */
+
+.block {
+  width: 100%;
+}
+
+/* -------- Loading -------- */
+
+.loading {
+  pointer-events: none;
+}
+
+.spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: var(--kd-radius-full);
+  animation: spin var(--kd-motion-duration-slow) linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}

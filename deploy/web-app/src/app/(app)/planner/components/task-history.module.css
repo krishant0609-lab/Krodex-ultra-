@@ -1,0 +1,92 @@
+/**
+ * KRODEX web — Task history timeline styles.
+ *
+ * Same editorial vocabulary as the planner index: a quiet list
+ * of rows with a metadata badge on the left, a description or
+ * reason in the middle, and a timestamp on the right.
+ */
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--kd-color-border-subtle);
+}
+
+.item {
+  border-bottom: 1px solid var(--kd-color-border-subtle);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--kd-space-4);
+  align-items: start;
+  padding: var(--kd-space-3) 0;
+}
+
+.rowMain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-2);
+  min-width: 0;
+}
+
+.rowMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--kd-space-2);
+  flex-wrap: wrap;
+}
+
+.rowDates {
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-text-tertiary);
+}
+
+.rowReason {
+  font-size: var(--kd-type-body-s-size);
+  line-height: var(--kd-type-body-s-leading);
+  color: var(--kd-color-text-secondary);
+  margin: 0;
+}
+
+.rowAside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--kd-space-1);
+}
+
+.rowLabel {
+  font-size: var(--kd-type-caption-size);
+  line-height: var(--kd-type-caption-leading);
+  font-weight: var(--kd-type-caption-weight);
+  letter-spacing: var(--kd-type-caption-tracking);
+  text-transform: uppercase;
+  color: var(--kd-color-text-tertiary);
+}
+
+.rowDate {
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-text-secondary);
+}
+
+.placeholder {
+  font-size: var(--kd-type-body-s-size);
+  line-height: var(--kd-type-body-s-leading);
+  color: var(--kd-color-text-tertiary);
+  font-style: italic;
+  margin: var(--kd-space-3) 0;
+}
+
+.errorMeta {
+  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: var(--kd-type-caption-size);
+  color: var(--kd-color-state-error-fg);
+  margin: var(--kd-space-3) 0 0;
+}

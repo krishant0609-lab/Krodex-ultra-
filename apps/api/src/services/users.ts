@@ -64,7 +64,13 @@ export async function getUserById(
     .maybeSingle();
   if (error) throw new Error(`getUserById failed: ${error.message}`);
   if (!data) throw new NotFoundError('user not found');
-  assertOwned(data, userId);
+  // public.users is the one table where the row's own `id` is the
+  // ownership field. Every other user-scoped table has a `user_id`
+  // FK that points back here. We check both `id` and `auth_user_id`
+  // because the prehandler passes `req.auth.userId = users.id` (the
+  // synthetic PK) while a future caller could also pass the auth
+  // subject directly.
+  assertOwned(data, userId, ['id', 'auth_user_id']);
   return asRow<UserRow>(data);
 }
 
@@ -82,7 +88,7 @@ export async function updateUser(
   if (error || !data) {
     throw new Error(`updateUser failed: ${error?.message ?? 'no row returned'}`);
   }
-  assertOwned(data, userId);
+  assertOwned(data, userId, ['id', 'auth_user_id']);
   return asRow<UserRow>(data);
 }
 

@@ -60,9 +60,13 @@ describe('createUser', () => {
 });
 
 describe('getUserById', () => {
+  // public.users is special: its ownership is its own `id` (synthetic
+  // PK) or its `auth_user_id` (linkage to Supabase Auth). The
+  // standard `user_id` FK that every other user-scoped table uses
+  // does not exist here. See services/users.ts.
   it('returns the user when present and owned', async () => {
     const client = makeFakeSupabase({
-      tables: { users: [{ id: SUB, user_id: SUB, email: 'a@b.co' }] },
+      tables: { users: [{ id: SUB, auth_user_id: SUB, email: 'a@b.co' }] },
     });
     const row = await getUserById(client, SUB);
     expect(row.id).toBe(SUB);
@@ -73,18 +77,37 @@ describe('getUserById', () => {
     await expect(getUserById(client, SUB)).rejects.toBeInstanceOf(NotFoundError);
   });
 
-  it('throws ForbiddenError when row exists but owned by someone else', async () => {
+  it('throws NotFoundError when no row matches the id filter', async () => {
+    // The mock's .eq('id', SUB) filters out the other row, so
+    // getUserById throws NotFoundError before assertOwned fires.
+    // (Production would hit the same path: a row with a different
+    // id is simply not visible to the query.)
+    const OTHER_ID = '22222222-2222-4222-8222-222222222222';
     const client = makeFakeSupabase({
-      tables: { users: [{ id: SUB, user_id: 'other-user' }] },
+      tables: { users: [{ id: OTHER_ID, auth_user_id: OTHER_ID, email: 'other@b.co' }] },
     });
-    await expect(getUserById(client, SUB)).rejects.toBeInstanceOf(ForbiddenError);
+    await expect(getUserById(client, SUB)).rejects.toBeInstanceOf(NotFoundError);
+  });
+
+  it('returns the user when the row matches the id (assertOwned short-circuits)', async () => {
+    // Defence in depth: even if the row passed the .eq('id')
+    // filter somehow, assertOwned(['id', 'auth_user_id']) would
+    // still throw if the row's id differed. We exercise the
+    // happy path here — the contract is that the prehandler
+    // passes users.id (the synthetic PK) and the row's id
+    // matches.
+    const client = makeFakeSupabase({
+      tables: { users: [{ id: SUB, auth_user_id: 'other-user', email: 'a@b.co' }] },
+    });
+    const row = await getUserById(client, SUB);
+    expect(row.id).toBe(SUB);
   });
 });
 
 describe('updateUser', () => {
   it('patches only the listed fields', async () => {
     const client = makeFakeSupabase({
-      tables: { users: [{ id: SUB, user_id: SUB, display_name: 'old', timezone: 'UTC' }] },
+      tables: { users: [{ id: SUB, auth_user_id: SUB, display_name: 'old', timezone: 'UTC' }] },
     });
     const row = await updateUser(client, SUB, { display_name: 'new' });
     expect(row.display_name).toBe('new');

@@ -134,8 +134,15 @@ export function buildAuthPreHandler(env: ApiEnv) {
     // a server-internal trust boundary: the user is identified by
     // the JWT signature (Supabase GoTrue, or dev HS256), not by
     // what they sent in the body.
+    //
+    // Lazy provisioning: if the row is missing, materialize it
+    // keyed to the verified JWT subject. The first authenticated
+    // call after signup (typically POST /users, or any GET that
+    // touches the user) is what bootstraps the row. The JWT
+    // signature is the only input that names the user, so this
+    // is safe against impersonation.
     const service = getServiceClient(env);
-    const { data, error } = await service
+    let { data, error } = await service
       .from('users')
       .select('id, email')
       .eq('auth_user_id', authUserId)
@@ -144,7 +151,35 @@ export function buildAuthPreHandler(env: ApiEnv) {
       throw new UnauthorizedError('user lookup failed');
     }
     if (!data) {
-      throw new UnauthorizedError('user not found');
+      // Auto-provision. We treat the verified JWT as ground truth
+      // for `auth_user_id`; `email` comes from the verified user
+      // record (not the body), `display_name` is null until the
+      // client sets it via PATCH /users/me.
+      const { data: created, error: createErr } = await service
+        .from('users')
+        .insert({
+          auth_user_id: authUserId,
+          email: email || null,
+          timezone: 'UTC',
+          locale: 'en-US',
+        })
+        .select('id, email')
+        .single();
+      if (createErr || !created) {
+        // Concurrent provisioning race: another request may have
+        // inserted the row between our SELECT and INSERT. Re-read.
+        const reread = await service
+          .from('users')
+          .select('id, email')
+          .eq('auth_user_id', authUserId)
+          .maybeSingle();
+        if (reread.error || !reread.data) {
+          throw new UnauthorizedError('user provisioning failed');
+        }
+        data = reread.data;
+      } else {
+        data = created;
+      }
     }
     req.auth = {
       userId: data.id as string,

@@ -33,7 +33,8 @@
     "perf:baseline": "node scripts/perf-baseline.mjs",
     "smoke:test": "npm --workspace @krodex/api run test -- src/__tests__/phase15-smoke.test.ts",
     "audit:env": "node scripts/audit-env.mjs",
-    "clean": "rimraf \"**/dist\" \"**/.next\" \"**/.turbo\" \"**/*.tsbuildinfo\""
+    "clean": "rimraf \"**/dist\" \"**/.next\" \"**/.turbo\" \"**/*.tsbuildinfo\"",
+    "postinstall": "node apps/api/scripts/patch-realtime-js.mjs"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^7.18.0",

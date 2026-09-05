@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * KRODEX web — sign in / sign up (cute lamp theme).
+ * KRODEX web — sign in / sign up (4-stage lamp theme).
  *
  * Real Supabase Auth (production path):
  *  - Google OAuth (signInWithOAuth) — primary, since Google
@@ -10,20 +10,37 @@
  *    for both sign-in and sign-up. The mode toggle swaps the
  *    submit label and the helper text.
  *
- * The lamp "wakes up" the moment the user starts typing in
- * either field (input event), then pulls back to "sleep" when
- * both fields are empty. The Google button keeps the lamp on
- * while the OAuth round-trip is in flight.
+ * The 4 lamp stages (each is a meaningful state in the
+ * authentication journey):
  *
- * The SupabaseAuthProvider (lib/auth-context.tsx) listens to
- * the auth state and writes the Supabase access token (ES256)
- * into the in-memory auth-store that the api-client reads.
- * The KRODEX API prehandler validates the same access token
- * with `supabase.auth.getUser(jwt)` and forwards it unchanged
- * to PostgREST so RLS keeps enforcing user ownership.
+ *   0. alone       — the page is just opened. The lamp is off
+ *                    and the form card is hidden. Quiet,
+ *                    ambient, dark.
+ *   1. interaction — the user has focused an input. The lamp
+ *                    flickers on briefly (still dark) so the
+ *                    room "reacts" to the touch. Form card
+ *                    still hidden.
+ *   2. illumination— both email and password fields have
+ *                    content. The lamp is fully on, the light
+ *                    cone is visible, the face is awake. The
+ *                    form card begins to appear but is still
+ *                    partially translucent.
+ *   3. sign-in/up  — the user has pulled the string (or
+ *                    pressed enter). The lamp glow intensifies
+ *                    and the form card is fully visible.
+ *
+ * The lamp is the input. The form is the reward. No fake
+ * "loading shimmer" states. The SupabaseAuthProvider
+ * (lib/auth-context.tsx) listens to the auth state and
+ * writes the Supabase access token (ES256) into the
+ * in-memory auth-store that the api-client reads. The
+ * KRODEX API prehandler validates the same access token
+ * with `supabase.auth.getUser(jwt)` and forwards it
+ * unchanged to PostgREST so RLS keeps enforcing user
+ * ownership.
  */
 
-import { Suspense, useEffect, useState, type FormEvent } from 'react';
+import { Suspense, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   useEmailSignIn,
@@ -34,6 +51,7 @@ import {
 import { useSupabaseAuth } from '../../../lib/auth-context';
 
 type Mode = 'signin' | 'signup';
+type Stage = 0 | 1 | 2 | 3;
 
 function LoginPageInner(): JSX.Element {
   const router = useRouter();
@@ -47,7 +65,16 @@ function LoginPageInner(): JSX.Element {
   const [mode, setMode] = useState<Mode>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [lampStateIndex, setLampStateIndex] = useState(0);
+  const [stage, setStage] = useState<Stage>(0);
+  const emailRef = useRef<HTMLInputElement>(null);
+
+  // Honor ?mode=signup on first mount so the landing page
+  // "Get started" CTA lands on the sign-up form.
+  useEffect(() => {
+    const m = search?.get('mode');
+    if (m === 'signup') setMode('signup');
+    else if (m === 'signin') setMode('signin');
+  }, [search]);
 
   // If we already have a session, route to the app immediately.
   useEffect(() => {
@@ -59,56 +86,99 @@ function LoginPageInner(): JSX.Element {
   // Surface ?error=... returned from the OAuth callback page.
   const oauthError = search?.get('error') ?? null;
 
-  const toggleLamp = (): void => {
-    setLampStateIndex((i) => (i + 1) % 2);
+  // Stage progression:
+  //   0 -> 1: any input focused
+  //   1 -> 2: both fields have content
+  //   2 -> 3: user pulls the string or presses enter
+  //   3 stays until submit
+  useEffect(() => {
+    if (stage >= 3) return;
+    if (email.length > 0 && password.length > 0) {
+      setStage(2);
+    } else if (email.length > 0 || password.length > 0) {
+      setStage(1);
+    } else if (stage === 1) {
+      // User cleared all fields; drop back to alone.
+      setStage(0);
+    }
+  }, [email, password, stage]);
+
+  const onFirstFocus = (): void => {
+    if (stage === 0) setStage(1);
   };
 
-  // Wake the lamp up the moment the user starts typing, and
-  // put it back to sleep when both fields are empty. Keeps the
-  // experience responsive without overriding an explicit click.
-  useEffect(() => {
-    if (email.length > 0 || password.length > 0) {
-      setLampStateIndex(1);
-    } else {
-      setLampStateIndex(0);
-    }
-  }, [email, password]);
+  const pullString = (): void => {
+    setStage(3);
+    // After the stage transition, focus the email field so
+    // keyboard users land in the form.
+    requestAnimationFrame(() => {
+      emailRef.current?.focus();
+    });
+  };
 
   const lampStates = [
     {
-      // OFF
+      // 0 — alone
+      name: 'alone',
       themeColor: '#2a2c30',
       themeGlowRGB: '42, 44, 48',
       shadeColor: '#2c2c2c',
       bulbColor: '#1a1a1a',
       lightOpacity: '0',
-      btnBg: '#2a2c30',
-      btnText: '#888',
+      glowScale: '0.6',
+      glowOpacity: '0',
       faceAwakeOpacity: '0',
       faceSleepOpacity: '1',
     },
     {
-      // ON — single warm colour, not the cycling palette from
-      // the original demo (cycling is too jittery for a real
-      // auth screen).
+      // 1 — interaction (flicker, still cool)
+      name: 'interaction',
+      themeColor: '#5a5347',
+      themeGlowRGB: '90, 83, 71',
+      shadeColor: '#3a3a3a',
+      bulbColor: '#5a4632',
+      lightOpacity: '0.04',
+      glowScale: '0.85',
+      glowOpacity: '0.18',
+      faceAwakeOpacity: '0',
+      faceSleepOpacity: '1',
+    },
+    {
+      // 2 — illumination (warm, awake face, cone visible)
+      name: 'illumination',
       themeColor: '#f59e0b',
       themeGlowRGB: '245, 158, 11',
       shadeColor: '#947463',
       bulbColor: '#fff0e6',
-      lightOpacity: '0.15',
-      btnBg: '#f59e0b',
-      btnText: '#fff',
+      lightOpacity: '0.18',
+      glowScale: '1',
+      glowOpacity: '0.35',
+      faceAwakeOpacity: '1',
+      faceSleepOpacity: '0',
+    },
+    {
+      // 3 — sign-in/sign-up (intensified glow)
+      name: 'signin',
+      themeColor: '#fbbf24',
+      themeGlowRGB: '251, 191, 36',
+      shadeColor: '#a0826c',
+      bulbColor: '#fff4e0',
+      lightOpacity: '0.22',
+      glowScale: '1.15',
+      glowOpacity: '0.55',
       faceAwakeOpacity: '1',
       faceSleepOpacity: '0',
     },
   ] as const;
 
-  const config = lampStates[lampStateIndex] ?? lampStates[0]!;
-  const lampIsOn = lampStateIndex % 2 === 1;
+  const config = lampStates[stage] ?? lampStates[0]!;
+  const lampIsOn = stage >= 2;
+  const formVisible = stage >= 2;
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     if (!email.trim() || !password) return;
+    if (stage < 3) setStage(3);
     if (mode === 'signin') {
       await emailIn.mutateAsync({ email: email.trim(), password });
       router.replace('/dashboard');
@@ -133,8 +203,8 @@ function LoginPageInner(): JSX.Element {
     '--shade-color': config.shadeColor,
     '--bulb-color': config.bulbColor,
     '--light-opacity': config.lightOpacity,
-    '--btn-bg': config.btnBg,
-    '--btn-text-color': config.btnText,
+    '--glow-scale': config.glowScale,
+    '--glow-opacity': config.glowOpacity,
   };
 
   return (
@@ -150,8 +220,8 @@ function LoginPageInner(): JSX.Element {
           --shade-color: #2c2c2c;
           --bulb-color: #1a1a1a;
           --light-opacity: 0;
-          --btn-text-color: #888;
-          --btn-bg: #2a2c30;
+          --glow-scale: 0.6;
+          --glow-opacity: 0;
         }
 
         .kx-login-root * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -169,7 +239,8 @@ function LoginPageInner(): JSX.Element {
 
         .kx-login-container {
           display: flex; width: 100%; max-width: 1100px;
-          height: 600px; padding: 2rem; gap: 2rem;
+          min-height: 600px; padding: 2rem; gap: 2rem;
+          align-items: center;
         }
 
         .kx-login-lamp-section {
@@ -179,26 +250,35 @@ function LoginPageInner(): JSX.Element {
 
         .kx-login-lamp-svg {
           width: 100%; max-width: 350px; height: auto;
-          overflow: visible; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.5));
+          overflow: visible;
+          filter: drop-shadow(0 20px 30px rgba(0,0,0,0.5));
         }
 
-        .kx-login-shade-main { fill: var(--shade-color); transition: fill 0.6s ease; }
-        .kx-login-shade-inner { fill: var(--bulb-color); transition: fill 0.6s ease; }
-        .kx-login-light-cone { opacity: var(--light-opacity); transition: opacity 0.6s ease; }
-        .kx-login-face-sleep { transition: opacity 0.3s ease; }
-        .kx-login-face-awake { opacity: 0; transition: opacity 0.3s ease; }
+        .kx-login-shade-main { fill: var(--shade-color); transition: fill 700ms cubic-bezier(0.4, 0, 0.2, 1); }
+        .kx-login-shade-inner { fill: var(--bulb-color); transition: fill 700ms cubic-bezier(0.4, 0, 0.2, 1); }
+        .kx-login-light-cone { opacity: var(--light-opacity); transition: opacity 700ms cubic-bezier(0.4, 0, 0.2, 1); }
+        .kx-login-face-sleep { transition: opacity 400ms ease; }
+        .kx-login-face-awake { opacity: 0; transition: opacity 400ms ease; }
 
         .kx-login-pull-string-group {
           cursor: pointer; transform-origin: top;
           transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .kx-login-pull-string-group:hover .kx-login-string-handle { stroke: #ffffff; }
+        .kx-login-pull-string-group:active { transform: scaleY(0.85); }
 
         .kx-login-lamp-ambient-glow {
           position: absolute; width: 300px; height: 300px;
-          background: radial-gradient(circle, rgba(var(--theme-glow-rgb), 0.15) 0%, transparent 70%);
-          top: 50%; left: 50%; transform: translate(-50%, -50%);
-          z-index: -1; transition: background 0.6s ease; pointer-events: none;
+          background: radial-gradient(circle, rgba(var(--theme-glow-rgb), 0.4) 0%, transparent 70%);
+          top: 50%; left: 50%;
+          transform: translate(-50%, -50%) scale(var(--glow-scale));
+          opacity: var(--glow-opacity);
+          z-index: -1;
+          transition:
+            background 700ms cubic-bezier(0.4, 0, 0.2, 1),
+            transform 700ms cubic-bezier(0.4, 0, 0.2, 1),
+            opacity 700ms cubic-bezier(0.4, 0, 0.2, 1);
+          pointer-events: none;
         }
 
         .kx-login-section { flex: 1; display: flex; justify-content: center; align-items: center; }
@@ -208,8 +288,28 @@ function LoginPageInner(): JSX.Element {
           background: rgba(18, 24, 32, 0.6); backdrop-filter: blur(12px);
           padding: 3rem 2.5rem; border-radius: 20px;
           border: 2px solid var(--theme-color);
-          box-shadow: 0 0 30px rgba(var(--theme-glow-rgb), 0.15), inset 0 0 15px rgba(255, 255, 255, 0.02);
-          transition: border-color 0.6s ease, box-shadow 0.6s ease;
+          box-shadow: 0 0 30px rgba(var(--theme-glow-rgb), 0.2),
+                      inset 0 0 15px rgba(255, 255, 255, 0.02);
+          transition:
+            opacity 600ms cubic-bezier(0.4, 0, 0.2, 1),
+            transform 600ms cubic-bezier(0.4, 0, 0.2, 1),
+            border-color 700ms ease,
+            box-shadow 700ms ease;
+          opacity: 0;
+          transform: translateY(28px);
+          pointer-events: none;
+        }
+
+        .kx-login-card-visible {
+          opacity: 1;
+          transform: translateY(0);
+          pointer-events: auto;
+        }
+
+        .kx-login-card-full {
+          border-color: var(--theme-color);
+          box-shadow: 0 0 50px rgba(var(--theme-glow-rgb), 0.35),
+                      inset 0 0 15px rgba(255, 255, 255, 0.03);
         }
 
         .kx-login-card h2 { font-size: 2rem; font-weight: 600; text-align: center; margin-bottom: 0.5rem; }
@@ -228,12 +328,12 @@ function LoginPageInner(): JSX.Element {
         }
         .kx-login-input-group input:focus {
           border-color: var(--theme-color);
-          box-shadow: 0 0 10px rgba(var(--theme-glow-rgb), 0.3);
+          box-shadow: 0 0 10px rgba(var(--theme-glow-rgb), 0.4);
         }
 
         .kx-login-btn {
           width: 100%; padding: 1rem; border: none; border-radius: 10px;
-          background: var(--btn-bg); color: var(--btn-text-color);
+          background: var(--theme-color); color: #fff;
           font-size: 1rem; font-weight: 600; cursor: pointer;
           margin-top: 0.5rem; transition: all 0.4s ease;
           font-family: inherit;
@@ -283,8 +383,19 @@ function LoginPageInner(): JSX.Element {
           color: #fca5a5; font-size: 0.85rem; text-align: center;
         }
 
+        .kx-login-hint {
+          margin-top: 1.5rem;
+          text-align: center;
+          color: #5a5a5a;
+          font-size: 0.85rem;
+          transition: opacity 600ms ease, color 700ms ease;
+          opacity: 0.7;
+        }
+        .kx-login-hint-active { color: rgba(var(--theme-glow-rgb), 0.95); opacity: 1; }
+        .kx-login-hint-hidden { opacity: 0; pointer-events: none; }
+
         @media (max-width: 768px) {
-          .kx-login-container { flex-direction: column; height: auto; }
+          .kx-login-container { flex-direction: column; min-height: auto; }
           .kx-login-lamp-svg { max-width: 250px; }
         }
       `}</style>
@@ -298,6 +409,8 @@ function LoginPageInner(): JSX.Element {
               viewBox="0 0 300 450"
               xmlns="http://www.w3.org/2000/svg"
               aria-label="Cute interactive lamp"
+              data-testid="login-lamp-svg"
+              data-stage={config.name}
             >
               <defs>
                 <linearGradient id="kxLoginLightCone" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -322,9 +435,9 @@ function LoginPageInner(): JSX.Element {
 
               <g
                 className="kx-login-pull-string-group"
-                onClick={toggleLamp}
+                onClick={pullString}
                 role="button"
-                aria-label={lampIsOn ? 'Turn lamp off' : 'Turn lamp on'}
+                aria-label={stage >= 3 ? 'Lamp on — form ready' : 'Pull the lamp string to continue'}
                 data-testid="login-lamp-toggle"
               >
                 <line x1="105" y1="180" x2="105" y2="280" stroke="#555" strokeWidth={3} />
@@ -390,7 +503,15 @@ function LoginPageInner(): JSX.Element {
           </div>
 
           <div className="kx-login-section">
-            <div className="kx-login-card" data-testid="login-card">
+            <div
+              className={
+                'kx-login-card' +
+                (formVisible ? ' kx-login-card-visible' : '') +
+                (stage === 3 ? ' kx-login-card-full' : '')
+              }
+              data-testid="login-card"
+              data-stage={config.name}
+            >
               <h2>{mode === 'signin' ? 'Welcome Back' : 'Create Account'}</h2>
               <p className="kx-login-eyebrow">
                 {mode === 'signin'
@@ -423,12 +544,14 @@ function LoginPageInner(): JSX.Element {
                 <div className="kx-login-input-group">
                   <label htmlFor="kx-login-email">Email</label>
                   <input
+                    ref={emailRef}
                     id="kx-login-email"
                     type="email"
                     autoComplete="email"
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    onFocus={onFirstFocus}
                     required
                     data-testid="login-email"
                   />
@@ -443,6 +566,7 @@ function LoginPageInner(): JSX.Element {
                     placeholder={mode === 'signup' ? 'At least 8 characters' : 'Your password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    onFocus={onFirstFocus}
                     required
                     minLength={mode === 'signup' ? 8 : 1}
                     data-testid="login-password"
@@ -495,6 +619,24 @@ function LoginPageInner(): JSX.Element {
                 </button>
               ) : null}
             </div>
+
+            <p
+              className={
+                'kx-login-hint' +
+                (stage === 0
+                  ? ''
+                  : stage === 1
+                    ? ' kx-login-hint-active'
+                    : ' kx-login-hint-hidden')
+              }
+              data-testid="login-hint"
+            >
+              {stage === 0
+                ? 'Touch the email field to wake the lamp.'
+                : stage === 1
+                  ? 'Now type a password — the lamp is listening.'
+                  : ''}
+            </p>
           </div>
         </div>
       </div>

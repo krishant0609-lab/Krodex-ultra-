@@ -1,0 +1,168 @@
+/**
+ * KRODEX web — public landing page styles.
+ *
+ * All visual values resolve to design tokens. The layout is a
+ * single-column editorial stack: hero, six pillars, four
+ * engineering principles, footer.
+ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--kd-color-surface-background);
+  color: var(--kd-color-text-primary);
+}
+
+.heroActions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--kd-space-3);
+}
+
+.pillars {
+  padding: var(--kd-space-20) var(--kd-space-6) var(--kd-space-16);
+  max-width: var(--kd-content-max-l);
+  margin: 0 auto;
+  width: 100%;
+}
+
+.pillarsHeading {
+  font-size: var(--kd-type-display-s-size);
+  line-height: var(--kd-type-display-s-leading);
+  font-weight: var(--kd-type-display-s-weight);
+  letter-spacing: var(--kd-type-display-s-tracking);
+  color: var(--kd-color-text-primary);
+  margin: 0 0 var(--kd-space-8);
+  text-align: center;
+}
+
+.pillarGrid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--kd-space-4);
+}
+
+@media (max-width: 960px) {
+  .pillarGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .pillarGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pillar {
+  position: relative;
+  background: var(--kd-color-surface-raised);
+  border: 1px solid var(--kd-color-border-subtle);
+  border-radius: var(--kd-radius-l);
+  padding: var(--kd-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-3);
+  transition: transform var(--kd-motion-duration-fast) var(--kd-motion-ease-out),
+    box-shadow var(--kd-motion-duration-fast) var(--kd-motion-ease-out);
+  box-shadow: var(--kd-elev-1);
+}
+
+.pillar:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--kd-elev-2);
+}
+
+.pillarAccent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  border-top-left-radius: var(--kd-radius-l);
+  border-bottom-left-radius: var(--kd-radius-l);
+}
+
+.pillar[data-accent='sapphire'] .pillarAccent {
+  background: var(--kd-color-accent-sapphire);
+}
+.pillar[data-accent='rose'] .pillarAccent {
+  background: var(--kd-color-accent-rose);
+}
+.pillar[data-accent='emerald'] .pillarAccent {
+  background: var(--kd-color-accent-emerald);
+}
+.pillar[data-accent='lavender'] .pillarAccent {
+  background: var(--kd-color-accent-lavender);
+}
+.pillar[data-accent='amber'] .pillarAccent {
+  background: var(--kd-color-accent-amber);
+}
+.pillar[data-accent='champagne'] .pillarAccent {
+  background: var(--kd-color-accent-champagne);
+}
+
+.pillarTitle {
+  margin: 0;
+  font-size: var(--kd-type-heading-m-size);
+  line-height: var(--kd-type-heading-m-leading);
+  font-weight: var(--kd-type-heading-m-weight);
+  color: var(--kd-color-text-primary);
+}
+
+.pillarBody {
+  margin: 0;
+  font-size: var(--kd-type-body-m-size);
+  line-height: var(--kd-type-body-m-leading);
+  color: var(--kd-color-text-secondary);
+}
+
+.principles {
+  padding: var(--kd-space-12) var(--kd-space-6);
+  background: var(--kd-color-surface-sunken);
+  border-top: 1px solid var(--kd-color-border-subtle);
+  border-bottom: 1px solid var(--kd-color-border-subtle);
+}
+
+.principlesHeading {
+  font-size: var(--kd-type-display-s-size);
+  line-height: var(--kd-type-display-s-leading);
+  font-weight: var(--kd-type-display-s-weight);
+  letter-spacing: var(--kd-type-display-s-tracking);
+  color: var(--kd-color-text-primary);
+  margin: 0 0 var(--kd-space-6);
+  text-align: center;
+}
+
+.principleList {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  max-width: 60ch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kd-space-4);
+  font-size: var(--kd-type-body-m-size);
+  line-height: var(--kd-type-body-m-leading);
+  color: var(--kd-color-text-secondary);
+}
+
+.principleList strong {
+  color: var(--kd-color-text-primary);
+  font-weight: var(--kd-type-label-weight);
+}
+
+.landingFooter {
+  padding: var(--kd-space-6);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kd-space-2) var(--kd-space-3);
+  justify-content: center;
+  font-size: var(--kd-type-body-s-size);
+  color: var(--kd-color-text-tertiary);
+}

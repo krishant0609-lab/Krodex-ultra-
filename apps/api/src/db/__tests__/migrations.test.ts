@@ -115,6 +115,12 @@ const EXPECTED_MIGRATION_FILES = [
   // See supabase/migrations/20260901164346_21_users_rls_use_auth_user_id.sql
   // for the full rationale.
   '20260901164346_21_users_rls_use_auth_user_id.sql',
+  // Migration 22 (v1.0 launch): health_ping() RPC. The liveness
+  // probe now performs a round-trip to Postgres (`select 1`) so
+  // Vercel/Railway can distinguish "API up, DB down" from a full
+  // outage. No schema changes; one new SECURITY DEFINER function
+  // and a grant to anon + authenticated.
+  '20260901164346_22_health_ping_rpc.sql',
 ] as const;
 
 const MIGRATION_NAMING_PATTERN =
@@ -245,7 +251,7 @@ function readMigration(name: string): string {
 // ----- the actual tests --------------------------------------------------
 
 describe('Phase 1+3+4+9 migration set — file presence', () => {
-  it('contains the expected 18 migration files', () => {
+  it('contains the expected 22 migration files', () => {
     const onDisk = readdirSync(migrationsDir)
       .filter((f) => f.endsWith('.sql'))
       .sort();

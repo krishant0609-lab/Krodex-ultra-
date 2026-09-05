@@ -3,13 +3,15 @@
 /**
  * KRODEX web — authenticated-app shell (client half).
  *
- * Phase 7: this client component owns the client-only concerns
- * of the (app) layout — the auth-guard redirect, the logout
- * handler, the sticky AppNav, the page outlet, and the
- * AppFooter. The version is passed in from the server wrapper
- * so the @krodex/shared import (which transitively pulls in
- * node:crypto via the events barrel) stays out of the client
- * bundle.
+ * Phase 9: switched from the horizontal AppNav to a vertical
+ * Sidebar as the primary navigation surface. The shell owns:
+ *  - the auth-guard redirect to /login
+ *  - the sidebar + main outlet + footer layout
+ *  - the logout handler
+ *
+ * The version is passed in from the server wrapper so the
+ * @krodex/shared import (which transitively pulls in node:crypto
+ * via the events barrel) stays out of the client bundle.
  *
  * No fake data, no fabricated progress. The shell renders the
  * chrome only; each page composes its own data via TanStack
@@ -19,7 +21,7 @@
 import { useCallback, useEffect, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { isAuthenticated, clearAuth } from '../../lib/auth-store';
-import { AppNav } from '../../components/app-nav';
+import { Sidebar } from '../../components/sidebar';
 import { AppFooter } from '../../components/app-footer';
 
 export interface AppShellClientProps {
@@ -46,15 +48,23 @@ export function AppShellClient({ version, children }: AppShellClientProps): JSX.
       style={{
         minHeight: '100vh',
         display: 'flex',
-        flexDirection: 'column',
         background: 'var(--kd-color-surface-background)',
       }}
     >
-      <AppNav onLogout={onLogout} />
-      <main style={{ flex: 1, padding: 'var(--kd-space-6)' }} data-testid="app-main">
-        {children}
+      <Sidebar version={version} onLogout={onLogout} />
+      <main
+        style={{
+          flex: 1,
+          padding: 'var(--kd-space-6)',
+          minWidth: 0,
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+        data-testid="app-main"
+      >
+        <div style={{ flex: 1 }}>{children}</div>
+        <AppFooter version={version} />
       </main>
-      <AppFooter version={version} />
     </div>
   );
 }

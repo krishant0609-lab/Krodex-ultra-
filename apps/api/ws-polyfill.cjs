@@ -95,24 +95,30 @@ process.stderr.write('[ws-diagnostic] typeof.globalThis.WebSocket=' + typeof glo
   }
 
   // Walk from the resolved entry to the package root.
-  // Common layouts seen:
-  //   <pkgRoot>/dist/main/index.js                (CJS entry, when require()'d)
-  //   <pkgRoot>/dist/main/lib/websocket-factory.js
-  //   <pkgRoot>/src/lib/websocket-factory.ts      (loaded by tsx)
+  // Resolved entry observed: /app/node_modules/@supabase/realtime-js/dist/main/index.js
+  // Going up four levels: main -> dist -> realtime-js -> @supabase.
+  // The package we care about is "realtime-js", so the real package root is
+  // dirname(entryPath)/../../../.. which is one level shallower than the
+  // npm namespace root. We probe both so the diagnostic stays correct if
+  // the entry layout differs.
   const path = require('path');
   let pkgRoot = '<unknown>';
+  let realtimeJsRoot = '<unknown>';
   try {
-    // entry is typically .../dist/main/index.js — step up three to package root.
-    pkgRoot = path.resolve(path.dirname(entryPath), '..', '..', '..');
-    process.stderr.write('[ws-diagnostic] realtimeJs.pkgRoot=' + pkgRoot + '\n');
+    const namespaceRoot = path.resolve(path.dirname(entryPath), '..', '..', '..', '..');
+    realtimeJsRoot = path.join(namespaceRoot, 'realtime-js');
+    pkgRoot = namespaceRoot;
+    process.stderr.write('[ws-diagnostic] realtimeJs.namespaceRoot=' + namespaceRoot + '\n');
+    process.stderr.write('[ws-diagnostic] realtimeJs.pkgRoot=' + realtimeJsRoot + '\n');
   } catch (err) {
     process.stderr.write('[ws-diagnostic] could not derive pkgRoot: ' + err.message + '\n');
   }
 
   const fs = require('fs');
   const candidates = [
-    path.join(pkgRoot, 'src', 'lib', 'websocket-factory.ts'),
-    path.join(pkgRoot, 'dist', 'main', 'lib', 'websocket-factory.js'),
+    path.join(realtimeJsRoot, 'src', 'lib', 'websocket-factory.ts'),
+    path.join(realtimeJsRoot, 'dist', 'main', 'lib', 'websocket-factory.js'),
+    path.join(realtimeJsRoot, 'package.json'),
   ];
 
   for (const filePath of candidates) {
@@ -147,7 +153,7 @@ process.stderr.write('[ws-diagnostic] typeof.globalThis.WebSocket=' + typeof glo
   // Also dump the package.json's "main" and "exports" so we know which
   // entry Node's resolver will pick when supabase-js does require().
   try {
-    const pkgJsonPath = path.join(pkgRoot, 'package.json');
+    const pkgJsonPath = path.join(realtimeJsRoot, 'package.json');
     if (fs.existsSync(pkgJsonPath)) {
       const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
       process.stderr.write('[ws-diagnostic] packageJson.path=' + pkgJsonPath + '\n');
@@ -162,6 +168,45 @@ process.stderr.write('[ws-diagnostic] typeof.globalThis.WebSocket=' + typeof glo
   } catch (err) {
     process.stderr.write('[ws-diagnostic] packageJson.err=' + err.message + '\n');
   }
+
+  // Also dump the entry file itself (the .js that Node's resolver picked)
+  // so we can see what code is actually being executed.
+  try {
+    if (fs.existsSync(entryPath)) {
+      process.stderr.write('[ws-diagnostic] ----- entryFile: ' + entryPath + ' -----\n');
+      const entryContent = fs.readFileSync(entryPath, 'utf8');
+      const entryLines = entryContent.split(/\r?\n/).slice(0, 30);
+      process.stderr.write('[ws-diagnostic] entryFile.totalLines=' + entryContent.split(/\r?\n/).length + '\n');
+      for (let i = 0; i < entryLines.length; i++) {
+        process.stderr.write('[ws-diagnostic] entryFile:' + (i + 1) + ':' + entryLines[i] + '\n');
+      }
+    } else {
+      process.stderr.write('[ws-diagnostic] entryFile=<absent at ' + entryPath + '>\n');
+    }
+  } catch (err) {
+    process.stderr.write('[ws-diagnostic] entryFile.err=' + err.message + '\n');
+  }
+
+  // Also list the dist/ and src/ directories so we see exactly what shipped.
+  function listDir(dir, depth) {
+    if (depth <= 0) return [];
+    let entries = [];
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch (err) {
+      process.stderr.write('[ws-diagnostic] listDir.err dir=' + dir + ' err=' + err.message + '\n');
+      return [];
+    }
+    for (const ent of entries) {
+      const child = path.join(dir, ent.name);
+      process.stderr.write('[ws-diagnostic] dirEntry: ' + child + (ent.isDirectory() ? '/' : '') + '\n');
+      if (ent.isDirectory() && depth > 1) {
+        listDir(child, depth - 1);
+      }
+    }
+  }
+  process.stderr.write('[ws-diagnostic] ----- dirTree: ' + realtimeJsRoot + ' (depth=2) -----\n');
+  listDir(realtimeJsRoot, 2);
 })();
 
 process.stderr.write('[ws-diagnostic] ===== END @supabase/realtime-js artifact survey =====\n');

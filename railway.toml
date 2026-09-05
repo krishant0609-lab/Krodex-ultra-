@@ -1,0 +1,21 @@
+# KRODEX v1.0 — Railway deploy manifest for the Fastify API.
+#
+# Source: deployment/v1.0-production branch.
+# Behavior:
+#   - Builds @krodex/shared (dist/) then @krodex/api (dist/) via npm workspaces.
+#   - Starts the Fastify HTTP server which also runs the outbox worker and
+#     the five scheduled jobs in-process (see apps/api/src/events).
+#   - Healthcheck path: GET /health (returns { phase, db, bus }).
+#
+# This manifest is read by `railway up` from the repo root; it does NOT
+# deploy the web app. apps/web continues to be deployed to Vercel.
+
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "node apps/api/dist/server.js"
+healthcheckPath = "/health"
+healthcheckTimeout = 60
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5

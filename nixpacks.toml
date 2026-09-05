@@ -1,0 +1,23 @@
+# KRODEX v1.0 — Nixpacks config for the Railway API service.
+#
+# The monorepo has three workspaces: @krodex/shared, @krodex/api, @krodex/web.
+# We only want to deploy @krodex/api for this service. The web app is built
+# and deployed separately to Vercel.
+#
+# We do NOT run `tsc` for the API here because the API source uses TypeScript's
+# "moduleResolution: Bundler" which emits bare directory imports; running the
+# compiled output with `node` then fails on Node's strict ESM resolver. We
+# instead run the TypeScript source directly with `tsx` (see Procfile), which
+# performs the resolution the test suite relies on.
+
+[phases.setup]
+aptPkgs = ["python3", "build-essential"]
+
+[phases.install]
+cmds = ["npm ci --no-audit --no-fund --include=dev"]
+
+[phases.build]
+cmds = [
+  "npm --workspace @krodex/shared run build",
+  "echo skip_api_compile_using_tsx",
+]

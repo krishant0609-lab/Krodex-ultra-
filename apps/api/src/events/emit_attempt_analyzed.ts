@@ -50,6 +50,12 @@ export async function handle(
   client: SupabaseClient,
   envelope: EventEnvelope<'attempt.submitted'>,
 ): Promise<HandlerOutcome> {
+  // System-owned attempts are not a thing; if a future change ever
+  // emits an attempt.submitted with null accountId, skip rather
+  // than crash the worker.
+  if (envelope.accountId === null) {
+    return { kind: 'succeeded', wrote: 0, skipped: 'system_owned_event' };
+  }
   // 1. Read the per-question outcomes for this attempt.
   const { data, error } = await client
     .from('test_answers')

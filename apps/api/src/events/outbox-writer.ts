@@ -44,7 +44,11 @@ export interface OutboxRow {
   event_id: string;
   event_type: EventType;
   schema_version: number;
-  user_id: string;
+  /**
+   * Owning user. NULL for system-owned events (e.g. system.tick).
+   * Maps to public.event_outbox.user_id (nullable as of migration 20).
+   */
+  user_id: string | null;
   actor_id: string | null;
   aggregate_type: string;
   aggregate_id: string;
@@ -112,7 +116,11 @@ export async function emit(
  */
 export function buildEnvelope<T extends EventType>(input: {
   eventType: T;
-  accountId: string;
+  /**
+   * Owning user. Pass `null` for system-owned events (e.g. system.tick).
+   * Maps to public.event_outbox.user_id (nullable as of migration 20).
+   */
+  accountId: string | null;
   actorId: string | null;
   aggregateType: string;
   aggregateId: string;

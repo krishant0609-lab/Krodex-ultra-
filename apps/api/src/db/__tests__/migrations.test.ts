@@ -92,9 +92,21 @@ const EXPECTED_MIGRATION_FILES = [
   // writes (no policies = deny by default).
   '20260901164346_17_security_audit_log.sql',
   // Phase 15: targeted indexes for the in-app delivery dispatcher
-  // and recovery-suggestions hot paths. Additive; existing query
+  // and recovery-suggestion hot paths. Additive; existing query
   // plans remain valid.
   '20260901164346_18_perf_indexes.sql',
+  // Phase 16 stub: deploy_attempts + deploy_reviews tables. Placeholder
+  // schema for the deploy tracking surface; not yet wired into routes.
+  '20260901164346_19_deploy_attempts_reviews_stub.sql',
+  // Migration 20: nullable outbox user_id. Required because the
+  // 4 scheduled jobs (mark_review_due, detect_task_missed,
+  // recompute_analytics_rollup, recompute_student_model) emit
+  // system.tick envelopes with no owning user. Drops NOT NULL on
+  // event_outbox.user_id and rebuilds uq_event_outbox_idem with
+  // NULLS NOT DISTINCT so system.tick rows dedup correctly. FK to
+  // public.users is preserved unchanged (only checked when
+  // user_id is non-null).
+  '20260901164346_20_nullable_outbox_user_id.sql',
 ] as const;
 
 const MIGRATION_NAMING_PATTERN =

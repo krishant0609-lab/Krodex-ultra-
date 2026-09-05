@@ -60,10 +60,29 @@ describe('mark_review_due job', () => {
     expect(r.ok).toBe(true);
     const outbox = (client as unknown as { __rows: (t: string) => unknown[] }).__rows('event_outbox');
     expect(outbox).toHaveLength(1);
-    const row = outbox[0] as { event_type: string; aggregate_type: string; aggregate_id: string };
+    const row = outbox[0] as { event_type: string; aggregate_type: string; aggregate_id: string; user_id: string | null };
     expect(row.event_type).toBe('system.tick');
     expect(row.aggregate_type).toBe('scheduled_job');
     expect(row.aggregate_id).toBe('mark_review_due');
+    // Migration 20: system.tick is system-owned; user_id is null.
+    // This is the contract that prevents the production 23503 FK
+    // violation. A future refactor that reintroduces the nil UUID
+    // would break this assertion.
+    expect(row.user_id).toBeNull();
+  });
+
+  it('emitted envelope carries accountId=null (regression: not the nil UUID)', async () => {
+    const client = makeFakeSupabase({
+      tables: { event_outbox: [] },
+      uniqueConstraints: { event_outbox: OUTBOX_UNIQUE },
+      rpcImpls: {
+        mark_due_reviews: () => ({ data: [], error: null }),
+      },
+    });
+    const r = await runMarkReviewDue(client, fixedNow('2026-09-02T10:00:00.000Z'));
+    expect(r.ok).toBe(true);
+    expect(r.tickEnvelope.accountId).toBeNull();
+    expect(r.tickEnvelope.accountId).not.toBe('00000000-0000-0000-0000-000000000000');
   });
 
   it('returns ok=true and emits a zero-count tick when nothing was due', async () => {

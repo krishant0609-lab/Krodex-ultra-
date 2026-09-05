@@ -132,6 +132,32 @@ describe('recompute_analytics_rollup', () => {
     expect(result.tickEnvelope.eventType).toBe('system.tick');
   });
 
+  it('emitted tick envelope carries accountId=null (migration 20 contract)', async () => {
+    const client = makeFakeSupabase({
+      tables: {
+        progress_evidence: [
+          { user_id: USER_A, created_at: '2026-09-02T11:57:00Z' },
+        ],
+      },
+      rpcImpls: {
+        recompute_analytics_rollup: () => ({ data: 1, error: null }),
+      },
+    });
+    const result = await runRecomputeAnalyticsRollup(
+      client,
+      () => FIXED_NOW,
+    );
+    expect(result.ok).toBe(true);
+    expect(result.tickEnvelope.accountId).toBeNull();
+    expect(result.tickEnvelope.accountId).not.toBe('00000000-0000-0000-0000-000000000000');
+    // Also assert the outbox row was actually written with null user_id.
+    const outbox = (client as unknown as { __rows: (t: string) => unknown[] }).__rows('event_outbox');
+    expect(outbox).toHaveLength(1);
+    const row = outbox[0] as { user_id: string | null; event_type: string };
+    expect(row.event_type).toBe('system.tick');
+    expect(row.user_id).toBeNull();
+  });
+
   it('preserves partial counts when a per-user RPC fails', async () => {
     // Make the first call succeed (3 rows), then the second
     // call fail. The handler must record the partial success

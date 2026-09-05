@@ -41,7 +41,7 @@ describe('detect_task_missed job', () => {
     expect(r.tickEnvelope.payload.emitted_event_count).toBe(3);
   });
 
-  it('writes a system.tick row into event_outbox', async () => {
+  it('writes a system.tick row into event_outbox with user_id=null', async () => {
     const client = makeFakeSupabase({
       tables: { event_outbox: [] },
       uniqueConstraints: { event_outbox: OUTBOX_UNIQUE },
@@ -53,10 +53,16 @@ describe('detect_task_missed job', () => {
     expect(r.ok).toBe(true);
     const outbox = (client as unknown as { __rows: (t: string) => unknown[] }).__rows('event_outbox');
     expect(outbox).toHaveLength(1);
-    const row = outbox[0] as { event_type: string; aggregate_type: string; aggregate_id: string };
+    const row = outbox[0] as { event_type: string; aggregate_type: string; aggregate_id: string; user_id: string | null };
     expect(row.event_type).toBe('system.tick');
     expect(row.aggregate_type).toBe('scheduled_job');
     expect(row.aggregate_id).toBe('detect_task_missed');
+    // Migration 20: system.tick is system-owned; user_id is null.
+    expect(row.user_id).toBeNull();
+    // The pre-remediation defect was the nil UUID. A future regression
+    // would surface here.
+    expect(r.tickEnvelope.accountId).toBeNull();
+    expect(r.tickEnvelope.accountId).not.toBe('00000000-0000-0000-0000-000000000000');
   });
 
   it('returns ok=true with zero count when the lookback is empty', async () => {

@@ -127,7 +127,10 @@ function buildTickEnvelope(now: Date, emittedEventCount: number): EventEnvelope<
   const bucket = ranAt.slice(0, 19); // YYYY-MM-DDTHH:MM:SS
   return buildEnvelope({
     eventType: 'system.tick',
-    accountId: '00000000-0000-0000-0000-000000000000', // synthetic; outbox.user_id is NOT NULL
+    // System-owned event: no owning user. The outbox.user_id column
+    // is nullable (migration 20) and the FK to public.users(id) is
+    // only checked when accountId is non-null.
+    accountId: null,
     actorId: null,
     aggregateType: 'scheduled_job',
     aggregateId: JOB_NAME,

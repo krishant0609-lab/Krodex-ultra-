@@ -106,6 +106,7 @@ export function planStudentModelForEvent(
 ): { userId: string; windowDays: number } | null {
   if (!isStudentModelTriggeringEvent(envelope)) return null;
   if (envelope.eventType === 'system.tick') return null;
+  if (envelope.accountId === null) return null;
   return { userId: envelope.accountId, windowDays: DEFAULT_WINDOW_DAYS };
 }
 

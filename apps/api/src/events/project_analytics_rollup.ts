@@ -84,7 +84,8 @@ export function isRollupTriggeringEvent(envelope: EventEnvelope): boolean {
 /**
  * Plan the rollup call for an envelope. Pure / deterministic.
  * Returns the userId + the window to recompute, or `null` for
- * event types the handler ignores.
+ * event types the handler ignores or for system-owned events
+ * (accountId === null).
  */
 export function planRollupForEvent(
   envelope: EventEnvelope,
@@ -92,10 +93,11 @@ export function planRollupForEvent(
 ): { userId: string; since: Date; until: Date } | null {
   if (!isRollupTriggeringEvent(envelope)) return null;
   // The synthetic `system.tick` envelopes emitted by the
-  // scheduler have accountId=0; skip those — the scheduler
+  // scheduler have accountId=null; skip those — the scheduler
   // job already invokes the SQL function directly for every
   // active user.
   if (envelope.eventType === 'system.tick') return null;
+  if (envelope.accountId === null) return null;
   const window = fiveMinuteRecomputeWindow(now);
   return { userId: envelope.accountId, ...window };
 }

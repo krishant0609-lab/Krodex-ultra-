@@ -312,8 +312,14 @@ export interface EventEnvelope<T extends EventType = EventType> {
   schemaVersion: 1;
   /** ISO 8601. */
   occurredAt: string;
-  /** Owning user. Phase 3 aliases TRD's accountId → user_id. */
-  accountId: string;
+  /**
+   * Owning user. Phase 3 aliases TRD's accountId → user_id.
+   * `null` means the event is system-owned (e.g. system.tick) and has no
+   * owning user. The database column public.event_outbox.user_id is
+   * nullable; the FK to public.users(id) is preserved but only checked
+   * when accountId is non-null.
+   */
+  accountId: string | null;
   /** The user who caused the event (null = system / worker). */
   actorId: string | null;
   aggregateType: string;

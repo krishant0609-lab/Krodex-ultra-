@@ -49,6 +49,10 @@ interface EvidenceWrite {
  * the mapping down.
  */
 export function planEvidenceForEvent(envelope: EventEnvelope): readonly EvidenceWrite[] {
+  // System-owned events (accountId === null) cannot produce per-user
+  // evidence rows. Return early with an empty plan; the worker's
+  // writes.length === 0 branch will record a no-op success.
+  if (envelope.accountId === null) return [];
   const writes: EvidenceWrite[] = [];
   const t = envelope.eventType;
   const userId = envelope.accountId;

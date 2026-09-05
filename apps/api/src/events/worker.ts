@@ -82,7 +82,11 @@ export interface ClaimedOutboxRow {
   event_id: string;
   event_type: string;
   schema_version: number;
-  user_id: string;
+  /**
+   * Owning user. NULL for system-owned events (e.g. system.tick).
+   * Maps to public.event_outbox.user_id (nullable as of migration 20).
+   */
+  user_id: string | null;
   actor_id: string | null;
   aggregate_type: string;
   aggregate_id: string;
@@ -153,7 +157,7 @@ export interface ProcessOnceOptions {
  * We trust the row because the worker is the only consumer of
  * `claim_pending_events` and the RPC is service-role only.
  */
-function envelopeFromOutboxRow(row: ClaimedOutboxRow): EventEnvelope {
+export function envelopeFromOutboxRow(row: ClaimedOutboxRow): EventEnvelope {
   return {
     eventId: row.event_id,
     eventType: row.event_type as EventType,

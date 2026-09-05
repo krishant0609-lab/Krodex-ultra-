@@ -111,6 +111,9 @@ export function planNotificationForEvent(
   if (!NOTIFICATION_EVENT_TYPES.has(envelope.eventType as EventType)) {
     return [];
   }
+  // System-owned events (accountId === null) cannot produce per-user
+  // notification rows. Return early with an empty plan.
+  if (envelope.accountId === null) return [];
   const userId = envelope.accountId;
 
   switch (envelope.eventType) {
@@ -437,7 +440,11 @@ export async function handle(
     return { kind: 'succeeded', wrote: 0, skipped: 'event_had_no_projection' };
   }
 
-  const { prefs, timezone } = await loadUserPreferences(client, envelope.accountId);
+  // planNotificationForEvent returns [] for null accountId, so any
+  // non-empty plan implies a non-null accountId. The assertion is
+  // bounded by the prior length check.
+  const accountId = envelope.accountId as string;
+  const { prefs, timezone } = await loadUserPreferences(client, accountId);
   const now = new Date(envelope.occurredAt);
 
   let wrote = 0;

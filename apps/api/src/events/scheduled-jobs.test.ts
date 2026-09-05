@@ -118,6 +118,47 @@ describe('registerScheduledJobs', () => {
     expect(logger.info).toHaveBeenCalled();
   });
 
+  it('migration 20: all 4 jobs write system.tick rows with user_id=null (no nil UUID)', async () => {
+    const logger = makeLogger();
+    const client = makeFakeSupabase({
+      tables: {
+        event_outbox: [],
+        progress_evidence: [
+          { user_id: 'u1', created_at: '2026-09-02T09:59:30Z' },
+        ],
+      },
+      uniqueConstraints: { event_outbox: OUTBOX_UNIQUE },
+      rpcImpls: {
+        mark_due_reviews: () => ({ data: [], error: null }),
+        detect_missed_tasks: () => ({ data: [], error: null }),
+        recompute_analytics_rollup: () => ({ data: 0, error: null }),
+        recompute_student_model: () => ({ data: 0, error: null }),
+      },
+    });
+    const sched = registerScheduledJobs({
+      client,
+      logger,
+      now: () => Date.parse('2026-09-02T10:00:00.000Z'),
+      intervals: {
+        mark_review_due: 0,
+        detect_task_missed: 0,
+        recompute_analytics_rollup: 0,
+        recompute_student_model: 0,
+      },
+    });
+    await sched.runOnce();
+    const outbox = (client as unknown as { __rows: (t: string) => unknown[] }).__rows('event_outbox');
+    // 4 jobs → 4 system.tick rows.
+    expect(outbox).toHaveLength(4);
+    for (const row of outbox as Array<{ event_type: string; user_id: string | null; aggregate_id: string }>) {
+      expect(row.event_type).toBe('system.tick');
+      // Migration 20 contract: system.tick is system-owned; user_id is null.
+      expect(row.user_id).toBeNull();
+      // The pre-remediation defect was the nil UUID. Guard against regression.
+      expect(row.user_id).not.toBe('00000000-0000-0000-0000-000000000000');
+    }
+  });
+
   it('runOnce logs a warning when a job fails but does not throw', async () => {
     const logger = makeLogger();
     const client = makeFakeSupabase({

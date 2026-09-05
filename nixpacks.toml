@@ -13,6 +13,9 @@
 [providers]
 node = "22"
 
+[variables]
+NODE_VERSION = "22"
+
 [phases.setup]
 aptPkgs = ["python3", "build-essential"]
 

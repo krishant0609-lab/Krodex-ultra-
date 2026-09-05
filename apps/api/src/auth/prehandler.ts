@@ -153,13 +153,18 @@ export function buildAuthPreHandler(env: ApiEnv) {
     if (!data) {
       // Auto-provision. We treat the verified JWT as ground truth
       // for `auth_user_id`; `email` comes from the verified user
-      // record (not the body), `display_name` is null until the
-      // client sets it via PATCH /users/me.
+      // record (not the body), `display_name` is filled with a
+      // best-effort default (the email local-part) so the row
+      // satisfies the NOT NULL constraint; the client can
+      // overwrite it via PATCH /users/me.
+      const fallbackName =
+        (email && email.split('@')[0]) || 'New User';
       const { data: created, error: createErr } = await service
         .from('users')
         .insert({
           auth_user_id: authUserId,
           email: email || null,
+          display_name: fallbackName,
           timezone: 'UTC',
           locale: 'en-US',
         })

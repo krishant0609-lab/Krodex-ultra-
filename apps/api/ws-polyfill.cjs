@@ -19,8 +19,21 @@
  * by application code.
  */
 
+process.stderr.write('[ws-polyfill] booting; node=' + process.versions.node + '\n');
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const WebSocket = require('ws');
-if (typeof globalThis.WebSocket === 'undefined') {
-  globalThis.WebSocket = WebSocket;
+let WebSocket;
+try {
+  WebSocket = require('ws');
+  process.stderr.write('[ws-polyfill] required ws ok; type=' + typeof WebSocket + '\n');
+} catch (err) {
+  process.stderr.write('[ws-polyfill] FAILED to require ws: ' + err.message + '\n');
+  throw err;
 }
+
+const before = typeof globalThis.WebSocket;
+globalThis.WebSocket = WebSocket;
+if (typeof global !== 'undefined' && typeof global.WebSocket === 'undefined') {
+  global.WebSocket = WebSocket;
+}
+process.stderr.write('[ws-polyfill] globalThis.WebSocket before=' + before + ' after=' + typeof globalThis.WebSocket + ' global.WebSocket=' + (typeof global !== 'undefined' ? typeof global.WebSocket : 'no-global') + '\n');

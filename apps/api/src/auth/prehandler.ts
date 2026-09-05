@@ -171,6 +171,12 @@ export function buildAuthPreHandler(env: ApiEnv) {
         .select('id, email')
         .single();
       if (createErr || !created) {
+        // Log the actual cause so we can diagnose from
+        // `railway logs` when this happens in production.
+        req.log.error(
+          { createErr: createErr?.message, code: createErr?.code, authUserId },
+          'public.users auto-provision failed',
+        );
         // Concurrent provisioning race: another request may have
         // inserted the row between our SELECT and INSERT. Re-read.
         const reread = await service
@@ -179,6 +185,10 @@ export function buildAuthPreHandler(env: ApiEnv) {
           .eq('auth_user_id', authUserId)
           .maybeSingle();
         if (reread.error || !reread.data) {
+          req.log.error(
+            { rereadErr: reread.error?.message, authUserId },
+            'public.users reread after provision failure also failed',
+          );
           throw new UnauthorizedError('user provisioning failed');
         }
         data = reread.data;

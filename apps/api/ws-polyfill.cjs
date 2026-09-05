@@ -96,19 +96,12 @@ process.stderr.write('[ws-diagnostic] typeof.globalThis.WebSocket=' + typeof glo
 
   // Walk from the resolved entry to the package root.
   // Resolved entry observed: /app/node_modules/@supabase/realtime-js/dist/main/index.js
-  // Going up four levels: main -> dist -> realtime-js -> @supabase.
-  // The package we care about is "realtime-js", so the real package root is
-  // dirname(entryPath)/../../../.. which is one level shallower than the
-  // npm namespace root. We probe both so the diagnostic stays correct if
-  // the entry layout differs.
+  // dirname(entryPath) = .../dist/main
+  // 2 levels up = .../realtime-js  (the actual package root)
   const path = require('path');
-  let pkgRoot = '<unknown>';
   let realtimeJsRoot = '<unknown>';
   try {
-    const namespaceRoot = path.resolve(path.dirname(entryPath), '..', '..', '..', '..');
-    realtimeJsRoot = path.join(namespaceRoot, 'realtime-js');
-    pkgRoot = namespaceRoot;
-    process.stderr.write('[ws-diagnostic] realtimeJs.namespaceRoot=' + namespaceRoot + '\n');
+    realtimeJsRoot = path.resolve(path.dirname(entryPath), '..', '..');
     process.stderr.write('[ws-diagnostic] realtimeJs.pkgRoot=' + realtimeJsRoot + '\n');
   } catch (err) {
     process.stderr.write('[ws-diagnostic] could not derive pkgRoot: ' + err.message + '\n');
@@ -116,9 +109,9 @@ process.stderr.write('[ws-diagnostic] typeof.globalThis.WebSocket=' + typeof glo
 
   const fs = require('fs');
   const candidates = [
+    path.join(realtimeJsRoot, 'package.json'),
     path.join(realtimeJsRoot, 'src', 'lib', 'websocket-factory.ts'),
     path.join(realtimeJsRoot, 'dist', 'main', 'lib', 'websocket-factory.js'),
-    path.join(realtimeJsRoot, 'package.json'),
   ];
 
   for (const filePath of candidates) {
@@ -207,6 +200,66 @@ process.stderr.write('[ws-diagnostic] typeof.globalThis.WebSocket=' + typeof glo
   }
   process.stderr.write('[ws-diagnostic] ----- dirTree: ' + realtimeJsRoot + ' (depth=2) -----\n');
   listDir(realtimeJsRoot, 2);
+
+  // Targeted checks: does the .ts contain the sentinel and the early-return?
+  // Does the compiled .js contain an equivalent early-return? Both questions
+  // need explicit grep-like output so we can decide patch compatibility.
+  function grep(filePath, needle, maxLines) {
+    if (!fs.existsSync(filePath)) {
+      process.stderr.write('[ws-diagnostic] grep.absent file=' + filePath + '\n');
+      return;
+    }
+    let content = '';
+    try {
+      content = fs.readFileSync(filePath, 'utf8');
+    } catch (err) {
+      process.stderr.write('[ws-diagnostic] grep.err file=' + filePath + ' err=' + err.message + '\n');
+      return;
+    }
+    const lines = content.split(/\r?\n/);
+    const hits = [];
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].indexOf(needle) !== -1) {
+        hits.push({ line: i + 1, text: lines[i] });
+        if (hits.length >= maxLines) break;
+      }
+    }
+    process.stderr.write(
+      '[ws-diagnostic] grep.file=' + filePath + ' needle=' + JSON.stringify(needle) + ' hits=' + hits.length + '\n'
+    );
+    for (const h of hits) {
+      process.stderr.write('[ws-diagnostic]   hit@' + h.line + ': ' + h.text + '\n');
+    }
+  }
+  const tsFile = path.join(realtimeJsRoot, 'src', 'lib', 'websocket-factory.ts');
+  const jsFile = path.join(realtimeJsRoot, 'dist', 'main', 'lib', 'websocket-factory.js');
+  grep(tsFile, '// ws-polyfill-installed', 5);
+  grep(tsFile, 'globalThis as any', 5);
+  grep(tsFile, 'detectEnvironment', 5);
+  grep(jsFile, 'globalThis', 5);
+  grep(jsFile, 'WebSocket', 5);
+  grep(jsFile, 'detectEnvironment', 5);
+  grep(jsFile, 'wsConstructor', 5);
+
+  // Also dump the installed @supabase/supabase-js version.
+  try {
+    const supabaseJsPath = req.resolve('@supabase/supabase-js');
+    process.stderr.write('[ws-diagnostic] supabaseJs.entryPath=' + supabaseJsPath + '\n');
+    const supabaseRoot = path.resolve(path.dirname(supabaseJsPath), '..', '..');
+    const supabasePkgPath = path.join(supabaseRoot, 'package.json');
+    if (fs.existsSync(supabasePkgPath)) {
+      const sp = JSON.parse(fs.readFileSync(supabasePkgPath, 'utf8'));
+      process.stderr.write('[ws-diagnostic] supabaseJs.version=' + JSON.stringify(sp.version) + '\n');
+      process.stderr.write(
+        '[ws-diagnostic] supabaseJs.dependencies=' + JSON.stringify(sp.dependencies) + '\n'
+      );
+      process.stderr.write('[ws-diagnostic] supabaseJs.main=' + JSON.stringify(sp.main) + '\n');
+    } else {
+      process.stderr.write('[ws-diagnostic] supabaseJs.packageJson=<absent at ' + supabasePkgPath + '>\n');
+    }
+  } catch (err) {
+    process.stderr.write('[ws-diagnostic] supabaseJs.err=' + err.message + '\n');
+  }
 })();
 
 process.stderr.write('[ws-diagnostic] ===== END @supabase/realtime-js artifact survey =====\n');

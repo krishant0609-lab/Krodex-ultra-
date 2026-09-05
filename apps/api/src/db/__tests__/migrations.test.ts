@@ -107,6 +107,14 @@ const EXPECTED_MIGRATION_FILES = [
   // public.users is preserved unchanged (only checked when
   // user_id is non-null).
   '20260901164346_20_nullable_outbox_user_id.sql',
+  // Migration 21: align public.users RLS with the auto-provisioning
+  // flow. The Phase 0-13 policy was `id = auth.uid() or is_service_role()`,
+  // which never matched the auto-provisioned rows (synthetic id,
+  // JWT subject in auth_user_id). New policy:
+  //   auth_user_id = auth_uid() or is_service_role().
+  // See supabase/migrations/20260901164346_21_users_rls_use_auth_user_id.sql
+  // for the full rationale.
+  '20260901164346_21_users_rls_use_auth_user_id.sql',
 ] as const;
 
 const MIGRATION_NAMING_PATTERN =

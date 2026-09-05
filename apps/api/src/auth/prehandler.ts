@@ -201,11 +201,12 @@ export function buildAuthPreHandler(env: ApiEnv) {
       userEmail: (data.email as string) || email,
       jwt: token,
     };
-    // Forward the ORIGINAL bearer token unchanged so PostgREST
-    // enforces RLS as `auth.uid() = <jwt sub>`. A Supabase-issued
-    // access token is what PostgREST accepts here; a dev HS256
-    // JWT is rejected by PostgREST (correctly — RLS cannot honor
-    // a token it cannot verify).
+    // The user client is documented in apps/api/src/db/supabase.ts
+    // (Phase 14 production note). It is the service-role client,
+    // guarded by `assertOwned` in every service-layer call. The
+    // original JWT is still passed for the contract (and may be
+    // needed when the Supabase project is reconfigured to expose
+    // the ES256 public key to PostgREST — see that note).
     req.supabaseUser = getUserClient(env, token);
   };
 }

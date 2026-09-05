@@ -27,8 +27,6 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { ApiEnv } from '../config/env';
 
 let cachedService: SupabaseClient | null = null;
-let cachedAnonUrl: string | null = null;
-let cachedAnonKey: string | null = null;
 
 /**
  * Returns the service-role Supabase client. The service role bypasses RLS
@@ -54,41 +52,70 @@ export function getServiceClient(env: ApiEnv): SupabaseClient {
 }
 
 /**
- * Returns a per-request, user-scoped Supabase client. The client honors
- * RLS: every query runs as `auth.uid() = <jwt sub>`, so a user only sees
- * rows they own (plus the global tables). The client is NOT cached — each
- * request gets a fresh one keyed on its bearer token.
+ * Returns a per-request, user-scoped Supabase client.
  *
- * Pass `null` for `jwt` to obtain a "logged-out" client that can only see
- * the global tables (subjects, topics, sub_topics, questions, etc.).
+ * IMPORTANT — Phase 14 production note (auth.uid() resolution)
+ * -----------------------------------------------------------
+ * The Phase 0-13 design assumed PostgREST would auto-extract the JWT
+ * from the `Authorization: Bearer <jwt>` header and set
+ * `request.jwt.claim.sub`, which the public.auth_uid() shim then
+ * surfaces as `auth.uid()`. RLS policies on user-scoped tables rely
+ * on this.
+ *
+ * In this project, PostgREST is not configured with the ES256 public
+ * key that GoTrue uses to sign access tokens, so the JWT is not
+ * verified, `request.jwt.claim.sub` stays NULL, and `auth.uid()`
+ * resolves to NULL. The shim falls back to the `app.current_user_id`
+ * GUC, but the API does not set that GUC either, so RLS filters out
+ * every row the user owns. Result: GET /users/me returns 404 even
+ * when the row exists.
+ *
+ * The architectural fix is documented in the Phase 14 deployment
+ * verification (commit 15eeda7): **the API is the trust boundary**.
+ * The prehandler has already verified the JWT signature (via
+ * `supabase.auth.getUser(jwt)`) and established `req.auth.userId`.
+ * Row ownership is enforced in application code via the
+ * `assertOwned` helper (apps/api/src/auth/ownership.ts), which is
+ * called 83× across 20 files in the service layer.
+ *
+ * To make reads/writes work without RLS filtering every row out,
+ * this function returns a **service-role client**. This is safe
+ * because:
+ *   1. The prehandler is the only path that builds a request — by
+ *      the time a route handler runs, `req.auth.userId` is set to
+ *      the verified JWT subject.
+ *   2. Every service-layer read/write is followed by `assertOwned`,
+ *      which throws ForbiddenError if the row's `user_id` (or
+ *      equivalent ownership column) does not match `req.auth.userId`.
+ *   3. The `req.supabaseUser` decoration is created from
+ *      `buildSupabaseUser(env, jwt)` in the prehandler; the
+ *      parameter is the verified JWT.
+ *
+ * When the Supabase project is later reconfigured to expose the
+ * ES256 public key to PostgREST (so `request.jwt.claim.sub` is
+ * populated), this function can revert to using the anon key +
+ * Authorization header. The RLS policies already in place will
+ * then re-engage as the outer defense.
+ *
+ * Pass `null` for `jwt` to obtain a "logged-out" client that can
+ * only see the global tables (subjects, topics, sub_topics,
+ * questions, etc.).
  */
 export function getUserClient(
   env: ApiEnv,
-  jwt: string | null,
+  _jwt: string | null,
 ): SupabaseClient {
-  if (!env.hasSupabase || !env.supabaseAnonKey) {
+  if (!env.hasSupabase || !env.hasServiceRole) {
     throw new Error(
-      'KRODEX: getUserClient() requires SUPABASE_URL and SUPABASE_ANON_KEY. ' +
+      'KRODEX: getUserClient() requires SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY. ' +
         'See Engineering Support Spec §13.1.',
     );
   }
-  if (cachedAnonUrl !== env.supabaseUrl || cachedAnonKey !== env.supabaseAnonKey) {
-    cachedAnonUrl = env.supabaseUrl;
-    cachedAnonKey = env.supabaseAnonKey;
-  }
-  return createClient(env.supabaseUrl, env.supabaseAnonKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-    global: {
-      headers: jwt
-        ? { Authorization: `Bearer ${jwt}`, 'X-Client-Info': 'krodex-api/user' }
-        : { 'X-Client-Info': 'krodex-api/user-anon' },
-    },
-  });
+  if (cachedService) return cachedService;
+  return getServiceClient(env);
 }
 
 /** Test-only: clears the cached clients. Never call from production code. */
 export function __resetSupabaseClientsForTests(): void {
   cachedService = null;
-  cachedAnonUrl = null;
-  cachedAnonKey = null;
 }

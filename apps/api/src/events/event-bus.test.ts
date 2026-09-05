@@ -43,6 +43,7 @@ const baseEnv: ApiEnv = {
   authJwtSecret: 'a'.repeat(32),
   authJwtTtlSeconds: 3600,
   authRefreshTtlSeconds: 2592000,
+  authAllowDevJwt: true,
   aiProvider: 'openai',
   aiProviderUrl: 'https://api.openai.com/v1',
   aiApiKey: '',

@@ -18,12 +18,15 @@ import { useState, type ReactNode } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { createQueryClient } from './query-client';
 import { ThemeProvider } from './theme';
+import { SupabaseAuthProvider } from './auth-context';
 
 export function Providers({ children }: { children: ReactNode }): JSX.Element {
   const [client] = useState(() => createQueryClient());
   return (
     <ThemeProvider>
-      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+      <QueryClientProvider client={client}>
+        <SupabaseAuthProvider>{children}</SupabaseAuthProvider>
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }

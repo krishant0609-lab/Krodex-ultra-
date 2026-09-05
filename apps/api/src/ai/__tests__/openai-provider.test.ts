@@ -41,6 +41,7 @@ function makeEnv(overrides: Partial<ApiEnv> = {}): ApiEnv {
     authJwtSecret: 'test',
     authJwtTtlSeconds: 3600,
     authRefreshTtlSeconds: 86400,
+    authAllowDevJwt: true,
     aiProvider: 'openai',
     aiProviderUrl: 'https://api.openai.com/v1',
     aiApiKey: 'sk-test',

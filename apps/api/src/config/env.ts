@@ -45,6 +45,13 @@ export interface ApiEnv {
   readonly authJwtSecret: string;
   readonly authJwtTtlSeconds: number;
   readonly authRefreshTtlSeconds: number;
+  /**
+   * `true` if the API should accept the dev HS256 JWT path.
+   * Hard-coded to `false` in `NODE_ENV=production`. In
+   * `development` / `test` it follows the
+   * `KRODEX_AUTH_ALLOW_DEV_JWT` env var (default `1`).
+   */
+  readonly authAllowDevJwt: boolean;
 
   // AI (Phase 8)
   readonly aiProvider: string;
@@ -128,6 +135,12 @@ export function loadEnv(): ApiEnv {
     authJwtSecret: trim(process.env.AUTH_JWT_SECRET) || 'dev-only-not-secure-replace-me-please-please',
     authJwtTtlSeconds: num(process.env.AUTH_JWT_TTL_SECONDS, 3600),
     authRefreshTtlSeconds: num(process.env.AUTH_REFRESH_TTL_SECONDS, 2_592_000),
+    authAllowDevJwt: (() => {
+      if (nodeEnv === 'production') return false;
+      const raw = trim(process.env.KRODEX_AUTH_ALLOW_DEV_JWT).toLowerCase();
+      if (raw === '') return true;
+      return raw === '1' || raw === 'true' || raw === 'yes' || raw === 'on';
+    })(),
 
     aiProvider: trim(process.env.AI_PROVIDER) || 'openai',
     aiProviderUrl: trim(process.env.AI_PROVIDER_URL) || 'https://api.openai.com/v1',

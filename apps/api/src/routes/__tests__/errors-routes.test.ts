@@ -55,6 +55,7 @@ beforeAll(async () => {
     authJwtSecret: 'test-secret-test-secret-test-secret-test',
     authJwtTtlSeconds: 3600,
     authRefreshTtlSeconds: 2_592_000,
+    authAllowDevJwt: true,
     aiProvider: 'openai',
     aiProviderUrl: 'https://api.openai.com/v1',
     aiApiKey: '',

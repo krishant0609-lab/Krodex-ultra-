@@ -84,12 +84,14 @@ function LoginPageInner(): JSX.Element {
     if (stage === 0) setStage(1);
   };
 
+  // Pull string: advance one stage at a time so the lamp transitions visibly.
+  // 0 -> 1 -> 2 -> 3 (form visible at 3)
   const pullString = (): void => {
     if (stage < 3) {
-      setStage(3);
-      requestAnimationFrame(() => {
-        emailRef.current?.focus();
-      });
+      setStage((s) => (s + 1) as Stage);
+      if (stage === 2) {
+        requestAnimationFrame(() => emailRef.current?.focus());
+      }
     }
   };
 
@@ -109,13 +111,13 @@ function LoginPageInner(): JSX.Element {
     },
     {
       name: 'interaction',
-      themeColor: '#5a5347',
-      themeGlowRGB: '90, 83, 71',
-      shadeColor: '#3a3a3a',
-      bulbColor: '#5a4632',
-      lightOpacity: '0.04',
-      glowScale: '0.85',
-      glowOpacity: '0.18',
+      themeColor: '#6366f1',
+      themeGlowRGB: '99, 102, 241',
+      shadeColor: '#2d2d4a',
+      bulbColor: '#c7d2fe',
+      lightOpacity: '0.12',
+      glowScale: '0.9',
+      glowOpacity: '0.28',
       faceAwakeOpacity: '0',
       faceSleepOpacity: '1',
     },
@@ -167,9 +169,10 @@ function LoginPageInner(): JSX.Element {
     oauthError ??
     null;
 
-  // Card opacity: 0=hidden, 1=interactive, 2=illuminated, 3=full
-  const cardOpacity = stage === 0 ? 0 : stage === 1 ? 0.7 : stage === 2 ? 1 : 1;
-  const cardScale = stage === 0 ? 'scale(0.96)' : 'scale(1)';
+  // Card is always faintly visible (0.25) so users know a form exists.
+  // Stage 1+ = interactive warmth, 2 = nearly full, 3 = complete.
+  const cardOpacity = stage === 0 ? 0.22 : stage === 1 ? 0.65 : stage === 2 ? 0.92 : 1;
+  const cardScale = stage === 0 ? 'scale(0.97)' : 'scale(1)';
 
   const rootVars: Record<string, string> = {
     '--theme-color': config.themeColor,
@@ -245,6 +248,20 @@ function LoginPageInner(): JSX.Element {
         }
         .kx-login-pull-string-group:hover .kx-login-string-handle { stroke: #ffffff; }
         .kx-login-pull-string-group:active { transform: scaleY(0.85); }
+
+        /* Gentle pulse on the handle to invite a click */
+        @keyframes lampPulse {
+          0%, 100% { opacity: 0.7; }
+          50% { opacity: 1; }
+        }
+        .kx-login-string-handle {
+          animation: lampPulse 2.4s ease-in-out infinite;
+        }
+        .kx-login-pull-string-group:hover .kx-login-string-handle {
+          animation: none;
+          opacity: 1;
+          stroke: #ffffff;
+        }
 
         .kx-login-lamp-ambient-glow {
           position: absolute; width: 320px; height: 320px;

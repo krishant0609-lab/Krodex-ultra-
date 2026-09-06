@@ -5,7 +5,7 @@
   "description": "KRODEX — web app (Next.js 14 App Router). Phase 6: route shells + data integration.",
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "npm --prefix ../../packages/shared run build && next build",
+    "build": "npm --prefix ../../packages/shared run build && node scripts/verify-shared-dist.cjs && next build",
     "start": "next start -p 3000",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",

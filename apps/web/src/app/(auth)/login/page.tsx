@@ -188,12 +188,19 @@ function LoginPageInner(): JSX.Element {
     else if (m === 'signin') setMode('signin');
   }, [search]);
 
+  // Stage 0 → 1: first input focus (any field)
+  // Stage 1 → 2: both email AND password have content
+  // Stage 2 → 3: user pulls cord, clicks shade, or hits enter
   useEffect(() => {
-    if (stage >= 2) return;
-    if (email.length > 0 && pwd.length > 0) setStage(1);
-    else if (email.length > 0 || pwd.length > 0) setStage(1);
-    else setStage(0);
-  }, [email, pwd, stage]);
+    if (email.length > 0 || pwd.length > 0) {
+      setStage(s => Math.max(s, 1) as Stage);
+      if (email.length > 0 && pwd.length > 0) {
+        setStage(s => Math.max(s, 2) as Stage);
+      }
+    } else {
+      setStage(0);
+    }
+  }, [email, pwd]);
 
   useEffect(() => {
     if (isDragging.current) {
@@ -214,6 +221,23 @@ function LoginPageInner(): JSX.Element {
     setTimeout(() => setStage(3), 420);
     requestAnimationFrame(() => {
       setTimeout(() => emailRef.current?.focus(), 900);
+    });
+  }, []);
+
+  // Advance one stage at a time — used by shade clicks and partial cord pull
+  const advanceStage = useCallback(() => {
+    setStage(s => {
+      if (s === 0) return 1 as Stage;
+      if (s === 1) {
+        requestAnimationFrame(() => setTimeout(() => emailRef.current?.focus(), 600));
+        return 2 as Stage;
+      }
+      if (s === 2) {
+        setStage(3);
+        requestAnimationFrame(() => setTimeout(() => emailRef.current?.focus(), 900));
+        return 2 as Stage;
+      }
+      return s;
     });
   }, []);
 
@@ -242,19 +266,14 @@ function LoginPageInner(): JSX.Element {
       activateLamp();
     } else {
       setSwing(s => s - 0.05);
+      if (pull > 0.15) advanceStage();
     }
-  }, [pull, activateLamp]);
+  }, [pull, activateLamp, advanceStage]);
 
   const onLampActivate = useCallback(() => {
-    if (stage < 2) {
-      setStage(s => (s + 1) as Stage);
-      if (stage === 1) {
-        requestAnimationFrame(() => {
-          setTimeout(() => emailRef.current?.focus(), 600);
-        });
-      }
-    }
-  }, [stage]);
+    if (stage < 2) advanceStage();
+    else if (stage === 2) activateLamp();
+  }, [stage, advanceStage]);
 
   const onSubmit = useCallback(async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
@@ -428,8 +447,8 @@ function LoginPageInner(): JSX.Element {
               <path d="M 88 52 Q 150 34 212 52 L 252 172 Q 150 196 48 172 Z" className="lp-shade" />
               <path d="M 88 52 Q 150 34 212 52 L 252 172 Q 150 196 48 172 Z" fill="url(#shadeHi)" className="lp-shade-hi" />
               <path d="M 88 52 Q 150 34 212 52 L 252 172 Q 150 196 48 172 Z" className="lp-shade-click"
-                onClick={onLampActivate} role="button" tabIndex={0} aria-label="Activate lamp"
-                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onLampActivate(); }}} />
+                onClick={advanceStage} role="button" tabIndex={0} aria-label="Advance lamp"
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); advanceStage(); }}} />
               <ellipse cx="150" cy="172" rx="94" ry="24" className="lp-bulb" />
               <ellipse cx="150" cy="168" rx="44" ry="18" fill="url(#bulbRad)" className="lp-bulb-glow" />
               <g className="lp-face-sleep">

@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import styles from './error.module.css';
 
 export default function AppErrorPage({
   error,
@@ -9,47 +10,33 @@ export default function AppErrorPage({
   reset: () => void;
 }) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '60vh',
-        gap: '24px',
-        fontFamily: 'var(--kd-font-ui)',
-        color: 'var(--kd-text-primary)',
-        padding: '40px',
-        textAlign: 'center',
-      }}
-    >
-      <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="24" cy="24" r="22" stroke="var(--kd-crimson)" strokeWidth="1.5" />
-        <path d="M24 14v12M24 32v2" stroke="var(--kd-crimson)" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-      <div>
-        <h1 style={{ fontFamily: 'var(--kd-font-display)', fontSize: '22px', fontWeight: 500, margin: '0 0 8px', color: 'var(--kd-text-primary)' }}>
-          Page error
-        </h1>
-        <p style={{ fontSize: '14px', color: 'var(--kd-text-muted)', margin: 0 }}>
-          {error?.message ?? 'An unexpected error occurred in the app'}
-        </p>
+    <div className={styles.page}>
+      <div className={styles.content}>
+        <div className={styles.iconWrap}>
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+        </div>
+        <div className={styles.textBlock}>
+          <h1 className={styles.heading}>Something went wrong</h1>
+          <p className={styles.message}>
+            {error?.message ?? 'An unexpected error occurred in the app.'}
+          </p>
+          {error.digest && (
+            <span className={styles.digest}>{error.digest}</span>
+          )}
+        </div>
+        <div className={styles.actions}>
+          <button className={styles.btnPrimary} onClick={reset}>
+            Try again
+          </button>
+          <a href="/dashboard" className={styles.btnSecondary}>
+            Go to dashboard
+          </a>
+        </div>
       </div>
-      <button
-        onClick={reset}
-        style={{
-          padding: '10px 20px',
-          background: 'var(--kd-sapphire)',
-          border: 'none',
-          borderRadius: 'var(--kd-radius-md)',
-          color: 'white',
-          fontFamily: 'var(--kd-font-ui)',
-          fontSize: '14px',
-          cursor: 'pointer',
-        }}
-      >
-        Try again
-      </button>
     </div>
   );
 }

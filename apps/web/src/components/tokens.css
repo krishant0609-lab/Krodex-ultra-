@@ -1,80 +1,91 @@
 /* ===================================================================
    KRODEX — Global Design Tokens
-   KRODEX Living Learning System — dark editorial aesthetic.
-   Used via CSS Modules @value or direct CSS custom properties.
+   KRODEX Living Learning System — Dark Academic Celestial Luxury aesthetic.
+   Aligned with Stitch design system (stitch_krodex_landing/).
    =================================================================== */
 
 /* ─── Color Palette ───────────────────────────────────────────── */
 :root {
-  /* Core backgrounds */
-  --kd-ink:          #07090e;
-  --kd-midnight:     #0b101b;
-  --kd-deep-navy:    #0f1b2d;
-  --kd-surface:      rgba(11, 16, 27, 0.72);
-  --kd-surface-md:   rgba(11, 16, 27, 0.85);
-  --kd-surface-lg:   rgba(7, 9, 14, 0.95);
+  /* Core backgrounds — Dark Academic Celestial Luxury (Stitch #090D16) */
+  --kd-ink:           #090D16;
+  --kd-midnight:      #0C111C;
+  --kd-deep-navy:     #0f1b2d;
+  --kd-surface:       rgba(13, 17, 28, 0.75);
+  --kd-surface-md:    rgba(13, 17, 28, 0.88);
+  --kd-surface-lg:    rgba(9, 13, 22, 0.97);
 
-  /* Primary accent — Champagne / Gold */
-  --kd-champagne:    #e6cca0;
-  --kd-champagne-lt: #f4ebd0;
-  --kd-champagne-dk: #c4a870;
-  --kd-gold:         #d4a843;
-  --kd-gold-glow:    rgba(230, 204, 160, 0.2);
+  /* Surface containers (Stitch palette) */
+  --kd-surface-container-lowest:  #060A12;
+  --kd-surface-container-low:     #0C111C;
+  --kd-surface-container:         #131B2E;
+  --kd-surface-container-high:    #1E2B4A;
+  --kd-surface-container-highest: #26334D;
+  --kd-surface-bright:           #353943;
 
-  /* Secondary accent — Sapphire / Sky */
-  --kd-sapphire:     #38bdf8;
-  --kd-sapphire-lt:  #7dd3fc;
-  --kd-sapphire-dk:  #0ea5e9;
+  /* Primary accent — Champagne / Gold (Stitch #E5C992) */
+  --kd-champagne:     #E5C992;
+  --kd-champagne-lt:  #FCDFA6;
+  --kd-champagne-dk:  #DFC38D;
+  --kd-gold:          #d4a843;
+  --kd-gold-glow:     rgba(229, 201, 146, 0.2);
+
+  /* Secondary accent — Sapphire / Sky (Stitch #38BDF8) */
+  --kd-sapphire:      #38BDF8;
+  --kd-sapphire-lt:   #7DD3FC;
+  --kd-sapphire-dk:   #0284C7;
   --kd-sapphire-glow: rgba(56, 189, 248, 0.2);
 
   /* Tertiary — Lavender */
-  --kd-lavender:     #a29bfe;
-  --kd-lavender-lt:  #c4b5fd;
-  --kd-lavender-dk:  #818cf8;
+  --kd-lavender:      #a29bfe;
+  --kd-lavender-lt:   #c4b5fd;
+  --kd-lavender-dk:   #818cf8;
   --kd-lavender-glow: rgba(162, 155, 254, 0.2);
 
-  /* Success — Emerald */
-  --kd-emerald:      #10b981;
-  --kd-emerald-lt:   #34d399;
-  --kd-emerald-glow: rgba(16, 185, 129, 0.2);
+  /* Success — Emerald / Sage (Stitch #34D399) */
+  --kd-emerald:       #34D399;
+  --kd-emerald-lt:    #6EE7B7;
+  --kd-emerald-glow:   rgba(52, 211, 153, 0.2);
 
   /* Warning — Amber */
-  --kd-amber:        #f59e0b;
-  --kd-amber-lt:     #fcd34d;
+  --kd-amber:         #f59e0b;
+  --kd-amber-lt:      #fcd34d;
 
-  /* Error — Crimson */
-  --kd-crimson:      #ef4444;
-  --kd-crimson-lt:   #f87171;
+  /* Error — Crimson / Red (Stitch palette) */
+  --kd-error:         #F87171;
+  --kd-error-lt:      #FCA5A5;
+  --kd-error-container:#93000A;
+  --kd-error-glow:    rgba(248, 113, 113, 0.2);
 
   /* Neutral / Slate */
-  --kd-slate:        #64748b;
-  --kd-slate-lt:     #94a3b8;
-  --kd-slate-dk:     #475569;
+  --kd-slate:         #64748B;
+  --kd-slate-lt:      #94A3B8;
+  --kd-slate-dk:      #475569;
 
-  /* Borders */
-  --kd-border:        rgba(230, 204, 160, 0.12);
-  --kd-border-md:     rgba(230, 204, 160, 0.2);
-  --kd-border-active: rgba(230, 204, 160, 0.35);
-  --kd-border-subtle: rgba(230, 204, 160, 0.07);
+  /* Borders — dark slate (Stitch #1E293B) */
+  --kd-border:         rgba(30, 41, 59, 0.8);
+  --kd-border-md:     rgba(30, 41, 59, 1.0);
+  --kd-border-active: rgba(56, 189, 248, 0.4);
+  --kd-border-subtle: rgba(30, 41, 59, 0.5);
 
-  /* Text */
-  --kd-text-primary:  #f4ebd0;
-  --kd-text-secondary: rgba(244, 235, 208, 0.72);
-  --kd-text-muted:    rgba(244, 235, 208, 0.48);
-  --kd-text-disabled: rgba(244, 235, 208, 0.28);
+  /* Text — warm white (Stitch palette) */
+  --kd-text-primary:   #F9F8F6;
+  --kd-text-secondary:  rgba(249, 248, 246, 0.72);
+  --kd-text-muted:      #94A3B8;
+  --kd-text-disabled:   rgba(148, 163, 184, 0.5);
 
   /* Glows */
-  --kd-glow-champagne: 0 0 20px rgba(230, 204, 160, 0.15);
+  --kd-glow-champagne: 0 0 20px rgba(229, 201, 146, 0.15);
   --kd-glow-sapphire:  0 0 20px rgba(56, 189, 248, 0.15);
   --kd-glow-lavender:  0 0 20px rgba(162, 155, 254, 0.15);
-  --kd-glow-emerald:   0 0 20px rgba(16, 185, 129, 0.15);
+  --kd-glow-emerald:   0 0 20px rgba(52, 211, 153, 0.15);
+  --kd-glow-error:     0 0 20px rgba(248, 113, 113, 0.15);
 
-  /* ─── Typography ──────────────────────────────────────────────── */
+  /* ─── Typography ─────────────────────────────────────────────── */
   --kd-font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
-  --kd-font-ui:      'Hanken Grotesk', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --kd-font-ui:      'Manrope', system-ui, sans-serif;
   --kd-font-mono:    'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
 
-  /* ─── Spacing scale ──────────────────────────────────────────── */
+  /* ─── Spacing scale ─────────────────────────────────────────── */
   --kd-space-1:   4px;
   --kd-space-2:   8px;
   --kd-space-3:   12px;
@@ -89,8 +100,8 @@
   --kd-space-24:  96px;
 
   /* ─── Radius ────────────────────────────────────────────────── */
-  --kd-radius-sm:  4px;
-  --kd-radius-md:  8px;
+  --kd-radius-sm:   4px;
+  --kd-radius-md:   8px;
   --kd-radius-lg:  12px;
   --kd-radius-xl:  16px;
   --kd-radius-2xl: 24px;
@@ -111,7 +122,7 @@
   --kd-ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
   --kd-ease-in:     cubic-bezier(0.4, 0, 1, 1);
   --kd-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --kd-spring:      cubic-bezier(0.34, 1.56, 0.64, 1);
+  --kd-spring:       cubic-bezier(0.34, 1.56, 0.64, 1);
   --kd-duration-fast:   150ms;
   --kd-duration-base:   250ms;
   --kd-duration-slow:   400ms;
@@ -124,8 +135,8 @@
   --kd-midnight:      #f0ede6;
   --kd-deep-navy:     #e8e4d9;
   --kd-surface:       rgba(249, 248, 245, 0.9);
-  --kd-surface-md:     rgba(249, 248, 245, 0.95);
-  --kd-surface-lg:     rgba(249, 248, 245, 0.98);
+  --kd-surface-md:    rgba(249, 248, 245, 0.95);
+  --kd-surface-lg:    rgba(249, 248, 245, 0.98);
   --kd-border:        rgba(30, 30, 30, 0.1);
   --kd-border-md:     rgba(30, 30, 30, 0.18);
   --kd-border-active: rgba(30, 30, 30, 0.28);

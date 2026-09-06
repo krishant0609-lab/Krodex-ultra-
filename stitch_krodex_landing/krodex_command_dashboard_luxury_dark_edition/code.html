@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Manrope:ital,wght@0,300..800;1,300..800&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container": "#1c1f29", "error-container": "#93000a", "primary-fixed-dim": "#dfc38d", "surface-tint": "#dfc38d", "on-primary-fixed": "#261a00", "surface-container-low": "#181b25", "surface-bright": "#353943", "surface-container-high": "#262a34", "surface-dim": "#0f131c", "primary-container": "#e5c992", "primary-fixed": "#fcdfa6", "on-background": "#dfe2ef", "on-secondary": "#002e6a", "on-tertiary-fixed": "#20133f", "on-primary-container": "#685427", "on-error-container": "#ffdad6", "surface-container-lowest": "#0a0e17", "primary": "#ffe6b6", "outline-variant": "#4c463b", "inverse-surface": "#dfe2ef", "on-primary-fixed-variant": "#574419", "surface": "#0f131c", "on-tertiary-fixed-variant": "#4c3f6e", "surface-container-highest": "#31353f", "background": "#0f131c", "on-secondary-container": "#e6ecff", "secondary-container": "#0566d9", "on-surface-variant": "#cfc5b6", "outline": "#989082", "surface-variant": "#31353f", "secondary-fixed-dim": "#adc6ff", "on-secondary-fixed": "#001a42", "secondary-fixed": "#d8e2ff", "inverse-on-surface": "#2c303a", "tertiary-fixed-dim": "#cfbef5", "tertiary-fixed": "#e9ddff", "secondary": "#adc6ff", "inverse-primary": "#705c2f", "tertiary": "#eee4ff", "on-tertiary-container": "#5c4f7e", "on-tertiary": "#352956", "tertiary-container": "#d4c4fb", "on-error": "#690005", "on-secondary-fixed-variant": "#004395", "on-primary": "#3e2e05", "error": "#ffb4ab", "on-surface": "#dfe2ef" }, "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, "spacing": { "space-4xl": "6rem", "gutter-mobile": "1rem", "space-md": "1rem", "gutter-tablet": "1.5rem", "margin-tablet": "2.5rem", "space-3xl": "4rem", "margin-mobile": "1.25rem", "space-2xs": "0.25rem", "space-3xs": "0.125rem", "gutter-desktop": "1.5rem", "margin-desktop": "4rem", "space-2xl": "3rem", "space-xl": "2rem", "space-sm": "0.75rem", "max-width-content": "1280px", "space-xs": "0.5rem", "space-lg": "1.5rem", "max-width-editorial": "68ch", "max-width-reading-container": "760px", "max-width-workbench": "1440px" }, "fontFamily": { "headline-md": [ "Newsreader" ], "headline-lg-mobile": [ "Newsreader" ], "headline-sm": [ "Newsreader" ], "title-lg": [ "Manrope" ], "body-md": [ "Manrope" ], "headline-lg": [ "Newsreader" ], "label-md": [ "Manrope" ], "code-marginalia": [ "Manrope" ], "code-num": [ "Manrope" ], "display-hero": [ "Newsreader" ], "display-hero-mobile": [ "Newsreader" ], "body-sm": [ "Manrope" ], "body-lg": [ "Manrope" ], "label-sm": [ "Manrope" ], "label-caps": [ "Manrope" ] }, "fontSize": { "headline-md": [ "24px", { "lineHeight": "32px", "letterSpacing": "0em", "fontWeight": "500" } ], "headline-lg-mobile": [ "30px", { "lineHeight": "36px", "letterSpacing": "-0.015em", "fontWeight": "400" } ], "headline-sm": [ "20px", { "lineHeight": "28px", "letterSpacing": "0em", "fontWeight": "500" } ], "title-lg": [ "18px", { "lineHeight": "26px", "letterSpacing": "0.005em", "fontWeight": "600" } ], "body-md": [ "14px", { "lineHeight": "22px", "letterSpacing": "0.01em", "fontWeight": "400" } ], "headline-lg": [ "32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "500" } ], "label-md": [ "13px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "500" } ], "code-marginalia": [ "12px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "500" } ], "code-num": [ "14px", { "lineHeight": "20px", "letterSpacing": "0.04em", "fontWeight": "500" } ], "display-hero": [ "56px", { "lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "400" } ], "display-hero-mobile": [ "36px", { "lineHeight": "44px", "letterSpacing": "-0.01em", "fontWeight": "400" } ], "body-sm": [ "12px", { "lineHeight": "18px", "letterSpacing": "0.015em", "fontWeight": "400" } ], "body-lg": [ "16px", { "lineHeight": "26px", "letterSpacing": "0.01em", "fontWeight": "400" } ], "label-sm": [ "11px", { "lineHeight": "16px", "letterSpacing": "0.08em", "fontWeight": "600" } ], "label-caps": [ "11px", { "lineHeight": "16px", "letterSpacing": "0.12em", "fontWeight": "700" } ] } } } };</script></head><body class="bg-[#090D16] font-body-md text-[#DFE2EF] antialiased selection:bg-[#E5C992]/20 selection:text-[#FFE6B6] min-h-screen relative overflow-x-hidden"><div class="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_20%_0%,rgba(56,189,248,0.06),transparent_50%),radial-gradient(circle_at_80%_20%,rgba(229,201,146,0.05),transparent_40%),radial-gradient(circle_at_50%_100%,rgba(15,23,42,0.8),transparent_70%)] z-0"></div><aside class="fixed left-0 top-0 h-screen w-[240px] bg-[#0C111C]/95 backdrop-blur-xl border-r border-[#1E293B] shadow-[4px_0_24px_rgba(0,0,0,0.5)] z-50 flex flex-col justify-between select-none"><div class="flex flex-col flex-1 overflow-y-auto"><div class="px-space-md py-space-lg flex items-center justify-between border-b border-[#1E293B]/60"><div class="flex flex-col"><span class="font-headline-sm text-headline-sm font-semibold tracking-tight text-[#FFE6B6] leading-none">KRODEX</span><span class="font-code-marginalia text-[11px] tracking-widest uppercase text-[#94A3B8] mt-space-3xs">STUDY OS v2.4</span></div><div class="w-2 h-2 rounded-full bg-[#E5C992] shadow-[0_0_8px_#E5C992] ring-2 ring-[#0C111C]" title="Spaced Loop Engine Active"></div></div><div class="px-space-xs space-y-space-md mt-space-sm"><div class="space-y-space-3xs"><div class="px-space-sm font-label-sm text-[10px] uppercase tracking-widest text-[#94A3B8]/70">Command</div><nav class="space-y-space-3xs"><a aria-current="page" class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg transition-colors bg-[#E5C992] text-[#261A00] font-semibold shadow-[0_0_15px_rgba(229,201,146,0.25)]" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[18px]">dashboard</span><span class="font-label-md">Dashboard</span></a></nav></div><div class="space-y-space-3xs"><div class="px-space-sm font-label-sm text-[10px] uppercase tracking-widest text-[#94A3B8]/70">Study</div><nav class="space-y-space-3xs"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-[#94A3B8] hover:bg-[#17223B] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="syllabus" href="#"><span class="material-symbols-outlined text-[18px]">menu_book</span><span>Syllabus</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-[#94A3B8] hover:bg-[#17223B] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="planner" href="#"><span class="material-symbols-outlined text-[18px]">calendar_today</span><span>Planner</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-[#94A3B8] hover:bg-[#17223B] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="tests" href="#"><span class="material-symbols-outlined text-[18px]">assignment</span><span>Tests</span></a></nav></div><div class="space-y-space-3xs"><div class="px-space-sm font-label-sm text-[10px] uppercase tracking-widest text-[#94A3B8]/70">Learn</div><nav class="space-y-space-3xs"><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-[#94A3B8] hover:bg-[#17223B] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="error-book" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">error_outline</span><span>Error Book</span></div><span class="font-label-sm text-[11px] px-space-2xs py-0.5 rounded bg-[#93000A]/60 border border-[#FFB4AB]/30 text-[#FFDAD6] font-semibold">4 Due</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-[#94A3B8] hover:bg-[#17223B] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="reviews" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">cycle</span><span>Reviews</span></div><span class="font-label-sm text-[11px] px-space-2xs py-0.5 rounded bg-[#17223B] border border-[#1E2B4A] text-[#E5C992] font-semibold">2 Due</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-[#94A3B8] hover:bg-[#17223B] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="backlog" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">history_edu</span><span>Backlog</span></div><span class="font-label-sm text-[11px] px-space-2xs py-0.5 rounded bg-[#17223B] border border-[#1E2B4A] text-[#94A3B8] font-semibold">1 Missed</span></a></nav></div><div class="space-y-space-3xs"><div class="px-space-sm font-label-sm text-[10px] uppercase tracking-widest text-[#94A3B8]/70">Analyze</div><nav class="space-y-space-3xs"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-[#94A3B8] hover:bg-[#17223B] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="insights" href="#"><span class="material-symbols-outlined text-[18px]">analytics</span><span>Insights</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-[#94A3B8] hover:bg-[#17223B] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="student-model" href="#"><span class="material-symbols-outlined text-[18px]">psychology</span><span>Student Model</span></a></nav></div><div class="space-y-space-3xs"><div class="px-space-sm font-label-sm text-[10px] uppercase tracking-widest text-[#94A3B8]/70">System</div><nav class="space-y-space-3xs"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-[#94A3B8] hover:bg-[#17223B] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="inbox" href="#"><span class="material-symbols-outlined text-[18px]">inbox</span><span>Inbox</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-[#94A3B8] hover:bg-[#17223B] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="assistant" href="#"><span class="material-symbols-outlined text-[18px]">smart_toy</span><span>Assistant</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-lg text-[#94A3B8] hover:bg-[#17223B] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="settings" href="#"><span class="material-symbols-outlined text-[18px]">tune</span><span>Settings</span></a></nav></div></div></div><div class="p-space-xs bg-[#090D16]/90 border-t border-[#1E293B]"><div class="p-space-sm rounded-lg bg-[#131B2E] border border-[#1E2B4A] shadow-[0_4px_16px_rgba(0,0,0,0.3)] flex flex-col gap-space-xs"><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-full bg-[#E5C992] flex items-center justify-center flex-shrink-0 shadow-[0_0_10px_rgba(229,201,146,0.3)]"><span class="material-symbols-outlined text-[#261A00] text-[18px]">person</span></div><div class="flex flex-col min-w-0 flex-1"><span class="font-label-md text-label-md font-semibold text-[#F9F8F6] truncate">Marcus Vance</span><span class="font-code-marginalia text-[11px] text-[#94A3B8] truncate">JEE Prep 2025</span></div></div><div class="flex items-center justify-between pt-space-xs border-t border-[#1E2B4A]/60"><button aria-label="Toggle theme" class="flex items-center justify-center p-space-2xs text-[#94A3B8] hover:text-[#FFE6B6] hover:bg-[#17223B] rounded transition-colors" type="button"><span class="material-symbols-outlined text-[18px]">dark_mode</span></button><div class="flex items-center gap-space-3xs"><span class="font-code-marginalia text-[11px] text-[#94A3B8] uppercase">Active</span><span class="w-1.5 h-1.5 rounded-full bg-[#E5C992] shadow-[0_0_6px_#E5C992]"></span></div><button aria-label="Collapse sidebar" class="flex items-center justify-center p-space-2xs text-[#94A3B8] hover:text-[#F9F8F6] hover:bg-[#17223B] rounded transition-colors" type="button"><span class="material-symbols-outlined text-[18px]">keyboard_double_arrow_left</span></button></div></div></div></aside><div class="pl-[240px] relative z-10"><header class="fixed top-0 left-[240px] right-0 h-16 bg-[#0C111C]/80 backdrop-blur-xl border-b border-[#1E293B] shadow-[0_4px_20px_rgba(0,0,0,0.35)] z-40 flex items-center"><div class="w-full max-w-workbench mx-auto px-gutter-desktop flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md min-w-0"><div class="flex items-center gap-space-2xs font-code-marginalia text-code-marginalia text-[#94A3B8] truncate"><span class="font-semibold text-[#FFE6B6]">KRODEX</span><span>/</span><span>Command</span><span>/</span><span class="text-[#F9F8F6] font-medium">Dashboard</span></div><div class="hidden xl:flex items-center gap-space-xs px-space-xs py-space-3xs rounded bg-[#131B2E] border border-[#1E2B4A]"><span class="w-2 h-2 rounded-full bg-[#38BDF8] shadow-[0_0_6px_#38BDF8]"></span><span class="font-code-marginalia text-[11px] text-[#94A3B8] uppercase tracking-wider">System Synced // 48h Spaced Loop Active</span></div></div><div class="flex items-center gap-space-sm"><div class="relative flex items-center"><div class="flex items-center gap-space-xs bg-[#131B2E] border border-[#1E2B4A] px-space-sm py-space-2xs rounded-lg shadow-inner w-64 md:w-80 cursor-text"><span class="material-symbols-outlined text-[#94A3B8] text-[18px]">search</span><input class="w-full bg-transparent border-none outline-none font-body-sm text-body-sm text-[#F9F8F6] placeholder:text-[#64748B]" placeholder="Search topics, errors, tests, formulas..." readonly="" type="text"/><span class="font-code-marginalia text-[11px] text-[#94A3B8] px-1 rounded bg-[#17223B] border border-[#1E2B4A]">⌘K</span></div></div><button class="flex items-center gap-space-2xs bg-[#E5C992] text-[#261A00] px-space-sm py-space-xs rounded-lg font-label-md text-label-md tracking-wider uppercase font-semibold hover:bg-[#FFE6B6] shadow-[0_0_16px_rgba(229,201,146,0.2)] transition-colors" type="button"><span class="material-symbols-outlined text-[16px]">add</span><span>Quick Action</span></button><div class="relative flex items-center"><button aria-label="Notifications" class="p-space-xs text-[#94A3B8] hover:text-[#F9F8F6] hover:bg-[#17223B] rounded-full transition-colors relative" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#FFB4AB] shadow-[0_0_6px_#FFB4AB]"></span></button></div><div class="w-8 h-8 rounded-full bg-[#E5C992] flex items-center justify-center flex-shrink-0 shadow-[0_0_8px_rgba(229,201,146,0.3)]"><span class="material-symbols-outlined text-[#261A00] text-[18px]">person</span></div></div></div></header><main class="relative pt-16 min-h-screen"><div class="max-w-workbench mx-auto px-gutter-desktop py-space-xl"><div class="flex flex-col w-full">
+<!-- Editorial Briefing Header -->
+<section class="w-full mb-space-2xl">
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-lg pb-space-lg">
+<div class="space-y-space-xs max-w-reading-container">
+<div class="flex items-center gap-space-xs font-code-marginalia text-code-marginalia text-[#94A3B8] uppercase tracking-wider">
+<span class="inline-block w-2 h-2 rounded-full bg-[#38BDF8] shadow-[0_0_6px_#38BDF8]"></span>
+<span>Cycle 14 // Day 42</span>
+<span>·</span>
+<span class="text-[#FFE6B6] font-medium">Session Active</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-[#F9F8F6] tracking-tight">
+          Good morning, Marcus. Today's focus is Electrodynamics &amp; Rotation.
+        </h1>
+<p class="font-body-lg text-body-lg text-[#94A3B8]">
+          3 priority items scheduled · 1 recovery block waiting · Spaced memory loop active.
+        </p>
+</div>
+<div class="flex flex-wrap items-center gap-space-sm">
+<button class="group relative flex items-center gap-space-xs px-space-md py-space-sm bg-[#E5C992] text-[#261A00] rounded-lg shadow-[0_4px_20px_rgba(229,201,146,0.25)] hover:bg-[#FFE6B6] transition-all font-semibold" type="button">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Continue Morning Study Session</span>
+<span class="font-code-marginalia text-code-marginalia opacity-60 ml-space-2xs text-[10px]">⏎</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-space-sm bg-[#131B2E] border border-[#1E2B4A] text-[#F9F8F6] rounded-lg shadow-sm hover:bg-[#17223B] hover:border-[#38BDF8]/40 transition-all" onclick="document.getElementById('mistake-modal').classList.remove('hidden')" type="button">
+<span class="material-symbols-outlined text-[18px] text-[#FFB4AB]">add_circle</span>
+<span class="font-label-md text-label-md uppercase tracking-wider text-[#DFE2EF]">Capture Mistake</span>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8] px-space-2xs py-0.5 rounded bg-[#17223B] border border-[#1E2B4A] text-[11px] font-semibold">C</span>
+</button>
+</div>
+</div>
+<!-- Live Study Focus Banner -->
+<div class="w-full bg-[#131B2E]/90 border border-[#1E2B4A] rounded-xl p-space-md shadow-[0_4px_24px_rgba(0,0,0,0.3)] backdrop-blur-md">
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-lg bg-[#17223B] border border-[#1E2B4A] flex items-center justify-center text-[#38BDF8] shadow-[inset_0_1px_3px_rgba(56,189,248,0.1)]">
+<span class="material-symbols-outlined text-[26px]">rotate_right</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs font-code-marginalia text-code-marginalia text-[#94A3B8]">
+<span class="px-space-2xs py-0.5 rounded bg-[#38BDF8]/15 border border-[#38BDF8]/30 text-[#38BDF8] font-semibold text-[11px]">ACTIVE COGNITIVE FOCUS</span>
+<span class="text-[#A5B4FC]">JEE ADVANCED // TARGET SCORE 92%+</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-[#F9F8F6] mt-space-3xs">
+              Rotational Inertia Tensor &amp; Lenz Law Dual Vector Integration
+            </div>
+</div>
+</div>
+<div class="flex items-center gap-space-lg w-full md:w-auto justify-between md:justify-end">
+<div class="text-left md:text-right">
+<div class="font-code-marginalia text-code-marginalia text-[#94A3B8] uppercase tracking-wider">Active Interval</div>
+<div class="font-title-lg text-title-lg text-[#FFE6B6] font-semibold" id="active-timer">48:12 elapsed</div>
+</div>
+<button class="px-space-sm py-space-xs bg-[#17223B] hover:bg-[#1E2B4A] border border-[#1E2B4A] text-[#DFE2EF] font-label-sm text-label-sm rounded uppercase tracking-wider transition-colors" type="button">
+            Pause Loop
+          </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Architecture: 8 Col Study Core vs 4 Col Telemetry / Review -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop items-start">
+<!-- LEFT ZONE: Today's Operating View (8 cols) -->
+<div class="lg:col-span-8 space-y-space-xl">
+<!-- Today's Study Blocks -->
+<section class="bg-[#131B2E]/90 border border-[#1E2B4A] rounded-xl p-space-lg shadow-[0_4px_24px_rgba(0,0,0,0.35)] backdrop-blur-sm">
+<div class="flex items-center justify-between mb-space-md pb-space-sm border-b border-[#1E2B4A]/60">
+<div>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8] uppercase tracking-wider">Tactile Schedule</span>
+<h2 class="font-headline-md text-headline-md text-[#F9F8F6] mt-space-3xs">Today's Operating Matrix</h2>
+</div>
+<div class="flex items-center gap-space-2xs text-[#94A3B8] font-code-marginalia text-code-marginalia">
+<span>4 BLOCKS</span>
+<span>·</span>
+<span class="text-[#E5C992] font-semibold">285 MINS ALLOCATED</span>
+</div>
+</div>
+<div class="space-y-space-sm">
+<!-- Block 01 (Completed) -->
+<div class="group flex flex-col md:flex-row md:items-center justify-between p-space-md rounded-lg bg-[#0C111C]/60 border border-[#1E2B4A]/50 hover:border-[#1E2B4A] transition-colors">
+<div class="flex items-start gap-space-md">
+<div class="w-8 h-8 rounded-full bg-[#17223B] border border-[#1E2B4A] flex items-center justify-center text-[#38BDF8] mt-1 md:mt-0">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="font-code-marginalia text-code-marginalia font-semibold text-[#94A3B8]">08:30 – 10:00</span>
+<span class="font-code-marginalia text-code-marginalia px-space-2xs py-0.5 rounded bg-[#17223B] border border-[#1E2B4A] text-[#DFE2EF]">Ch.14 Electrodynamics</span>
+</div>
+<h3 class="font-title-lg text-title-lg text-[#DFE2EF] font-semibold mt-space-3xs line-through opacity-70">
+                  Physics: Lenz's Law &amp; Induced EMF
+                </h3>
+<p class="font-body-sm text-body-sm text-[#94A3B8] mt-space-3xs">
+                  Verification run: 14 problems resolved. Sign convention clarified via right-hand screw rule.
+                </p>
+</div>
+</div>
+<div class="mt-space-sm md:mt-0 flex items-center gap-space-sm pl-12 md:pl-0">
+<span class="font-label-sm text-label-sm px-space-xs py-space-3xs rounded bg-[#17223B] border border-[#1E2B4A] text-[#94A3B8] font-medium uppercase tracking-wider">Verified 10:02</span>
+<button class="p-space-2xs rounded hover:bg-[#17223B] text-[#94A3B8] hover:text-[#F9F8F6]" title="View Proof Log" type="button">
+<span class="material-symbols-outlined text-[18px]">history_edu</span>
+</button>
+</div>
+</div>
+<!-- Block 02 (In Progress) -->
+<div class="relative flex flex-col md:flex-row md:items-center justify-between p-space-md rounded-lg bg-[#17223B] border border-[#38BDF8]/40 shadow-[0_0_20px_rgba(56,189,248,0.1)] overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-[#38BDF8] shadow-[0_0_8px_#38BDF8]"></div>
+<div class="flex items-start gap-space-md pl-space-xs">
+<div class="w-8 h-8 rounded-full bg-[#0566D9]/30 border border-[#38BDF8]/40 text-[#38BDF8] flex items-center justify-center mt-1 md:mt-0">
+<span class="material-symbols-outlined text-[18px] animate-pulse">cached</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="font-code-marginalia text-code-marginalia font-semibold text-[#38BDF8]">10:30 – 12:00</span>
+<span class="font-code-marginalia text-code-marginalia px-space-2xs py-0.5 rounded bg-[#0566D9]/20 border border-[#38BDF8]/40 text-[#38BDF8] font-semibold uppercase">In Progress</span>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8]">Rigid Body Mechanics</span>
+</div>
+<h3 class="font-title-lg text-title-lg text-[#F9F8F6] font-semibold mt-space-3xs">
+                  Active Practice: Rotational Dynamics Problem Set #4
+                </h3>
+<p class="font-body-sm text-body-sm text-[#94A3B8] mt-space-3xs">
+                  Moment of Inertia Tensor, non-principal axes rotation, and precession vectors (Target: 8 high-order items).
+                </p>
+</div>
+</div>
+<div class="mt-space-sm md:mt-0 flex items-center gap-space-xs pl-12 md:pl-0">
+<button class="px-space-sm py-space-xs bg-[#E5C992] text-[#261A00] font-label-sm text-label-sm uppercase tracking-wider rounded font-semibold hover:bg-[#FFE6B6] shadow-[0_0_12px_rgba(229,201,146,0.2)] transition-colors" type="button">
+                Workspace
+              </button>
+</div>
+</div>
+<!-- Block 03 (Due Review) -->
+<div class="flex flex-col md:flex-row md:items-center justify-between p-space-md rounded-lg bg-[#93000A]/15 border border-[#FFB4AB]/30 hover:bg-[#93000A]/20 transition-colors">
+<div class="flex items-start gap-space-md">
+<div class="w-8 h-8 rounded-full bg-[#93000A]/40 border border-[#FFB4AB]/30 text-[#FFB4AB] flex items-center justify-center mt-1 md:mt-0">
+<span class="material-symbols-outlined text-[18px]">priority_high</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="font-code-marginalia text-code-marginalia font-semibold text-[#FFB4AB]">14:00 – 15:00</span>
+<span class="font-code-marginalia text-code-marginalia px-space-2xs py-0.5 rounded bg-[#93000A]/50 border border-[#FFB4AB]/30 text-[#FFDAD6] font-semibold uppercase tracking-wider">Due Today</span>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8]">Retest Probe Queue</span>
+</div>
+<h3 class="font-title-lg text-title-lg text-[#F9F8F6] font-semibold mt-space-3xs">
+                  Scheduled Error Review: Lenz's Law Sign Inversion
+                </h3>
+<p class="font-body-sm text-body-sm text-[#94A3B8] mt-space-3xs">
+                  Target: Error #0418. Re-solve 3 variations to suppress recurrence coefficient below 5%.
+                </p>
+</div>
+</div>
+<div class="mt-space-sm md:mt-0 flex items-center gap-space-sm pl-12 md:pl-0">
+<button class="px-space-sm py-space-xs bg-[#17223B] hover:bg-[#1E2B4A] border border-[#1E2B4A] text-[#DFE2EF] font-label-sm text-label-sm uppercase tracking-wider rounded transition-colors" type="button">
+                Start Retest
+              </button>
+</div>
+</div>
+<!-- Block 04 (Planned) -->
+<div class="flex flex-col md:flex-row md:items-center justify-between p-space-md rounded-lg bg-[#0C111C]/40 border border-[#1E2B4A]/40 hover:border-[#1E2B4A] transition-colors">
+<div class="flex items-start gap-space-md">
+<div class="w-8 h-8 rounded-full bg-[#17223B] border border-[#1E2B4A] flex items-center justify-center text-[#94A3B8] mt-1 md:mt-0">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="font-code-marginalia text-code-marginalia font-semibold text-[#94A3B8]">16:30 – 17:30</span>
+<span class="font-code-marginalia text-code-marginalia px-space-2xs py-0.5 rounded bg-[#17223B] border border-[#1E2B4A] text-[#94A3B8] uppercase">Planned</span>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8]">Mathematics</span>
+</div>
+<h3 class="font-title-lg text-title-lg text-[#DFE2EF] font-medium mt-space-3xs">
+                  Calculus: Integration by Partial Fractions
+                </h3>
+<p class="font-body-sm text-body-sm text-[#94A3B8] mt-space-3xs">
+                  Non-linear irreducible quadratics and Heavyside cover-up method drill.
+                </p>
+</div>
+</div>
+<div class="mt-space-sm md:mt-0 flex items-center gap-space-sm pl-12 md:pl-0">
+<button class="p-space-2xs text-[#94A3B8] hover:text-[#F9F8F6] rounded hover:bg-[#17223B]" type="button">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Learning Loop Systemic Circuit (Active Architecture) -->
+<section class="bg-[#131B2E]/90 border border-[#1E2B4A] rounded-xl p-space-lg shadow-[0_4px_24px_rgba(0,0,0,0.35)] backdrop-blur-sm">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-xs mb-space-md pb-space-sm border-b border-[#1E2B4A]/60">
+<div>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8] uppercase tracking-wider">Cybernetic Memory Core</span>
+<h2 class="font-headline-md text-headline-md text-[#F9F8F6] mt-space-3xs">Spaced Reinforcement Loop</h2>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-[#E5C992] shadow-[0_0_6px_#E5C992] animate-pulse"></span>
+<span class="font-code-marginalia text-code-marginalia text-[#FFE6B6] font-semibold uppercase">Continuous Calibration Engine</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-[#94A3B8] mb-space-lg max-w-editorial">
+          Knowledge is never stored passively. Every mistaken assumption is tagged, isolated into a localized micro-probe, and pushed down a 48-hour re-interrogation pipeline.
+        </p>
+<!-- Interactive Circuit Diagram -->
+<div class="p-space-md bg-[#0C111C]/80 border border-[#1E2B4A] rounded-lg overflow-x-auto">
+<div class="min-w-[680px] flex items-center justify-between relative py-space-sm">
+<!-- Step 1 -->
+<div class="flex flex-col items-center text-center z-10 w-28 group cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-[#131B2E] border border-[#1E2B4A] flex items-center justify-center text-[#FFE6B6] shadow-sm group-hover:scale-105 group-hover:border-[#E5C992] transition-all">
+<span class="material-symbols-outlined text-[20px]">menu_book</span>
+</div>
+<span class="font-label-md text-label-md text-[#F9F8F6] font-semibold mt-space-xs">1. Ingest</span>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8]">Syllabus Topic</span>
+</div>
+<!-- Connector 1 -->
+<div class="flex-1 h-0.5 bg-[#1E2B4A] relative">
+<div class="absolute inset-0 bg-gradient-to-r from-[#E5C992] to-[#38BDF8] w-full"></div>
+</div>
+<!-- Step 2 -->
+<div class="flex flex-col items-center text-center z-10 w-28 group cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-[#131B2E] border border-[#1E2B4A] flex items-center justify-center text-[#38BDF8] shadow-sm group-hover:scale-105 group-hover:border-[#38BDF8] transition-all">
+<span class="material-symbols-outlined text-[20px]">psychology_alt</span>
+</div>
+<span class="font-label-md text-label-md text-[#F9F8F6] font-semibold mt-space-xs">2. Diagnose</span>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8]">Deep Practice</span>
+</div>
+<!-- Connector 2 -->
+<div class="flex-1 h-0.5 bg-[#1E2B4A] relative">
+<div class="absolute inset-0 bg-[#38BDF8] w-full"></div>
+</div>
+<!-- Step 3 (Mistake Isolated) -->
+<div class="flex flex-col items-center text-center z-10 w-28 group cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-[#93000A]/50 border border-[#FFB4AB]/40 text-[#FFB4AB] flex items-center justify-center shadow-[0_0_12px_rgba(255,180,171,0.2)] group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[20px]">bug_report</span>
+</div>
+<span class="font-label-md text-label-md text-[#FFB4AB] font-semibold mt-space-xs">3. Log Error</span>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8]">Tag #0421</span>
+</div>
+<!-- Connector 3 -->
+<div class="flex-1 h-0.5 bg-[#1E2B4A] relative">
+<div class="absolute inset-0 bg-gradient-to-r from-[#FFB4AB]/60 to-[#E5C992] w-3/4"></div>
+</div>
+<!-- Step 4 (Spaced Loop) -->
+<div class="flex flex-col items-center text-center z-10 w-28 group cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-[#131B2E] border border-[#E5C992]/40 text-[#FFE6B6] flex items-center justify-center shadow-[0_0_10px_rgba(229,201,146,0.15)] group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[20px]">update</span>
+</div>
+<span class="font-label-md text-label-md text-[#F9F8F6] font-semibold mt-space-xs">4. Spaced 48h</span>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8]">Decay Anchor</span>
+</div>
+<!-- Connector 4 -->
+<div class="flex-1 h-0.5 bg-[#1E2B4A]"></div>
+<!-- Step 5 -->
+<div class="flex flex-col items-center text-center z-10 w-28 group cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-[#0C111C] border border-[#1E2B4A] text-[#94A3B8] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[20px]">verified</span>
+</div>
+<span class="font-label-md text-label-md text-[#94A3B8] font-semibold mt-space-xs">5. Retest</span>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8]/60">Mastery Update</span>
+</div>
+</div>
+</div>
+<!-- Citation blockquote / Tactical advice -->
+<div class="mt-space-md p-space-md bg-[#0C111C]/80 border border-[#1E2B4A] rounded-lg flex items-start gap-space-sm">
+<div class="w-1 h-full min-h-[44px] bg-[#E5C992] rounded shadow-[0_0_8px_#E5C992]"></div>
+<div>
+<p class="font-headline-sm text-headline-sm italic text-[#F9F8F6]">
+              "We do not learn by avoiding wrong answers, but by dissecting the exact coordinate where our reasoning broke symmetry."
+            </p>
+<span class="font-code-marginalia text-code-marginalia uppercase text-[#94A3B8] mt-space-2xs block">
+              — System Diagnostic Principle // KRODEX Manual § 4.19
+            </span>
+</div>
+</div>
+</section>
+<!-- Academic Subject Visual Showcase (Visual Richness / 2-3 Photos) -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Physics Notebook / Rigorous Notes -->
+<div class="group relative rounded-xl overflow-hidden bg-[#131B2E] border border-[#1E2B4A] shadow-[0_4px_20px_rgba(0,0,0,0.4)] flex flex-col justify-end min-h-[220px]">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105 filter saturate-90 brightness-90" data-alt="Close-up editorial photograph of an academic physics manuscript and engineering graph paper covered with precise mathematical equations, vector cross products, and hand-drawn magnetic field line diagrams. Shot with warm natural morning window lighting, dark ink pens, muted ivory paper texture, scholarly atmosphere." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBPgrd7NxiJfKdjyM-CQHrAGXaWYJN6BxmVN7FNbqlbYd1VfwrClYL_nTTtucq_Hxyk_6yIl21FxS45CTxnwznhzA67rX96PDjQYZqqi_HC3QHl7Y8kfWjcUclX22SW2LjBUrsoWi-0akpC4Ql2EaiyEdFm76B4eStZ40BMNxv_kvn6Jg6nDuyryVkxp6NucylEy0YAPZJj5BDnNEvnbOq4RdSdWn8LEsj0WHuXBXtbs4OvnCRcekKb6g')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-[#090D16] via-[#090D16]/75 to-transparent"></div>
+<div class="relative p-space-md text-[#DFE2EF]">
+<span class="font-code-marginalia text-code-marginalia text-[#E5C992] uppercase tracking-wider">Lab Dossier // Ch.14</span>
+<h4 class="font-headline-sm text-headline-sm text-[#F9F8F6] font-medium mt-space-3xs">Magnetic Dipole Mechanics</h4>
+<p class="font-body-sm text-body-sm text-[#94A3B8] line-clamp-2 mt-space-3xs">
+              Reviewing Faraday's paradox across rotating conductive disks and closed loop currents.
+            </p>
+</div>
+</div>
+<!-- Problem Matrix Blueprint -->
+<div class="group relative rounded-xl overflow-hidden bg-[#131B2E] border border-[#1E2B4A] shadow-[0_4px_20px_rgba(0,0,0,0.4)] flex flex-col justify-end min-h-[220px]">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105 filter saturate-90 brightness-90" data-alt="High-end academic study desk with a classic brass mechanical drafting compass resting on intricate rotational dynamics coordinate plots and tensor calculus matrices. Soft archival lighting, deep navy ink on cream vellum paper, clean architectural aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBhxnZWzX_d7qRTr-zBQaOi18ioTwAAVGzYoKFZDSu6oCUbRr9QXIPmsBYjBC9E-MN1tAtSVhFa8YhKyy-0tGPaQhwfbEV1CSNgfjaQTGglx2ZdCVMUeZe18dVy7M0vyZLt5cWJcOK4ZildJEkMzzaNiMTKSyrgIlUeux4uoltINMYFGl3u7nFqUIdzw4Af1t9rsjx3JQ8hGB7e_ALSt3V-N-wQXopr0sQOMMcKe_yGHJ3PDvY_RcHuUg')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-[#090D16] via-[#090D16]/75 to-transparent"></div>
+<div class="relative p-space-md text-[#DFE2EF]">
+<span class="font-code-marginalia text-code-marginalia text-[#E5C992] uppercase tracking-wider">Active Problem Matrix</span>
+<h4 class="font-headline-sm text-headline-sm text-[#F9F8F6] font-medium mt-space-3xs">Rotational Dynamics Set #4</h4>
+<p class="font-body-sm text-body-sm text-[#94A3B8] line-clamp-2 mt-space-3xs">
+              Targeting angular momentum non-conservation edge cases and variable pivot axis problems.
+            </p>
+</div>
+</div>
+</section>
+</div>
+<!-- RIGHT ZONE: Needs Attention & Real Learning Dimensions (4 cols) -->
+<div class="lg:col-span-4 space-y-space-xl">
+<!-- Needs Immediate Attention -->
+<section class="bg-[#131B2E]/90 border border-[#1E2B4A] rounded-xl p-space-md shadow-[0_4px_24px_rgba(0,0,0,0.35)] backdrop-blur-sm">
+<div class="flex items-center justify-between pb-space-sm mb-space-sm border-b border-[#1E2B4A]/60">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px] text-[#FFB4AB]">warning</span>
+<h3 class="font-title-lg text-title-lg text-[#F9F8F6] font-semibold">Immediate Priority</h3>
+</div>
+<span class="font-label-sm text-label-sm px-space-2xs py-0.5 rounded bg-[#93000A]/50 border border-[#FFB4AB]/30 text-[#FFDAD6] font-semibold">3 Items</span>
+</div>
+<div class="space-y-space-sm">
+<!-- Urgent Error Card -->
+<div class="p-space-sm rounded-lg bg-[#0C111C]/80 border border-[#1E2B4A]">
+<div class="flex items-center justify-between">
+<span class="font-code-marginalia text-code-marginalia px-space-2xs py-0.5 rounded bg-[#93000A]/50 border border-[#FFB4AB]/30 text-[#FFDAD6] font-semibold uppercase">Urgent Error</span>
+<span class="font-code-marginalia text-code-marginalia text-[#FFB4AB] font-medium">Recurrence: 2nd time</span>
+</div>
+<h4 class="font-title-lg text-title-lg text-[#F9F8F6] font-semibold mt-space-2xs">
+              Capacitance Dielectric Slab Inversion
+            </h4>
+<p class="font-body-sm text-body-sm text-[#94A3B8] mt-space-3xs">
+              Incorrect boundary condition used during partial dielectric insertion with floating source.
+            </p>
+<div class="mt-space-sm flex items-center justify-between pt-space-xs border-t border-[#1E2B4A]/60">
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8]">Tagged: #E-0399</span>
+<button class="px-space-sm py-1 rounded bg-[#E5C992] text-[#261A00] font-label-sm text-label-sm uppercase tracking-wider font-semibold hover:bg-[#FFE6B6] transition-colors" type="button">
+                Solve Probe
+              </button>
+</div>
+</div>
+<!-- Recovery Buffer Card (Non-moralizing guilt-free) -->
+<div class="p-space-sm rounded-lg bg-[#0C111C]/80 border border-[#1E2B4A]">
+<div class="flex items-center justify-between">
+<span class="font-code-marginalia text-code-marginalia px-space-2xs py-0.5 rounded bg-[#17223B] border border-[#1E2B4A] text-[#DFE2EF] font-semibold uppercase">Pacing Adjustment</span>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8]">From Yesterday</span>
+</div>
+<h4 class="font-title-lg text-title-lg text-[#F9F8F6] font-semibold mt-space-2xs">
+              Thermodynamics Carnot Cycle (45m)
+            </h4>
+<p class="font-body-sm text-body-sm text-[#94A3B8] mt-space-3xs">
+              Displaced by laboratory session. Neutral reallocation available.
+            </p>
+<div class="mt-space-sm flex items-center justify-end pt-space-xs border-t border-[#1E2B4A]/60">
+<button class="px-space-sm py-1 rounded bg-[#17223B] border border-[#38BDF8]/40 text-[#38BDF8] font-label-sm text-label-sm uppercase tracking-wider hover:bg-[#0566D9]/30 transition-colors" onclick="this.innerText='Buffered to Sat 09:00'; this.classList.add('bg-[#1E2B4A]','text-[#94A3B8]','border-[#1E2B4A]');" type="button">
+                Add to Recovery Buffer
+              </button>
+</div>
+</div>
+<!-- Spaced Retest Due -->
+<div class="p-space-sm rounded-lg bg-[#0C111C]/80 border border-[#1E2B4A]">
+<div class="flex items-center justify-between">
+<span class="font-code-marginalia text-code-marginalia px-space-2xs py-0.5 rounded bg-[#E5C992]/20 border border-[#E5C992]/40 text-[#FFE6B6] font-semibold uppercase">Review Due</span>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8]">At 18:00 Today</span>
+</div>
+<h4 class="font-title-lg text-title-lg text-[#F9F8F6] font-semibold mt-space-2xs">
+              2 Spaced Flash-Probes Queued
+            </h4>
+<p class="font-body-sm text-body-sm text-[#94A3B8] mt-space-3xs">
+              Topics: Gyroscopic Torque derivation &amp; Biot-Savart circular loop edge field.
+            </p>
+</div>
+</div>
+</section>
+<!-- Real Learning Dimensions (Tactile Academic Telemetry) -->
+<section class="bg-[#131B2E]/90 border border-[#1E2B4A] rounded-xl p-space-md shadow-[0_4px_24px_rgba(0,0,0,0.35)] backdrop-blur-sm">
+<div class="flex items-center justify-between pb-space-sm mb-space-sm border-b border-[#1E2B4A]/60">
+<div>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8] uppercase tracking-wider">Empirical Calibration</span>
+<h3 class="font-title-lg text-title-lg text-[#F9F8F6] font-semibold mt-space-3xs">Learning Dimensions</h3>
+</div>
+<button class="text-[#94A3B8] hover:text-[#FFE6B6]" title="Telemetry details" type="button">
+<span class="material-symbols-outlined text-[18px]">query_stats</span>
+</button>
+</div>
+<div class="space-y-space-md">
+<!-- Metric 1: Verified Coverage -->
+<div>
+<div class="flex items-baseline justify-between mb-space-3xs">
+<span class="font-body-sm text-body-sm text-[#DFE2EF] font-medium">Syllabus Mastery (Verified)</span>
+<span class="font-title-lg text-title-lg text-[#FFE6B6] font-semibold">68.4%</span>
+</div>
+<div class="w-full h-2 rounded bg-[#0C111C] border border-[#1E2B4A]/60 overflow-hidden">
+<div class="h-full bg-[#E5C992] rounded shadow-[0_0_8px_#E5C992]" style="width: 68.4%;"></div>
+</div>
+<div class="flex justify-between font-code-marginalia text-code-marginalia text-[#94A3B8] mt-space-3xs">
+<span>142 topics verified</span>
+<span>66 remaining</span>
+</div>
+</div>
+<!-- Metric 2: Error Recurrence Rate -->
+<div>
+<div class="flex items-baseline justify-between mb-space-3xs">
+<span class="font-body-sm text-body-sm text-[#DFE2EF] font-medium">Error Recurrence Rate</span>
+<div class="flex items-baseline gap-space-2xs">
+<span class="font-title-lg text-title-lg text-[#38BDF8] font-semibold">8.2%</span>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8]">↓ 10.4%</span>
+</div>
+</div>
+<div class="w-full h-2 rounded bg-[#0C111C] border border-[#1E2B4A]/60 overflow-hidden">
+<div class="h-full bg-[#38BDF8] rounded shadow-[0_0_8px_#38BDF8]" style="width: 8.2%;"></div>
+</div>
+<p class="font-code-marginalia text-code-marginalia text-[#94A3B8] mt-space-3xs">
+              Down from 18.6% last review cycle (Sign error containment succeeded).
+            </p>
+</div>
+<!-- Metric 3: Spaced Review Discipline -->
+<div>
+<div class="flex items-baseline justify-between mb-space-3xs">
+<span class="font-body-sm text-body-sm text-[#DFE2EF] font-medium">Spaced Review Cadence</span>
+<span class="font-title-lg text-title-lg text-[#FFE6B6] font-semibold">94.1%</span>
+</div>
+<div class="w-full h-2 rounded bg-[#0C111C] border border-[#1E2B4A]/60 overflow-hidden">
+<div class="h-full bg-gradient-to-r from-[#E5C992] to-[#FFE6B6] rounded shadow-[0_0_8px_#E5C992]" style="width: 94.1%;"></div>
+</div>
+<div class="flex justify-between font-code-marginalia text-code-marginalia text-[#94A3B8] mt-space-3xs">
+<span>32 of 34 loops on-time</span>
+<span class="text-[#38BDF8]">Optimal retention</span>
+</div>
+</div>
+<!-- Metric 4: Cognitive Entropy -->
+<div class="p-space-sm bg-[#0C111C]/80 border border-[#1E2B4A] rounded-lg">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8] uppercase">Cognitive Entropy</span>
+<span class="font-headline-sm text-headline-sm font-semibold text-[#F9F8F6] mt-space-3xs">0.14 <span class="text-body-sm font-normal text-[#94A3B8]">e.u.</span></span>
+</div>
+<div class="flex flex-col items-end">
+<span class="px-space-xs py-0.5 rounded bg-[#17223B] border border-[#1E2B4A] text-[#FFE6B6] font-code-marginalia text-code-marginalia uppercase font-semibold">Low Noise</span>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8] mt-space-3xs">High System Stability</span>
+</div>
+</div>
+<!-- Minimal sparkline SVG under 2KB -->
+<div class="mt-space-sm pt-space-xs">
+<svg class="w-full h-8 text-[#38BDF8]" fill="none" viewbox="0 0 200 32">
+<path d="M0 26 L25 24 L50 28 L75 18 L100 16 L125 20 L150 12 L175 14 L200 8" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"></path>
+<path d="M0 26 L25 24 L50 28 L75 18 L100 16 L125 20 L150 12 L175 14 L200 8 V32 H0 Z" fill="currentColor" fill-opacity="0.12"></path>
+</svg>
+</div>
+</div>
+</div>
+</section>
+<!-- Chronological Evidence Stream -->
+<section class="bg-[#131B2E]/90 border border-[#1E2B4A] rounded-xl p-space-md shadow-[0_4px_24px_rgba(0,0,0,0.35)] backdrop-blur-sm">
+<div class="flex items-center justify-between pb-space-sm mb-space-sm border-b border-[#1E2B4A]/60">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px] text-[#94A3B8]">receipt_long</span>
+<h3 class="font-title-lg text-title-lg text-[#F9F8F6] font-semibold">Evidence Stream</h3>
+</div>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8]">Live Audit</span>
+</div>
+<ol class="relative space-y-space-md pl-4">
+<!-- Item 1 -->
+<li class="relative">
+<div class="absolute -left-4 top-1.5 w-2 h-2 rounded-full bg-[#38BDF8] shadow-[0_0_6px_#38BDF8]"></div>
+<div class="flex items-center gap-space-xs font-code-marginalia text-code-marginalia text-[#94A3B8]">
+<span class="font-semibold text-[#F9F8F6]">10:02 Today</span>
+<span>·</span>
+<span>Problem Set Closed</span>
+</div>
+<p class="font-body-sm text-body-sm text-[#DFE2EF] mt-space-3xs">
+              18 problems attempted · 2 errors isolated into active queue.
+            </p>
+</li>
+<!-- Item 2 -->
+<li class="relative">
+<div class="absolute -left-4 top-1.5 w-2 h-2 rounded-full bg-[#FFB4AB] shadow-[0_0_6px_#FFB4AB]"></div>
+<div class="flex items-center gap-space-xs font-code-marginalia text-code-marginalia text-[#94A3B8]">
+<span class="font-semibold text-[#F9F8F6]">Yesterday 17:40</span>
+<span>·</span>
+<span>Classification</span>
+</div>
+<p class="font-body-sm text-body-sm text-[#DFE2EF] mt-space-3xs">
+              Error #0420 catalogued as <span class="italic font-headline-sm text-body-sm text-[#FFE6B6]">"Sign Inversion in Faraday Flux Integral"</span>.
+            </p>
+</li>
+<!-- Item 3 -->
+<li class="relative">
+<div class="absolute -left-4 top-1.5 w-2 h-2 rounded-full bg-[#E5C992] shadow-[0_0_6px_#E5C992]"></div>
+<div class="flex items-center gap-space-xs font-code-marginalia text-code-marginalia text-[#94A3B8]">
+<span class="font-semibold text-[#F9F8F6]">Yesterday 11:15</span>
+<span>·</span>
+<span>Retest Clearance</span>
+</div>
+<p class="font-body-sm text-body-sm text-[#DFE2EF] mt-space-3xs">
+              Kirchhoff Loop Law integrals verified. Promoted to 7-day spaced loop.
+            </p>
+</li>
+</ol>
+</section>
+</div>
+</div>
+<!-- Quick Mistake Logging Modal Overlay (Tactile Tier 2 Dossier) -->
+<div class="hidden fixed inset-0 z-50 bg-[#090D16]/80 backdrop-blur-md flex items-center justify-center p-gutter-mobile" id="mistake-modal">
+<div class="bg-[#131B2E] border border-[#1E2B4A] w-full max-w-[580px] rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] overflow-hidden p-space-lg animate-in fade-in zoom-in-95 duration-150">
+<div class="flex items-center justify-between pb-space-sm mb-space-md border-b border-[#1E2B4A]/80">
+<div class="flex items-center gap-space-xs">
+<div class="w-7 h-7 rounded bg-[#93000A]/50 border border-[#FFB4AB]/40 text-[#FFB4AB] flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">bug_report</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-[#F9F8F6]">Log Mistake Probe</h3>
+</div>
+<button class="p-space-2xs text-[#94A3B8] hover:text-[#F9F8F6] rounded hover:bg-[#17223B]" onclick="document.getElementById('mistake-modal').classList.add('hidden')" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<form class="space-y-space-md" onsubmit="event.preventDefault(); document.getElementById('mistake-modal').classList.add('hidden');">
+<div>
+<label class="block font-label-md text-label-md uppercase tracking-wider text-[#94A3B8] mb-space-2xs">
+            Subject &amp; Problem Coordinate
+          </label>
+<input class="w-full bg-[#0C111C] border border-[#1E2B4A] px-space-sm py-space-xs rounded-lg font-body-md text-body-md text-[#F9F8F6] placeholder:text-[#64748B] outline-none focus:border-[#E5C992] transition-colors shadow-inner" placeholder="e.g. Physics Ch.14 Lenz Law Problem #12" required="" type="text"/>
+</div>
+<div>
+<label class="block font-label-md text-label-md uppercase tracking-wider text-[#94A3B8] mb-space-2xs">
+            Error Classification Taxonomy
+          </label>
+<div class="grid grid-cols-2 gap-space-xs">
+<label class="flex items-center gap-space-xs p-space-xs bg-[#0C111C] border border-[#1E2B4A] rounded-lg cursor-pointer hover:bg-[#17223B] transition-colors">
+<input checked="" class="accent-[#E5C992]" name="error-type" type="radio"/>
+<span class="font-body-sm text-body-sm text-[#DFE2EF]">Conceptual Slip</span>
+</label>
+<label class="flex items-center gap-space-xs p-space-xs bg-[#0C111C] border border-[#1E2B4A] rounded-lg cursor-pointer hover:bg-[#17223B] transition-colors">
+<input class="accent-[#E5C992]" name="error-type" type="radio"/>
+<span class="font-body-sm text-body-sm text-[#DFE2EF]">Sign / Calculation</span>
+</label>
+<label class="flex items-center gap-space-xs p-space-xs bg-[#0C111C] border border-[#1E2B4A] rounded-lg cursor-pointer hover:bg-[#17223B] transition-colors">
+<input class="accent-[#E5C992]" name="error-type" type="radio"/>
+<span class="font-body-sm text-body-sm text-[#DFE2EF]">Boundary Condition Miss</span>
+</label>
+<label class="flex items-center gap-space-xs p-space-xs bg-[#0C111C] border border-[#1E2B4A] rounded-lg cursor-pointer hover:bg-[#17223B] transition-colors">
+<input class="accent-[#E5C992]" name="error-type" type="radio"/>
+<span class="font-body-sm text-body-sm text-[#DFE2EF]">Speed / Reading Flaw</span>
+</label>
+</div>
+</div>
+<div>
+<label class="block font-label-md text-label-md uppercase tracking-wider text-[#94A3B8] mb-space-2xs">
+            Micro-Reflection (What premise was assumed wrongly?)
+          </label>
+<textarea class="w-full bg-[#0C111C] border border-[#1E2B4A] p-space-sm rounded-lg font-body-md text-body-md text-[#F9F8F6] placeholder:text-[#64748B] outline-none focus:border-[#E5C992] transition-colors shadow-inner resize-none" placeholder="I assumed the magnetic flux decreased, but the coil motion increased B..." rows="3"></textarea>
+</div>
+<div class="flex items-center justify-between pt-space-xs border-t border-[#1E2B4A]/60">
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8]">Scheduled for automatic 48h re-test probe</span>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-sm py-space-xs rounded-lg bg-[#17223B] border border-[#1E2B4A] text-[#DFE2EF] font-label-sm text-label-sm uppercase tracking-wider hover:bg-[#1E2B4A]" onclick="document.getElementById('mistake-modal').classList.add('hidden')" type="button">
+              Cancel
+            </button>
+<button class="px-space-md py-space-xs rounded-lg bg-[#E5C992] text-[#261A00] font-label-sm text-label-sm uppercase tracking-wider font-semibold hover:bg-[#FFE6B6] transition-colors shadow-[0_0_12px_rgba(229,201,146,0.25)]" type="submit">
+              Seal into Queue
+            </button>
+</div>
+</div>
+</form>
+</div>
+</div>
+<script>
+    // Keyboard hotkey 'C' for capture mistake modal
+    document.addEventListener('keydown', (e) => {
+      if ((e.key === 'c' || e.key === 'C') && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+        const modal = document.getElementById('mistake-modal');
+        if (modal) modal.classList.toggle('hidden');
+      }
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('mistake-modal');
+        if (modal && !modal.classList.contains('hidden')) {
+          modal.classList.add('hidden');
+        }
+      }
+    });
+
+    // Subtle timer increment simulation
+    let seconds = 48 * 60 + 12;
+    setInterval(() => {
+      seconds++;
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      const el = document.getElementById('active-timer');
+      if (el) el.innerText = `${m}:${s < 10 ? '0' : ''}${s} elapsed`;
+    }, 1000);
+  </script>
+</div></div></main></div></body></html>

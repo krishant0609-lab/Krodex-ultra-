@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Krodex Scholars Dimension - Luxury Glassmorphic Portal</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #020308;
+      --accent-1: #38bdf8;
+      --accent-2: #818cf8;
+      --accent-3: #c084fc;
+      --glow-rgb: 56, 189, 248;
+      --lamp-glow-rgb: 56, 189, 248;
+      --lamp-shade-tint: #0b1526;
+      --light-opacity: 0;
+
+      --glass-base: rgba(10, 15, 32, 0.62);
+      --glass-border: rgba(255, 255, 255, 0.16);
+      --input-bg: rgba(6, 10, 24, 0.76);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-serif: 'Cinzel', serif;
+      --font-sans: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'Space Grotesk', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    body {
+      background: var(--bg-dark);
+      min-height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      perspective: 1600px;
+      color: var(--text-main);
+      position: relative;
+    }
+
+    #webglCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.45;
+      transition: opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    body.portal-active #webglCanvas {
+      opacity: 1;
+    }
+
+    .study-vignette {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, transparent 22%, rgba(2, 3, 8, 0.94) 92%),
+                  linear-gradient(180deg, rgba(2, 3, 8, 0.7) 0%, transparent 30%, rgba(2, 3, 8, 0.88) 100%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .study-grid-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 3;
+      opacity: 0.12;
+      background-image: 
+        radial-gradient(1px 1px at 30px 30px, rgba(255,255,255,0.7), transparent),
+        linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mix-blend-mode: screen;
+    }
+
+    .cursor-liquid-aura {
+      position: fixed;
+      width: 480px;
+      height: 480px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(var(--glow-rgb), 0.24) 0%, transparent 70%);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 4;
+      filter: blur(52px);
+      mix-blend-mode: screen;
+      transition: opacity 0.3s ease;
+    }
+
+    .master-stage {
+      position: relative;
+      width: 100%;
+      max-width: 1000px;
+      height: 540px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      perspective: 1600px;
+      padding: 0 20px;
+    }
+
+    /* Modern Minimalist Lamp Rig */
+    .lamp-section {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      height: 520px;
+      width: 360px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 25;
+      transition: left 1.1s cubic-bezier(0.34, 1.2, 0.64, 1),
+                  transform 1.1s cubic-bezier(0.34, 1.2, 0.64, 1);
+      transform-style: preserve-3d;
+    }
+
+    .lamp-svg {
+      height: 480px;
+      width: auto;
+      max-width: 100%;
+      overflow: visible;
+      filter: drop-shadow(0 25px 45px rgba(0,0,0,0.8));
+      transform-style: preserve-3d;
+    }
+
+    .lamp-glass-shade {
+      fill: var(--lamp-shade-tint);
+      transition: fill 0.6s ease;
+    }
+
+    .lamp-crystal-ring {
+      stroke: var(--accent-1);
+      transition: stroke 0.6s ease;
+    }
+
+    .light-cone {
+      opacity: var(--light-opacity);
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .pull-string-group {
+      cursor: grab;
+      transform-origin: top center;
+    }
+    .pull-string-group:active {
+      cursor: grabbing;
+    }
+
+    #stringPath {
+      stroke: #e2e8f0;
+      transition: stroke 0.3s ease;
+    }
+
+    #stringBead {
+      stroke: var(--accent-1);
+      fill: #0d1527;
+      transition: stroke 0.3s ease, filter 0.2s ease;
+    }
+
+    .pull-string-group:hover #stringBead {
+      filter: drop-shadow(0 0 14px var(--accent-1));
+    }
+
+    .tension-wave-ring {
+      fill: none;
+      stroke: var(--accent-1);
+      opacity: 0;
+      transform-origin: 105px 200px;
+      pointer-events: none;
+      transition: stroke 0.6s ease;
+    }
+
+    .lamp-ambient-glow {
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      background: radial-gradient(circle, rgba(var(--lamp-glow-rgb), 0.32) 0%, transparent 70%);
+      top: 48%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: -1;
+      transition: background 0.6s ease;
+      pointer-events: none;
+    }
+
+    .lamp-hint-tag {
+      margin-top: 4px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      opacity: 0.85;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      animation: pulseHint 2.2s infinite ease-in-out;
+      transition: opacity 0.3s ease;
+    }
+
+    @keyframes pulseHint {
+      0%, 100% { opacity: 0.5; transform: translateY(0); }
+      50% { opacity: 1; transform: translateY(3px); }
+    }
+
+    body.portal-active .lamp-section {
+      left: calc(50% - 250px);
+      transform: translate(-50%, -50%);
+    }
+
+    body.portal-active .lamp-hint-tag {
+      opacity: 0.45;
+    }
+
+    /* Refined Liquid Glass Card */
+    .viewport-3d-scene {
+      position: absolute;
+      left: calc(50% + 180px);
+      top: 50%;
+      transform: translate(-50%, -50%) translateZ(-300px) scale(0.75);
+      z-index: 20;
+      width: 410px;
+      height: 520px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+      perspective: 1500px;
+    }
+
+    body.portal-active .viewport-3d-scene {
+      opacity: 1;
+      pointer-events: all;
+      transform: translate(-50%, -50%) translateZ(0) scale(1);
+    }
+
+    .card-liquid-rig {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      will-change: transform;
+      transition: transform 0.16s cubic-bezier(0.1, 0.8, 0.2, 1);
+    }
+
+    .liquid-glass-chassis {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(145deg, rgba(14, 18, 36, 0.6) 0%, rgba(6, 8, 20, 0.8) 100%);
+      backdrop-filter: blur(38px) saturate(210%) brightness(105%);
+      -webkit-backdrop-filter: blur(38px) saturate(210%) brightness(105%);
+      border-radius: 30px;
+      border: 1px solid var(--glass-border);
+      box-shadow: 
+        0 30px 80px -15px rgba(0, 0, 0, 0.95),
+        0 0 45px -10px rgba(var(--glow-rgb), 0.3),
+        inset 0 1px 1px rgba(255, 255, 255, 0.35),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.7);
+      overflow: hidden;
+      padding: 24px 26px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transform-style: preserve-3d;
+      transition: border-color 0.8s, box-shadow 0.8s;
+    }
+
+    .glass-light-sheen {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(500px circle at var(--sheen-x, 50%) var(--sheen-y, 50%), rgba(255, 255, 255, 0.15), transparent 45%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .liquid-glass-chassis::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 30px;
+      padding: 1.4px;
+      background: linear-gradient(
+        135deg, 
+        var(--accent-1), 
+        rgba(255, 255, 255, 0.16) 35%, 
+        var(--accent-2) 70%, 
+        var(--accent-3)
+      );
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+      z-index: 3;
+      transition: background 0.8s;
+    }
+
+    .glass-liquid-ripple {
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        125deg,
+        transparent 38%,
+        rgba(255, 255, 255, 0.04) 47%,
+        rgba(255, 255, 255, 0.5) 50%,
+        rgba(255, 255, 255, 0.02) 53%,
+        transparent 62%
+      );
+      transform: rotate(28deg);
+      pointer-events: none;
+      z-index: 1;
+      animation: ambientSweep 9s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate;
+    }
+
+    @keyframes ambientSweep {
+      0% { transform: translateY(-30%) rotate(28deg); opacity: 0.22; }
+      100% { transform: translateY(30%) rotate(32deg); opacity: 0.42; }
+    }
+
+    .header-3d-stack {
+      text-align: center;
+      margin-bottom: 8px;
+      transform: translateZ(45px);
+      transform-style: preserve-3d;
+      position: relative;
+      z-index: 10;
+    }
+
+    .academic-crest-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 12px;
+      background: rgba(var(--glow-rgb), 0.08);
+      border: 1px solid rgba(var(--glow-rgb), 0.35);
+      border-radius: 9999px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--accent-1);
+      margin-bottom: 6px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 0 10px rgba(var(--glow-rgb), 0.25);
+      font-family: var(--font-mono);
+      transform: translateZ(20px);
+      transition: color 0.8s, border-color 0.8s, box-shadow 0.8s;
+    }
+
+    .card-title {
+      font-family: var(--font-serif);
+      font-size: 1.65rem;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #ffffff 40%, var(--text-muted) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 2px;
+      transform: translateZ(30px);
+    }
+
+    .card-subtitle {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      font-weight: 400;
+      transform: translateZ(18px);
+    }
+
+    .mode-glider-track {
+      position: relative;
+      display: flex;
+      background: rgba(4, 7, 18, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 3px;
+      margin-bottom: 12px;
+      transform: translateZ(35px);
+      z-index: 10;
+    }
+
+    .mode-glider {
+      position: absolute;
+      top: 3px;
+      bottom: 3px;
+      left: 3px;
+      width: calc(50% - 3px);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.04));
+      border: 1px solid rgba(var(--glow-rgb), 0.65);
+      box-shadow: 0 4px 16px rgba(var(--glow-rgb), 0.35);
+      border-radius: 11px;
+      transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 1;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 8px 0;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      z-index: 2;
+      position: relative;
+      transition: color 0.3s ease;
+      text-align: center;
+      font-family: var(--font-mono);
+      letter-spacing: 0.4px;
+    }
+
+    .mode-btn.active {
+      color: #ffffff;
+      text-shadow: 0 0 10px rgba(var(--glow-rgb), 0.75);
+    }
+
+    .forms-3d-stage {
+      position: relative;
+      width: 100%;
+      flex: 1;
+      transform-style: preserve-3d;
+      perspective: 1000px;
+      transform: translateZ(28px);
+      z-index: 10;
+    }
+
+    .auth-3d-panel {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      opacity: 0;
+      pointer-events: none;
+      transform: rotateY(-20deg) translateZ(-35px);
+      transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .auth-3d-panel.active {
+      opacity: 1;
+      pointer-events: all;
+      transform: rotateY(0deg) translateZ(0);
+    }
+
+    .liquid-input-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      transform-style: preserve-3d;
+      transform: translateZ(12px);
+    }
+
+    .liquid-input-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      pointer-events: none;
+      transition: color 0.3s ease, transform 0.3s ease;
+      z-index: 2;
+    }
+
+    .liquid-field {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 13px;
+      padding: 11px 40px 11px 42px;
+      color: #ffffff;
+      font-size: 0.86rem;
+      font-weight: 500;
+      outline: none;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .liquid-field::placeholder {
+      color: transparent;
+    }
+
+    .liquid-floating-label {
+      position: absolute;
+      left: 42px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      pointer-events: none;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 2;
+    }
+
+    .liquid-field:focus ~ .liquid-floating-label,
+    .liquid-field:not(:placeholder-shown) ~ .liquid-floating-label {
+      top: 0;
+      transform: translateY(-50%) scale(0.8);
+      left: 14px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(6, 10, 24, 0.95);
+      border: 1px solid rgba(var(--glow-rgb), 0.5);
+      color: var(--accent-1);
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+    }
+
+    .liquid-field:focus {
+      border-color: rgba(var(--glow-rgb), 0.9);
+      background: rgba(10, 16, 36, 0.75);
+      box-shadow: 0 0 18px rgba(var(--glow-rgb), 0.35), inset 0 0 6px rgba(255, 255, 255, 0.08);
+    }
+
+    .liquid-field:focus ~ .input-icon {
+      color: var(--accent-1);
+      transform: scale(1.1);
+    }
+
+    .pass-eye-toggle {
+      position: absolute;
+      right: 12px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.86rem;
+      padding: 5px;
+      border-radius: 6px;
+      transition: color 0.2s, background 0.2s;
+      z-index: 3;
+    }
+
+    .pass-eye-toggle:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .row-meta-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      transform: translateZ(14px);
+    }
+
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .checkbox-container input {
+      accent-color: var(--accent-1);
+      cursor: pointer;
+      width: 14px;
+      height: 14px;
+    }
+
+    .liquid-link {
+      color: var(--accent-1);
+      text-decoration: none;
+      font-weight: 600;
+      transition: text-shadow 0.25s;
+    }
+
+    .liquid-link:hover {
+      text-shadow: 0 0 10px rgba(var(--glow-rgb), 0.8);
+    }
+
+    .liquid-glow-submit {
+      position: relative;
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 13px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);
+      cursor: pointer;
+      box-shadow: 0 10px 24px -4px rgba(var(--glow-rgb), 0.4);
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transform: translateZ(24px);
+      font-family: var(--font-mono);
+    }
+
+    .liquid-glow-submit:hover {
+      transform: translateZ(28px) translateY(-1px);
+      box-shadow: 0 14px 30px -2px rgba(var(--glow-rgb), 0.6);
+      filter: brightness(1.1);
+    }
+
+    .liquid-glow-submit:active {
+      transform: translateZ(18px) translateY(1px);
+    }
+
+    .liquid-glow-submit::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -120%;
+      width: 120%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      transition: left 0.7s ease;
+    }
+
+    .liquid-glow-submit:hover::before {
+      left: 120%;
+    }
+
+    .liquid-google-btn {
+      position: relative;
+      width: 100%;
+      padding: 9px 12px;
+      border-radius: 13px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+      font-size: 0.82rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      transform: translateZ(20px);
+      font-family: var(--font-mono);
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .liquid-google-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(var(--glow-rgb), 0.6);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), 0 0 14px rgba(var(--glow-rgb), 0.25);
+      transform: translateZ(24px) translateY(-1px);
+    }
+
+    .liquid-google-btn svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    .form-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 1px 0;
+      transform: translateZ(14px);
+    }
+
+    .form-divider::before,
+    .form-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .form-divider span {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .strength-track {
+      height: 3px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .strength-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 2px;
+      transition: width 0.3s ease, background 0.3s ease;
+    }
+
+    .liquid-toast {
+      position: fixed;
+      bottom: 24px;
+      padding: 10px 20px;
+      border-radius: 14px;
+      background: rgba(8, 12, 28, 0.92);
+      backdrop-filter: blur(24px);
+      border: 1px solid rgba(var(--glow-rgb), 0.5);
+      color: #ffffff;
+      font-size: 0.82rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.75), 0 0 20px rgba(var(--glow-rgb), 0.35);
+      transform: translateY(120px);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 100;
+      font-family: var(--font-mono);
+    }
+
+    .liquid-toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .click-ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.7), transparent 75%);
+      transform: scale(0);
+      animation: rippleBurst 0.6s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+      pointer-events: none;
+    }
+
+    @keyframes rippleBurst {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    @media (max-width: 900px) {
+      .master-stage {
+        height: auto;
+        min-height: 560px;
+      }
+      body.portal-active .lamp-section {
+        left: 50%;
+        top: 22%;
+        transform: translate(-50%, -50%) scale(0.72);
+      }
+      body.portal-active .viewport-3d-scene {
+        left: 50%;
+        top: 68%;
+        transform: translate(-50%, -50%) scale(0.92);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="webglCanvas"></canvas>
+
+  <div class="study-vignette"></div>
+  <div class="study-grid-overlay"></div>
+  <div class="cursor-liquid-aura" id="cursorLiquidAura"></div>
+
+  <div class="master-stage">
+
+    <!-- Minimalist Architectural Lamp -->
+    <div class="lamp-section" id="lampSection">
+      <div class="lamp-ambient-glow" id="lampGlow"></div>
+
+      <svg class="lamp-svg" id="lampSvg" viewBox="0 0 300 450" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="brassGoldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#9a4a06" />
+            <stop offset="35%" stop-color="#fef08a" />
+            <stop offset="65%" stop-color="#d97706" />
+            <stop offset="100%" stop-color="#6b2f0a" />
+          </linearGradient>
+
+          <linearGradient id="blackMarbleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#1e293b" />
+            <stop offset="50%" stop-color="#090d16" />
+            <stop offset="100%" stop-color="#020617" />
+          </linearGradient>
+
+          <linearGradient id="volumetricConeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+            <stop offset="25%" stop-color="var(--accent-1)" stop-opacity="0.55" />
+            <stop offset="100%" stop-color="var(--accent-2)" stop-opacity="0" />
+          </linearGradient>
+
+          <radialGradient id="crystalDomeShading" cx="50%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.35)" />
+            <stop offset="60%" stop-color="var(--lamp-shade-tint)" />
+            <stop offset="100%" stop-color="#050811" />
+          </radialGradient>
+        </defs>
+
+        <!-- Dynamic Tension Wave Rings for Pulled String Effect -->
+        <circle id="tensionWave1" class="tension-wave-ring" cx="105" cy="200" r="14" />
+        <circle id="tensionWave2" class="tension-wave-ring" cx="105" cy="200" r="28" />
+        <circle id="tensionWave3" class="tension-wave-ring" cx="105" cy="200" r="44" />
+
+        <!-- Optical Volumetric Light Cone -->
+        <polygon points="85,200 215,200 330,450 -30,450" fill="url(#volumetricConeGrad)" class="light-cone" />
+
+        <!-- Stepped Precision Base -->
+        <ellipse cx="150" cy="414" rx="72" ry="16" fill="#02040a" />
+        <ellipse cx="150" cy="408" rx="68" ry="14" fill="url(#blackMarbleGrad)" stroke="rgba(255,255,255,0.12)" stroke-width="1" />
+        <ellipse cx="150" cy="404" rx="60" ry="10" fill="url(#brassGoldGrad)" />
+        <ellipse cx="150" cy="401" rx="54" ry="8" fill="#090d16" stroke="rgba(255,255,255,0.15)" stroke-width="1" />
+
+        <!-- Turned Brass Column & Collar -->
+        <ellipse cx="150" cy="396" rx="20" ry="5" fill="url(#brassGoldGrad)" />
+        <rect x="146" y="200" width="8" height="196" rx="3" fill="url(#brassGoldGrad)" />
+        <line x1="148" y1="202" x2="148" y2="394" stroke="rgba(255,255,255,0.7)" stroke-width="1.2" />
+        <ellipse cx="150" cy="295" rx="14" ry="4" fill="url(#brassGoldGrad)" stroke="#78350f" stroke-width="0.8" />
+
+        <!-- Fluted Bell Crystal Lamp Shade (Minimalist, No Face) -->
+        <path d="M 88 78 Q 150 48 212 78 L 246 200 Q 150 218 54 200 Z" 
+              class="lamp-glass-shade" 
+              fill="url(#crystalDomeShading)" 
+              stroke="rgba(255,255,255,0.25)" 
+              stroke-width="1.5" />
+
+        <path d="M 112 68 Q 102 140 92 201" stroke="rgba(255,255,255,0.14)" stroke-width="1.2" fill="none" />
+        <path d="M 132 60 Q 128 135 124 204" stroke="rgba(255,255,255,0.16)" stroke-width="1.2" fill="none" />
+        <path d="M 150 56 L 150 205" stroke="rgba(255,255,255,0.22)" stroke-width="1.4" fill="none" />
+        <path d="M 168 60 Q 172 135 176 204" stroke="rgba(255,255,255,0.16)" stroke-width="1.2" fill="none" />
+        <path d="M 188 68 Q 198 140 208 201" stroke="rgba(255,255,255,0.14)" stroke-width="1.2" fill="none" />
+
+        <!-- Lower Beveled Rim -->
+        <ellipse cx="150" cy="200" rx="96" ry="18" fill="#090d16" />
+        <ellipse cx="150" cy="200" rx="96" ry="18" fill="none" class="lamp-crystal-ring" stroke-width="3" />
+        <ellipse cx="150" cy="200" rx="88" ry="13" fill="none" stroke="url(#brassGoldGrad)" stroke-width="2" />
+        <ellipse cx="150" cy="198" rx="46" ry="9" fill="url(#brassGoldGrad)" opacity="0.65" />
+
+        <!-- Crown Finial -->
+        <ellipse cx="150" cy="74" rx="28" ry="8" fill="url(#brassGoldGrad)" stroke="#78350f" stroke-width="1" />
+        <path d="M 144 68 L 150 46 L 156 68 Z" fill="url(#brassGoldGrad)" />
+        <circle cx="150" cy="44" r="5.5" fill="var(--accent-1)" stroke="#ffffff" stroke-width="1.2" />
+
+        <!-- Interactive Golden Chain String & Pendant -->
+        <g class="pull-string-group" id="pullStringGroup">
+          <path id="stringPath" d="M 105 200 Q 105 250 105 295" stroke-width="2.6" fill="none" stroke-linecap="round" />
+          <circle id="chainBead1" cx="105" cy="225" r="2.2" fill="url(#brassGoldGrad)" />
+          <circle id="chainBead2" cx="105" cy="250" r="2.2" fill="url(#brassGoldGrad)" />
+          <circle id="chainBead3" cx="105" cy="275" r="2.2" fill="url(#brassGoldGrad)" />
+
+          <line id="stringPendantRod" x1="105" y1="295" x2="105" y2="318" stroke="url(#brassGoldGrad)" stroke-width="3.5" stroke-linecap="round" />
+          <circle id="stringBead" cx="105" cy="326" r="9" stroke-width="2.5" />
+          <circle id="stringBeadCore" cx="105" cy="326" r="4" fill="var(--accent-1)" />
+        </g>
+      </svg>
+
+      <div class="lamp-hint-tag" id="lampHint">
+        <i class="fa-solid fa-arrow-down-long"></i>
+        <span id="hintText">Pull string down to toggle</span>
+      </div>
+    </div>
+
+    <!-- Liquid Glass Academic Portal -->
+    <main class="viewport-3d-scene" id="portalScene">
+      <div class="card-liquid-rig" id="cardRig">
+        <div class="liquid-glass-chassis" id="glassChassis">
+          <div class="glass-light-sheen"></div>
+          <div class="glass-liquid-ripple"></div>
+
+          <div class="header-3d-stack">
+            <div class="academic-crest-badge">
+              <i class="fa-solid fa-feather-pointed"></i>
+              <span>Scholars Codex 3D</span>
+            </div>
+            <h1 class="card-title" id="portalTitle">Academic Portal</h1>
+            <p class="card-subtitle" id="portalSubtitle">Zero-trust cryptographic knowledge matrix</p>
+          </div>
+
+          <div class="mode-glider-track" role="tablist">
+            <div class="mode-glider" id="modeGlider"></div>
+            <button class="mode-btn active" id="tabStudent" type="button" role="tab">Student Sign up</button>
+            <button class="mode-btn" id="tabEnroll" type="button" role="tab">Student Login Portal</button>
+          </div>
+
+          <div class="forms-3d-stage">
+
+            <!-- SIGN IN FORM -->
+            <form class="auth-3d-panel active" id="signInForm" autocomplete="off">
+              <div class="liquid-input-container">
+                <div class="liquid-input-box">
+                  <i class="fa-regular fa-envelope input-icon"></i>
+                  <input type="email" id="studentId" class="liquid-field" placeholder=" " required />
+                  <label for="studentId" class="liquid-floating-label">Gmail</label>
+                </div>
+              </div>
+
+              <div class="liquid-input-container">
+                <div class="liquid-input-box">
+                  <i class="fa-solid fa-key input-icon"></i>
+                  <input type="password" id="studentKey" class="liquid-field" placeholder=" " required />
+                  <label for="studentKey" class="liquid-floating-label">Password</label>
+                  <button type="button" class="pass-eye-toggle" aria-label="Toggle password visibility">
+                    <i class="fa-regular fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="row-meta-actions">
+                <label class="checkbox-container">
+                  <input type="checkbox" checked /> Remember
+                </label>
+                <a href="#" class="liquid-link" id="lostPasswordLinkLogin">Lost Password?</a>
+              </div>
+
+              <button type="submit" class="liquid-glow-submit">
+                <span>Welcome to Krodex</span>
+                <i class="fa-solid fa-arrow-right-long"></i>
+              </button>
+
+              <div class="form-divider">
+                <span>OR</span>
+              </div>
+
+              <button type="button" class="liquid-google-btn" id="googleLoginBtn">
+                <svg viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.36 7.33 24 12 24z"/>
+                  <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.16 0 9.97 0 12s.46 3.84 1.26 5.42l4.02-3.15z"/>
+                  <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.64 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                </svg>
+                <span>Login with Google</span>
+              </button>
+            </form>
+
+            <!-- SIGN UP FORM -->
+            <form class="auth-3d-panel" id="signUpForm" autocomplete="off">
+              <div class="liquid-input-container">
+                <div class="liquid-input-box">
+                  <i class="fa-regular fa-envelope input-icon"></i>
+                  <input type="email" id="regEmail" class="liquid-field" placeholder=" " required />
+                  <label for="regEmail" class="liquid-floating-label">Gmail</label>
+                </div>
+              </div>
+
+              <div class="liquid-input-container">
+                <div class="liquid-input-box">
+                  <i class="fa-solid fa-shield-halved input-icon"></i>
+                  <input type="password" id="regKey" class="liquid-field" placeholder=" " required />
+                  <label for="regKey" class="liquid-floating-label">Password</label>
+                  <button type="button" class="pass-eye-toggle" aria-label="Toggle password visibility">
+                    <i class="fa-regular fa-eye"></i>
+                  </button>
+                </div>
+                <div class="strength-track">
+                  <div class="strength-fill" id="strengthFill"></div>
+                </div>
+              </div>
+
+              <div class="row-meta-actions">
+                <a href="#" class="liquid-link" id="lostPasswordLinkSignup">Lost Password?</a>
+              </div>
+
+              <button type="submit" class="liquid-glow-submit">
+                <span>Matriculate Identity</span>
+                <i class="fa-solid fa-feather"></i>
+              </button>
+
+              <div class="form-divider">
+                <span>OR</span>
+              </div>
+
+              <button type="button" class="liquid-google-btn" id="googleSignUpBtn">
+                <svg viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.36 7.33 24 12 24z"/>
+                  <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.16 0 9.97 0 12s.46 3.84 1.26 5.42l4.02-3.15z"/>
+                  <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.64 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                </svg>
+                <span>Sign up with Google</span>
+              </button>
+            </form>
+
+          </div>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <div class="liquid-toast" id="liquidToast">
+    <i class="fa-solid fa-compass-drafting" style="color: var(--accent-1); font-size: 1rem;"></i>
+    <span id="toastContent">Faculty record updated.</span>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // -------------------------------------------------------------
+      // 1. ALL-NEW 3D BACKGROUND: QUANTUM MATRIX GRID & FLOATING CRYSTALS
+      // -------------------------------------------------------------
+      const canvas3D = document.getElementById('webglCanvas');
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
+      camera.position.set(0, 3.2, 8);
+      camera.rotation.x = -0.22;
+
+      const renderer = new THREE.WebGLRenderer({
+        canvas: canvas3D,
+        alpha: true,
+        antialias: true,
+        powerPreference: 'high-performance'
+      });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.25;
+
+      const quantumGroup = new THREE.Group();
+      scene.add(quantumGroup);
+
+      // Dynamic Sine-Waving Floor Grid
+      const gridW = 50;
+      const gridD = 50;
+      const gridSegmentsX = 45;
+      const gridSegmentsZ = 45;
+      const planeGeo = new THREE.PlaneGeometry(gridW, gridD, gridSegmentsX, gridSegmentsZ);
+      planeGeo.rotateX(-Math.PI / 2);
+
+      const gridMat = new THREE.MeshBasicMaterial({
+        color: 0x38bdf8,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.22
+      });
+      const gridMesh = new THREE.Mesh(planeGeo, gridMat);
+      gridMesh.position.set(0, -3.2, -6);
+      quantumGroup.add(gridMesh);
+
+      const posAttr = planeGeo.attributes.position;
+      const originalY = new Float32Array(posAttr.count);
+      for (let i = 0; i < posAttr.count; i++) {
+        originalY[i] = posAttr.getY(i);
+      }
+
+      // Floating Holographic Crystal Polyhedrons
+      const crystalMat = new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color(0x38bdf8),
+        emissive: new THREE.Color(0x818cf8),
+        emissiveIntensity: 0.45,
+        roughness: 0.08,
+        metalness: 0.1,
+        transmission: 0.92,
+        thickness: 1.5,
+        transparent: true,
+        opacity: 0.7,
+        wireframe: false
+      });
+
+      const wireFrameMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.35
+      });
+
+      const crystalGroup = new THREE.Group();
+      crystalGroup.position.set(2.0, 0.4, -3.5);
+      quantumGroup.add(crystalGroup);
+
+      const octaMesh = new THREE.Mesh(new THREE.OctahedronGeometry(1.5, 0), crystalMat);
+      const octaWire = new THREE.Mesh(new THREE.OctahedronGeometry(1.68, 0), wireFrameMat);
+      crystalGroup.add(octaMesh);
+      crystalGroup.add(octaWire);
+
+      const satGeo = new THREE.IcosahedronGeometry(0.5, 0);
+      const sat1 = new THREE.Mesh(satGeo, crystalMat);
+      const sat2 = new THREE.Mesh(satGeo, crystalMat);
+      crystalGroup.add(sat1);
+      crystalGroup.add(sat2);
+
+      // Drifting Knowledge Text Sprites
+      const scholasticVerbals = [
+        'KNOWLEDGE', 'EUREKA', 'DISCOVERY', 'LOGIC', 
+        'INSIGHT', 'ALGORITHM', 'WISDOM', 'FOCUS',
+        'e^{iπ}+1=0', '∇×B', '∫₀^∞', 'ℏ', 'c²', 'λ = h/p'
+      ];
+
+      function makeTextSprite(message) {
+        const c = document.createElement('canvas');
+        c.width = 340;
+        c.height = 90;
+        const ctx = c.getContext('2d');
+        ctx.font = 'bold 34px "Space Grotesk", monospace';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.shadowColor = 'rgba(56, 189, 248, 0.95)';
+        ctx.shadowBlur = 12;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(message, 170, 45);
+
+        const tex = new THREE.CanvasTexture(c);
+        tex.needsUpdate = true;
+        const spriteMat = new THREE.SpriteMaterial({
+          map: tex,
+          transparent: true,
+          opacity: 0.65,
+          blending: THREE.AdditiveBlending
+        });
+        const sprite = new THREE.Sprite(spriteMat);
+        sprite.scale.set(2.4, 0.65, 1);
+        return sprite;
+      }
+
+      const verbalSprites = [];
+      scholasticVerbals.forEach((word, idx) => {
+        const sprite = makeTextSprite(word);
+        const theta = (idx / scholasticVerbals.length) * Math.PI * 2;
+        const r = 3.6 + (idx % 3) * 1.4;
+        const y = ((idx % 5) - 2) * 1.3 + 0.5;
+        sprite.position.set(Math.cos(theta) * r + 2.0, y, Math.sin(theta) * r - 3.5);
+        sprite.userData = {
+          theta: theta,
+          radius: r,
+          baseY: y,
+          speed: 0.14 + (idx % 4) * 0.05,
+          wobbleFreq: 1.1 + Math.random()
+        };
+        quantumGroup.add(sprite);
+        verbalSprites.push(sprite);
+      });
+
+      const ambientLight = new THREE.AmbientLight(0x0a1128, 1.6);
+      scene.add(ambientLight);
+
+      const lightA = new THREE.PointLight(0x38bdf8, 7, 30);
+      lightA.position.set(6, 5, 4);
+      scene.add(lightA);
+
+      const lightB = new THREE.PointLight(0x818cf8, 6, 30);
+      lightB.position.set(-6, -4, 3);
+      scene.add(lightB);
+
+      const lightC = new THREE.PointLight(0xc084fc, 4, 25);
+      lightC.position.set(2, 6, -4);
+      scene.add(lightC);
+
+      const dustGeo = new THREE.BufferGeometry();
+      const dustCount = 140;
+      const dustPositions = new Float32Array(dustCount * 3);
+      for (let i = 0; i < dustCount * 3; i += 3) {
+        dustPositions[i] = (Math.random() - 0.5) * 26;
+        dustPositions[i + 1] = (Math.random() - 0.5) * 18;
+        dustPositions[i + 2] = (Math.random() - 0.5) * 16;
+      }
+      dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
+      const dustMat = new THREE.PointsMaterial({
+        size: 0.06,
+        color: 0x38bdf8,
+        transparent: true,
+        opacity: 0.45,
+        blending: THREE.AdditiveBlending
+      });
+      const dustField = new THREE.Points(dustGeo, dustMat);
+      scene.add(dustField);
+
+      // -------------------------------------------------------------
+      // 2. SYNCHRONIZED COLOR ENGINE (3D, CARD, AND LAMP)
+      // -------------------------------------------------------------
+      const syncPalettes = [
+        {
+          c1: new THREE.Color(0x38bdf8),
+          c2: new THREE.Color(0x818cf8),
+          c3: new THREE.Color(0xc084fc),
+          glowRgb: '56, 189, 248',
+          shadeTint: '#0d182b'
+        },
+        {
+          c1: new THREE.Color(0x34d399),
+          c2: new THREE.Color(0x059669),
+          c3: new THREE.Color(0x38bdf8),
+          glowRgb: '52, 211, 153',
+          shadeTint: '#0c221a'
+        },
+        {
+          c1: new THREE.Color(0xf59e0b),
+          c2: new THREE.Color(0xd97706),
+          c3: new THREE.Color(0xef4444),
+          glowRgb: '245, 158, 11',
+          shadeTint: '#2b1c0e'
+        },
+        {
+          c1: new THREE.Color(0xa855f7),
+          c2: new THREE.Color(0x6366f1),
+          c3: new THREE.Color(0xec4899),
+          glowRgb: '168, 85, 247',
+          shadeTint: '#22112d'
+        }
+      ];
+
+      let currentPaletteIndex = 0;
+      let nextPaletteIndex = 1;
+      const CYCLE_INTERVAL = 2000;
+      let lastCycleTime = performance.now();
+
+      const liveC1 = new THREE.Color().copy(syncPalettes[0].c1);
+      const liveC2 = new THREE.Color().copy(syncPalettes[0].c2);
+      const liveC3 = new THREE.Color().copy(syncPalettes[0].c3);
+
+      const glassChassis = document.getElementById('glassChassis');
+      const cardRig = document.getElementById('cardRig');
+      const cursorLiquidAura = document.getElementById('cursorLiquidAura');
+
+      let mouseXNorm = 0;
+      let mouseYNorm = 0;
+      let mouseTargetX = 0;
+      let mouseTargetY = 0;
+      let currentRigRotX = 0;
+      let currentRigRotY = 0;
+
+      window.addEventListener('mousemove', (e) => {
+        const halfW = window.innerWidth / 2;
+        const halfH = window.innerHeight / 2;
+        mouseTargetX = (e.clientX - halfW) / halfW;
+        mouseTargetY = -(e.clientY - halfH) / halfH;
+
+        if (glassChassis) {
+          const rect = glassChassis.getBoundingClientRect();
+          const sheenX = e.clientX - rect.left;
+          const sheenY = e.clientY - rect.top;
+          glassChassis.style.setProperty('--sheen-x', `${sheenX}px`);
+          glassChassis.style.setProperty('--sheen-y', `${sheenY}px`);
+        }
+
+        cursorLiquidAura.style.left = `${e.clientX}px`;
+        cursorLiquidAura.style.top = `${e.clientY}px`;
+      });
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      const clock = new THREE.Clock();
+
+      function renderLoop() {
+        requestAnimationFrame(renderLoop);
+
+        const elapsedTime = clock.getElapsedTime();
+        const now = performance.now();
+
+        const delta = now - lastCycleTime;
+        const progress = Math.min(Math.max(delta / CYCLE_INTERVAL, 0), 1);
+
+        if (delta >= CYCLE_INTERVAL) {
+          currentPaletteIndex = (currentPaletteIndex + 1) % syncPalettes.length;
+          nextPaletteIndex = (currentPaletteIndex + 1) % syncPalettes.length;
+          lastCycleTime = now;
+        }
+
+        const currPal = syncPalettes[currentPaletteIndex];
+        const nextPal = syncPalettes[nextPaletteIndex];
+
+        liveC1.lerpColors(currPal.c1, nextPal.c1, progress * 0.12);
+        liveC2.lerpColors(currPal.c2, nextPal.c2, progress * 0.12);
+        liveC3.lerpColors(currPal.c3, nextPal.c3, progress * 0.12);
+
+        gridMat.color.copy(liveC1);
+        crystalMat.color.copy(liveC1);
+        crystalMat.emissive.copy(liveC2);
+        lightA.color.copy(liveC1);
+        lightB.color.copy(liveC2);
+        lightC.color.copy(liveC3);
+        dustMat.color.copy(liveC1);
+
+        const hexC1 = `#${liveC1.getHexString()}`;
+        const hexC2 = `#${liveC2.getHexString()}`;
+        const hexC3 = `#${liveC3.getHexString()}`;
+
+        document.documentElement.style.setProperty('--accent-1', hexC1);
+        document.documentElement.style.setProperty('--accent-2', hexC2);
+        document.documentElement.style.setProperty('--accent-3', hexC3);
+        document.documentElement.style.setProperty('--glow-rgb', currPal.glowRgb);
+
+        if (isLampOn) {
+          document.documentElement.style.setProperty('--lamp-shade-tint', currPal.shadeTint);
+          document.documentElement.style.setProperty('--lamp-glow-rgb', currPal.glowRgb);
+        }
+
+        const pos = planeGeo.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+          const u = pos.getX(i);
+          const v = pos.getZ(i);
+          const wave = Math.sin(u * 0.35 + elapsedTime * 1.8) * Math.cos(v * 0.35 + elapsedTime * 1.5) * 0.55;
+          pos.setY(i, originalY[i] + wave);
+        }
+        pos.needsUpdate = true;
+
+        octaMesh.rotation.x = elapsedTime * 0.4;
+        octaMesh.rotation.y = elapsedTime * 0.55;
+        octaWire.rotation.x = -elapsedTime * 0.3;
+        octaWire.rotation.y = -elapsedTime * 0.4;
+
+        sat1.position.set(Math.cos(elapsedTime * 1.5) * 2.5, Math.sin(elapsedTime * 1.5) * 1.2, Math.sin(elapsedTime * 1.5) * 2.5);
+        sat1.rotation.y = elapsedTime * 2;
+        sat2.position.set(Math.cos(elapsedTime * 1.5 + Math.PI) * 2.5, Math.cos(elapsedTime * 1.5) * 1.2, Math.sin(elapsedTime * 1.5 + Math.PI) * 2.5);
+        sat2.rotation.y = -elapsedTime * 2;
+
+        verbalSprites.forEach(sprite => {
+          const d = sprite.userData;
+          d.theta += d.speed * 0.015;
+          sprite.position.x = Math.cos(d.theta) * d.radius + 2.0;
+          sprite.position.z = Math.sin(d.theta) * d.radius - 3.5;
+          sprite.position.y = d.baseY + Math.sin(elapsedTime * d.wobbleFreq + d.theta) * 0.35;
+        });
+
+        mouseXNorm = THREE.MathUtils.lerp(mouseXNorm, mouseTargetX, 0.08);
+        mouseYNorm = THREE.MathUtils.lerp(mouseYNorm, mouseTargetY, 0.08);
+
+        const targetRotY = mouseXNorm * 12;
+        const targetRotX = mouseYNorm * 12;
+        currentRigRotX = THREE.MathUtils.lerp(currentRigRotX, targetRotX, 0.1);
+        currentRigRotY = THREE.MathUtils.lerp(currentRigRotY, targetRotY, 0.1);
+
+        cardRig.style.transform = `rotateX(${currentRigRotX.toFixed(2)}deg) rotateY(${currentRigRotY.toFixed(2)}deg)`;
+
+        const lampSvg = document.getElementById('lampSvg');
+        if (lampSvg) {
+          lampSvg.style.transform = `rotateY(${(mouseXNorm * 6).toFixed(2)}deg) rotateX(${(-mouseYNorm * 6).toFixed(2)}deg)`;
+        }
+
+        renderer.render(scene, camera);
+      }
+
+      // -------------------------------------------------------------
+      // 3. PHYSICAL STRING STRETCHING WITH VISIBLE WAVE TENSION
+      // -------------------------------------------------------------
+      let isLampOn = false;
+      const pullStringGroup = document.getElementById('pullStringGroup');
+      const stringPath = document.getElementById('stringPath');
+      const chainBead1 = document.getElementById('chainBead1');
+      const chainBead2 = document.getElementById('chainBead2');
+      const chainBead3 = document.getElementById('chainBead3');
+      const stringPendantRod = document.getElementById('stringPendantRod');
+      const stringBead = document.getElementById('stringBead');
+      const stringBeadCore = document.getElementById('stringBeadCore');
+      const tensionWave1 = document.getElementById('tensionWave1');
+      const tensionWave2 = document.getElementById('tensionWave2');
+      const tensionWave3 = document.getElementById('tensionWave3');
+      const rootStyles = document.documentElement.style;
+
+      let isDraggingString = false;
+      let startMouseY = 0;
+      let startMouseX = 0;
+      let currentStretchY = 0;
+      let currentStretchX = 0;
+      const MAX_STRETCH = 75;
+      const TRIGGER_THRESHOLD = 26;
+
+      function updateStringGraphic(dy, dx = 0) {
+        const originX = 105;
+        const originY = 200;
+        const anchorEndY = 295;
+
+        const tipX = originX + dx;
+        const tipY = anchorEndY + dy;
+        const controlX = originX + dx * 0.45;
+        const controlY = (originY + tipY) / 2;
+
+        stringPath.setAttribute('d', `M ${originX} ${originY} Q ${controlX} ${controlY} ${tipX} ${tipY}`);
+
+        function getBezierPoint(t) {
+          const u = 1 - t;
+          const x = u * u * originX + 2 * u * t * controlX + t * t * tipX;
+          const y = u * u * originY + 2 * u * t * controlY + t * t * tipY;
+          return { x, y };
+        }
+
+        const p1 = getBezierPoint(0.28);
+        chainBead1.setAttribute('cx', p1.x);
+        chainBead1.setAttribute('cy', p1.y);
+
+        const p2 = getBezierPoint(0.55);
+        chainBead2.setAttribute('cx', p2.x);
+        chainBead2.setAttribute('cy', p2.y);
+
+        const p3 = getBezierPoint(0.82);
+        chainBead3.setAttribute('cx', p3.x);
+        chainBead3.setAttribute('cy', p3.y);
+
+        const angle = Math.atan2(tipY - controlY, tipX - controlX);
+        const rodLength = 23;
+        const rodEndX = tipX + Math.cos(angle) * rodLength;
+        const rodEndY = tipY + Math.sin(angle) * rodLength;
+
+        stringPendantRod.setAttribute('x1', tipX);
+        stringPendantRod.setAttribute('y1', tipY);
+        stringPendantRod.setAttribute('x2', rodEndX);
+        stringPendantRod.setAttribute('y2', rodEndY);
+
+        const beadCenterDist = rodLength + 8;
+        const beadX = tipX + Math.cos(angle) * beadCenterDist;
+        const beadY = tipY + Math.sin(angle) * beadCenterDist;
+
+        stringBead.setAttribute('cx', beadX);
+        stringBead.setAttribute('cy', beadY);
+        stringBeadCore.setAttribute('cx', beadX);
+        stringBeadCore.setAttribute('cy', beadY);
+
+        const stretchRatio = Math.min(Math.max(dy / MAX_STRETCH, 0), 1);
+        if (stretchRatio > 0.04) {
+          tensionWave1.style.opacity = (stretchRatio * 0.95).toFixed(2);
+          tensionWave1.setAttribute('r', 14 + stretchRatio * 26);
+          tensionWave1.setAttribute('cx', originX + dx * 0.2);
+          tensionWave1.setAttribute('cy', originY + dy * 0.2);
+
+          tensionWave2.style.opacity = (stretchRatio * 0.7).toFixed(2);
+          tensionWave2.setAttribute('r', 28 + stretchRatio * 44);
+          tensionWave2.setAttribute('cx', originX + dx * 0.35);
+          tensionWave2.setAttribute('cy', originY + dy * 0.35);
+
+          tensionWave3.style.opacity = (stretchRatio * 0.45).toFixed(2);
+          tensionWave3.setAttribute('r', 44 + stretchRatio * 60);
+
+          stringBead.style.stroke = 'var(--accent-1)';
+          stringBead.style.filter = `drop-shadow(0 0 ${10 + stretchRatio * 18}px var(--accent-1))`;
+          stringPath.style.stroke = 'var(--accent-1)';
+        } else {
+          tensionWave1.style.opacity = 0;
+          tensionWave2.style.opacity = 0;
+          tensionWave3.style.opacity = 0;
+          stringBead.style.stroke = 'var(--accent-1)';
+          stringBead.style.filter = 'none';
+          stringPath.style.stroke = '#e2e8f0';
+        }
+      }
+
+      function releaseString() {
+        if (!isDraggingString) return;
+        isDraggingString = false;
+
+        const triggered = currentStretchY >= TRIGGER_THRESHOLD;
+
+        let recoilProgress = 1;
+        const initY = currentStretchY;
+        const initX = currentStretchX;
+
+        function snapBack() {
+          recoilProgress -= 0.11;
+          if (recoilProgress > 0) {
+            const decay = Math.sin(recoilProgress * Math.PI * 4) * recoilProgress;
+            updateStringGraphic(initY * decay, initX * decay);
+            requestAnimationFrame(snapBack);
+          } else {
+            updateStringGraphic(0, 0);
+            currentStretchY = 0;
+            currentStretchX = 0;
+            if (triggered) {
+              togglePortalVisibility();
+            }
+          }
+        }
+        snapBack();
+      }
+
+      function onStringStart(clientX, clientY) {
+        isDraggingString = true;
+        startMouseY = clientY;
+        startMouseX = clientX;
+      }
+
+      function onStringMove(clientX, clientY) {
+        if (!isDraggingString) return;
+        const rawDy = clientY - startMouseY;
+        const rawDx = (clientX - startMouseX) * 0.35;
+        if (rawDy > 0) {
+          currentStretchY = Math.min(rawDy, MAX_STRETCH);
+          currentStretchX = Math.max(-28, Math.min(28, rawDx));
+          updateStringGraphic(currentStretchY, currentStretchX);
+        }
+      }
+
+      pullStringGroup.addEventListener('mousedown', (e) => {
+        onStringStart(e.clientX, e.clientY);
+        e.preventDefault();
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        onStringMove(e.clientX, e.clientY);
+      });
+
+      window.addEventListener('mouseup', releaseString);
+
+      pullStringGroup.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 0) {
+          onStringStart(e.touches[0].clientX, e.touches[0].clientY);
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (isDraggingString && e.touches.length > 0) {
+          onStringMove(e.touches[0].clientX, e.touches[0].clientY);
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchend', releaseString);
+
+      pullStringGroup.addEventListener('click', () => {
+        if (currentStretchY === 0) {
+          updateStringGraphic(34, 4);
+          setTimeout(() => {
+            updateStringGraphic(0, 0);
+            togglePortalVisibility();
+          }, 160);
+        }
+      });
+
+      function togglePortalVisibility() {
+        isLampOn = !isLampOn;
+
+        if (isLampOn) {
+          rootStyles.setProperty('--light-opacity', '0.28');
+          document.body.classList.add('portal-active');
+          document.getElementById('hintText').innerText = 'Pull string to dismiss portal';
+          notify('Authentication codex unlocked.');
+        } else {
+          rootStyles.setProperty('--light-opacity', '0');
+          rootStyles.setProperty('--lamp-shade-tint', '#08111e');
+          rootStyles.setProperty('--lamp-glow-rgb', '42, 44, 48');
+
+          document.body.classList.remove('portal-active');
+          document.getElementById('hintText').innerText = 'Pull string down to toggle';
+          notify('Portal locked. Returning to standby.');
+        }
+      }
+
+      // -------------------------------------------------------------
+      // 4. PORTAL FORM INTERFACES & AUTHENTICATION
+      // -------------------------------------------------------------
+      const tabStudent = document.getElementById('tabStudent');
+      const tabEnroll = document.getElementById('tabEnroll');
+      const modeGlider = document.getElementById('modeGlider');
+      const signInForm = document.getElementById('signInForm');
+      const signUpForm = document.getElementById('signUpForm');
+      const portalTitle = document.getElementById('portalTitle');
+      const portalSubtitle = document.getElementById('portalSubtitle');
+      const regKey = document.getElementById('regKey');
+      const strengthFill = document.getElementById('strengthFill');
+      const liquidToast = document.getElementById('liquidToast');
+      const toastContent = document.getElementById('toastContent');
+
+      function switchPortalMode(mode) {
+        if (mode === 'enroll') {
+          tabStudent.classList.remove('active');
+          tabEnroll.classList.add('active');
+          modeGlider.style.transform = 'translateX(100%)';
+          signInForm.classList.remove('active');
+          signUpForm.classList.add('active');
+          portalTitle.innerText = 'Scholar Register';
+          portalSubtitle.innerText = 'Matriculate into the zero-trust codex';
+        } else {
+          tabEnroll.classList.remove('active');
+          tabStudent.classList.add('active');
+          modeGlider.style.transform = 'translateX(0%)';
+          signUpForm.classList.remove('active');
+          signInForm.classList.add('active');
+          portalTitle.innerText = 'Academic Portal';
+          portalSubtitle.innerText = 'Zero-trust cryptographic knowledge matrix';
+        }
+      }
+
+      tabStudent.addEventListener('click', () => switchPortalMode('signin'));
+      tabEnroll.addEventListener('click', () => switchPortalMode('enroll'));
+
+      document.querySelectorAll('.pass-eye-toggle').forEach(btn => {
+        btn.addEventListener('click', function () {
+          const input = this.closest('.liquid-input-box').querySelector('input');
+          const icon = this.querySelector('i');
+          if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'fa-regular fa-eye-slash';
+          } else {
+            input.type = 'password';
+            icon.className = 'fa-regular fa-eye';
+          }
+        });
+      });
+
+      if (regKey && strengthFill) {
+        regKey.addEventListener('input', (e) => {
+          const val = e.target.value;
+          let score = 0;
+          if (val.length >= 8) score += 25;
+          if (/[A-Z]/.test(val)) score += 25;
+          if (/[0-9]/.test(val)) score += 25;
+          if (/[^A-Za-z0-9]/.test(val)) score += 25;
+
+          strengthFill.style.width = `${score}%`;
+          if (score <= 25) strengthFill.style.background = '#ef4444';
+          else if (score <= 50) strengthFill.style.background = '#f59e0b';
+          else if (score <= 75) strengthFill.style.background = '#38bdf8';
+          else strengthFill.style.background = '#34d399';
+        });
+      }
+
+      function notify(message) {
+        toastContent.innerText = message;
+        liquidToast.classList.add('show');
+        setTimeout(() => liquidToast.classList.remove('show'), 3200);
+      }
+
+      function triggerCelebration() {
+        if (typeof confetti === 'function') {
+          confetti({
+            particleCount: 70,
+            spread: 80,
+            origin: { y: 0.65 },
+            colors: ['#38bdf8', '#818cf8', '#c084fc', '#34d399', '#ffffff']
+          });
+        }
+      }
+
+      document.querySelectorAll('.liquid-glow-submit, .liquid-google-btn').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+          const rect = this.getBoundingClientRect();
+          const ripple = document.createElement('span');
+          ripple.className = 'click-ripple';
+          const size = Math.max(rect.width, rect.height);
+          ripple.style.width = ripple.style.height = `${size}px`;
+          ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+          ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
+          this.appendChild(ripple);
+          setTimeout(() => ripple.remove(), 600);
+        });
+      });
+
+      signInForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const id = document.getElementById('studentId').value.trim() || 'Scholar';
+        triggerCelebration();
+        notify(`Faculty session verified. Welcome, Fellow ${id}!`);
+      });
+
+      signUpForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('regEmail').value.trim() || 'Scholar';
+        triggerCelebration();
+        notify(`Codex matriculation granted for ${email}!`);
+      });
+
+      document.getElementById('googleLoginBtn').addEventListener('click', () => {
+        triggerCelebration();
+        notify('Connecting with Google Authenticator...');
+      });
+
+      document.getElementById('googleSignUpBtn').addEventListener('click', () => {
+        triggerCelebration();
+        notify('Registering credential with Google...');
+      });
+
+      document.getElementById('lostPasswordLinkLogin').addEventListener('click', (e) => {
+        e.preventDefault();
+        notify('Password reset link sent to institutional Gmail.');
+      });
+
+      document.getElementById('lostPasswordLinkSignup').addEventListener('click', (e) => {
+        e.preventDefault();
+        notify('Password recovery link sent to institutional Gmail.');
+      });
+
+      window.onload = function () {
+        renderLoop();
+      };
+
+    })();
+  </script>
+</body>
+</html>

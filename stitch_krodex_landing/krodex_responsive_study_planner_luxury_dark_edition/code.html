@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      "colors": {
+        "on-background": "#dfe2ef",
+        "outline": "#989082",
+        "on-secondary-fixed": "#001a42",
+        "surface-dim": "#090D16",
+        "background": "#090D16",
+        "on-primary-fixed-variant": "#574419",
+        "on-surface-variant": "#94A3B8",
+        "surface-container-high": "#1E2B4A",
+        "on-surface": "#F9F8F6",
+        "on-secondary-fixed-variant": "#004395",
+        "surface-container-lowest": "#060A12",
+        "surface-bright": "#26334D",
+        "tertiary-fixed": "#3B2F17",
+        "on-tertiary-fixed-variant": "#E5C992",
+        "tertiary": "#E5C992",
+        "on-tertiary-container": "#FCDFA6",
+        "on-error-container": "#ffdad6",
+        "tertiary-container": "#2A2111",
+        "inverse-on-surface": "#0C111C",
+        "surface-container": "#131B2E",
+        "on-primary-fixed": "#261a00",
+        "secondary-fixed-dim": "#38BDF8",
+        "outline-variant": "#1E293B",
+        "on-error": "#690005",
+        "on-primary": "#131B2E",
+        "on-tertiary": "#261a00",
+        "inverse-surface": "#F9F8F6",
+        "primary-fixed-dim": "#dfc38d",
+        "tertiary-fixed-dim": "#E5C992",
+        "on-tertiary-fixed": "#FCDFA6",
+        "surface-container-highest": "#243254",
+        "secondary-container": "#0369A1",
+        "on-secondary": "#07172C",
+        "error": "#F87171",
+        "primary-fixed": "#fcdfa6",
+        "primary-container": "#E5C992",
+        "on-primary-container": "#1E1705",
+        "primary": "#E5C992",
+        "surface-variant": "#17223B",
+        "surface": "#0D1322",
+        "secondary": "#38BDF8",
+        "inverse-primary": "#705c2f",
+        "secondary-fixed": "#0284C7",
+        "surface-tint": "#E5C992",
+        "surface-container-low": "#0C111C",
+        "error-container": "#450A0A",
+        "on-secondary-container": "#E0F2FE",
+        "sage": "#34D399",
+        "sage-container": "#064E3B",
+        "on-sage-container": "#A7F3D0"
+      },
+      "borderRadius": {
+        "DEFAULT": "0.25rem",
+        "lg": "0.375rem",
+        "xl": "0.5rem",
+        "full": "0.75rem"
+      },
+      "spacing": {
+        "space-4xl": "6rem",
+        "gutter-mobile": "1rem",
+        "space-md": "1rem",
+        "gutter-tablet": "1.5rem",
+        "margin-tablet": "2rem",
+        "space-3xl": "4rem",
+        "margin-mobile": "1.25rem",
+        "space-2xs": "0.25rem",
+        "space-3xs": "0.125rem",
+        "gutter-desktop": "2rem",
+        "margin-desktop": "3rem",
+        "space-2xl": "3rem",
+        "space-xl": "2rem",
+        "space-sm": "0.75rem",
+        "max-width-workbench": "1440px",
+        "space-xs": "0.5rem",
+        "space-lg": "1.5rem",
+        "max-width-editorial": "68ch",
+        "max-width-reading-container": "760px"
+      },
+      "fontFamily": {
+        "headline-md": ["Newsreader", "serif"],
+        "headline-lg-mobile": ["Newsreader", "serif"],
+        "headline-sm": ["Newsreader", "serif"],
+        "title-lg": ["Manrope", "sans-serif"],
+        "body-md": ["Manrope", "sans-serif"],
+        "headline-lg": ["Newsreader", "serif"],
+        "label-md": ["Manrope", "sans-serif"],
+        "code-marginalia": ["Manrope", "monospace"],
+        "display-hero": ["Newsreader", "serif"],
+        "display-hero-mobile": ["Newsreader", "serif"],
+        "body-sm": ["Manrope", "sans-serif"],
+        "body-lg": ["Manrope", "sans-serif"],
+        "label-sm": ["Manrope", "sans-serif"]
+      },
+      "fontSize": {
+        "headline-md": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+        "headline-lg-mobile": ["30px", { "lineHeight": "36px", "letterSpacing": "-0.015em", "fontWeight": "400" }],
+        "headline-sm": ["22px", { "lineHeight": "28px", "letterSpacing": "0em", "fontWeight": "500" }],
+        "title-lg": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+        "body-md": ["15px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+        "headline-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "400" }],
+        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.06em", "fontWeight": "600" }],
+        "code-marginalia": ["12px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "400" }],
+        "display-hero": ["56px", { "lineHeight": "64px", "letterSpacing": "-0.03em", "fontWeight": "400" }],
+        "display-hero-mobile": ["38px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "400" }],
+        "body-sm": ["13px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "400" }],
+        "body-lg": ["17px", { "lineHeight": "28px", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+        "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "500" }]
+      }
+    }
+  }
+};</script></head><body class="bg-[#090D16] font-body-md text-on-surface antialiased selection:bg-[#E5C992] selection:text-[#090D16] relative min-h-screen overflow-x-hidden"><div class="fixed inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(56,189,248,0.07),rgba(229,201,146,0.03)_60%,transparent_100%)] pointer-events-none z-0"></div><aside class="fixed left-0 top-0 h-screen w-[240px] bg-[#0C111C]/95 backdrop-blur-xl border-r border-[#1E293B] shadow-[4px_0_24px_rgba(0,0,0,0.5)] z-50 flex flex-col justify-between select-none"><div class="flex flex-col flex-1 overflow-y-auto"><div class="px-space-md py-space-lg flex items-center justify-between border-b border-[#1E293B]/70"><div class="flex flex-col"><span class="font-headline-sm text-headline-sm font-semibold tracking-tight text-[#F9F8F6] leading-none">KRODEX</span><span class="font-code-marginalia text-code-marginalia tracking-wider uppercase text-[#E5C992]/80 mt-space-3xs">STUDY OS v2.4</span></div><div class="w-2 h-2 rounded-full bg-[#E5C992] ring-2 ring-[#E5C992]/30 shadow-[0_0_8px_#E5C992]" title="Spaced Loop Engine Active"></div></div><div class="px-space-xs space-y-space-md mt-space-2xs"><div class="space-y-space-3xs"><div class="px-space-sm font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant/70">Command</div><nav class="space-y-space-3xs" data-active-classes="bg-[#E5C992] text-[#090D16] font-semibold"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#131B2E] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[18px]">dashboard</span><span>Dashboard</span></a></nav></div><div class="space-y-space-3xs"><div class="px-space-sm font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant/70">Study</div><nav class="space-y-space-3xs" data-active-classes="bg-[#E5C992] text-[#090D16] font-semibold"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#131B2E] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="syllabus" href="#"><span class="material-symbols-outlined text-[18px]">menu_book</span><span>Syllabus</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-sm py-space-xs rounded transition-colors bg-[#E5C992] text-[#090D16] font-semibold shadow-[0_0_12px_rgba(229,201,146,0.25)]" data-path="planner" href="#"><span class="material-symbols-outlined text-[18px]">calendar_today</span><span>Planner</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#131B2E] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="tests" href="#"><span class="material-symbols-outlined text-[18px]">assignment</span><span>Tests</span></a></nav></div><div class="space-y-space-3xs"><div class="px-space-sm font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant/70">Learn</div><nav class="space-y-space-3xs" data-active-classes="bg-[#E5C992] text-[#090D16] font-semibold"><a class="flex items-center justify-between px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#131B2E] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="error-book" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">error_outline</span><span>Error Book</span></div><span class="font-label-sm text-label-sm px-space-2xs py-0.5 rounded bg-error-container text-[#FCA5A5] border border-red-900/60 font-semibold">4 Due</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#131B2E] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="reviews" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">cycle</span><span>Reviews</span></div><span class="font-label-sm text-label-sm px-space-2xs py-0.5 rounded bg-[#17223B] border border-[#26334D] text-[#38BDF8] font-semibold">2 Due</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#131B2E] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="backlog" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">history_edu</span><span>Backlog</span></div><span class="font-label-sm text-label-sm px-space-2xs py-0.5 rounded bg-[#2A2111] border border-[#E5C992]/40 text-[#E5C992] font-semibold">1 Missed</span></a></nav></div><div class="space-y-space-3xs"><div class="px-space-sm font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant/70">Analyze</div><nav class="space-y-space-3xs" data-active-classes="bg-[#E5C992] text-[#090D16] font-semibold"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#131B2E] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="insights" href="#"><span class="material-symbols-outlined text-[18px]">analytics</span><span>Insights</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#131B2E] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="student-model" href="#"><span class="material-symbols-outlined text-[18px]">psychology</span><span>Student Model</span></a></nav></div><div class="space-y-space-3xs"><div class="px-space-sm font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant/70">System</div><nav class="space-y-space-3xs" data-active-classes="bg-[#E5C992] text-[#090D16] font-semibold"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#131B2E] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="inbox" href="#"><span class="material-symbols-outlined text-[18px]">inbox</span><span>Inbox</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#131B2E] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="assistant" href="#"><span class="material-symbols-outlined text-[18px]">smart_toy</span><span>Assistant</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#131B2E] hover:text-[#F9F8F6] transition-colors font-body-sm text-body-sm" data-path="settings" href="#"><span class="material-symbols-outlined text-[18px]">tune</span><span>Settings</span></a></nav></div></div></div><div class="p-space-xs bg-[#090D16] border-t border-[#1E293B]"><div class="p-space-sm rounded bg-[#0C111C] border border-[#1E293B] shadow-[0_2px_10px_rgba(0,0,0,0.4)] flex flex-col gap-space-xs"><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-full bg-[#17223B] border border-[#38BDF8]/40 flex items-center justify-center flex-shrink-0 text-[#38BDF8]"><span class="material-symbols-outlined text-[18px]">person</span></div><div class="flex flex-col min-w-0 flex-1"><span class="font-label-md text-label-md font-semibold text-[#F9F8F6] truncate">Marcus Vance</span><span class="font-code-marginalia text-code-marginalia text-[#E5C992]/80 truncate">JEE Prep 2025</span></div></div><div class="flex items-center justify-between pt-space-xs border-t border-[#1E293B]/60"><button aria-label="Toggle theme" class="flex items-center justify-center p-space-2xs text-[#E5C992] hover:text-[#FCDFA6] hover:bg-[#131B2E] rounded transition-colors" type="button"><span class="material-symbols-outlined text-[18px]">dark_mode</span></button><div class="flex items-center gap-space-3xs"><span class="font-code-marginalia text-code-marginalia text-on-surface-variant uppercase">Active</span><span class="w-1.5 h-1.5 rounded-full bg-[#34D399] shadow-[0_0_6px_#34D399]"></span></div><button aria-label="Collapse sidebar" class="flex items-center justify-center p-space-2xs text-on-surface-variant hover:text-[#F9F8F6] hover:bg-[#131B2E] rounded transition-colors" type="button"><span class="material-symbols-outlined text-[18px]">keyboard_double_arrow_left</span></button></div></div></div></aside><div class="pl-[240px] relative z-10"><header class="fixed top-0 left-[240px] right-0 h-16 bg-[#0C111C]/90 backdrop-blur-xl border-b border-[#1E293B] shadow-[0_4px_20px_rgba(0,0,0,0.4)] z-40 flex items-center"><div class="w-full max-w-workbench mx-auto px-gutter-desktop flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md min-w-0"><div class="flex items-center gap-space-2xs font-code-marginalia text-code-marginalia text-on-surface-variant truncate"><span class="font-semibold text-[#F9F8F6]">KRODEX</span><span>/</span><span>Command</span><span>/</span><span class="text-[#E5C992] font-medium">Dashboard</span></div><div class="hidden xl:flex items-center gap-space-xs px-space-xs py-space-3xs rounded bg-[#131B2E] border border-[#1E2B4A]"><span class="w-2 h-2 rounded-full bg-[#38BDF8] shadow-[0_0_6px_#38BDF8]"></span><span class="font-code-marginalia text-code-marginalia text-[#94A3B8] uppercase tracking-wider">System Synced // 48h Spaced Loop Active</span></div></div><div class="flex items-center gap-space-sm"><div class="relative flex items-center"><div class="flex items-center gap-space-xs bg-[#090D16] border border-[#1E293B] px-space-sm py-space-2xs rounded shadow-[inset_0_1px_3px_rgba(0,0,0,0.5)] w-64 md:w-80 cursor-text focus-within:border-[#38BDF8]/60 transition-colors"><span class="material-symbols-outlined text-outline text-[18px]">search</span><input class="w-full bg-transparent border-none outline-none font-body-sm text-body-sm text-[#F9F8F6] placeholder:text-[#64748B]" placeholder="Search topics, errors, tests, formulas..." readonly="" type="text"/><span class="font-code-marginalia text-code-marginalia text-[#94A3B8] px-1 rounded bg-[#131B2E] border border-[#1E293B]">⌘K</span></div></div><button class="flex items-center gap-space-2xs bg-[#E5C992] text-[#090D16] px-space-sm py-space-xs rounded font-label-md text-label-md tracking-wider uppercase font-bold hover:bg-[#FCDFA6] transition-colors shadow-[0_0_15px_rgba(229,201,146,0.2)]" type="button"><span class="material-symbols-outlined text-[16px]">add</span><span>Quick Action</span></button><div class="relative flex items-center"><button aria-label="Notifications" class="p-space-xs text-on-surface-variant hover:text-[#F9F8F6] hover:bg-[#131B2E] rounded-full transition-colors relative" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#F87171] shadow-[0_0_6px_#F87171]"></span></button></div><div class="w-8 h-8 rounded-full bg-[#17223B] border border-[#38BDF8]/50 flex items-center justify-center flex-shrink-0 text-[#38BDF8]"><span class="material-symbols-outlined text-[18px]">person</span></div></div></div></header><main class="relative pt-16 bg-[#090D16] min-h-screen"><div class="max-w-workbench mx-auto px-gutter-desktop py-space-xl"><div class="flex flex-col w-full">
+<!-- Top Context / Architectural Title Header -->
+<div class="flex flex-col gap-space-md mb-space-xl">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+<div class="flex flex-col max-w-max-width-editorial">
+<div class="flex items-center gap-space-xs font-code-marginalia text-code-marginalia uppercase tracking-widest text-[#38BDF8] font-semibold mb-space-3xs">
+<span>Engine // Spaced Equilibrium Model</span>
+<span>•</span>
+<span class="text-[#E5C992]">Zero-Guilt Protocol Active</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-[#F9F8F6] tracking-tight">Responsive Study Planner</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-space-2xs leading-relaxed">
+          Adaptive scheduling grounded in actual cognitive capacity. Missed study blocks roll seamlessly into intelligent recovery buffers with zero moralizing guilt or compounding fatigue.
+        </p>
+</div>
+<!-- Header Utilities / Actions -->
+<div class="flex items-center gap-space-xs self-start md:self-auto flex-wrap">
+<div class="flex items-center bg-[#0C111C] border border-[#1E293B] px-space-xs py-space-3xs rounded text-[#F9F8F6] font-body-sm text-body-sm shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
+<button aria-label="Previous day" class="p-space-2xs text-[#94A3B8] hover:text-[#E5C992] transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<span class="px-space-xs font-title-lg text-title-lg tracking-tight font-medium text-[#F9F8F6]">Friday, Nov 15, 2024</span>
+<button aria-label="Next day" class="p-space-2xs text-[#94A3B8] hover:text-[#E5C992] transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+<button class="flex items-center gap-space-2xs bg-[#E5C992] text-[#090D16] px-space-md py-space-xs rounded font-label-md text-label-md uppercase tracking-wider font-bold shadow-[0_0_16px_rgba(229,201,146,0.25)] hover:bg-[#FCDFA6] transition-all" type="button">
+<span class="material-symbols-outlined text-[16px]">add_circle</span>
+<span>Schedule Block</span>
+</button>
+</div>
+</div>
+<!-- Segmented Navigation Strip -->
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-sm bg-[#0C111C] border border-[#1E293B] p-space-2xs rounded">
+<div class="flex items-center gap-space-3xs overflow-x-auto w-full sm:w-auto">
+<button class="px-space-sm py-space-xs rounded bg-[#17223B] border border-[#26334D] text-[#F9F8F6] font-title-lg text-title-lg shadow-sm font-semibold flex items-center gap-space-xs" type="button">
+<span class="text-[#E5C992]">Day Timeline</span>
+<span class="font-code-marginalia text-code-marginalia bg-[#090D16] border border-[#1E293B] px-space-2xs py-0.5 rounded text-[#E5C992]">Nov 15</span>
+</button>
+<button class="px-space-sm py-space-xs rounded text-on-surface-variant hover:text-[#F9F8F6] hover:bg-[#131B2E] transition-colors font-body-sm text-body-sm flex items-center gap-space-xs" type="button">
+<span>Week Distribution</span>
+<span class="font-code-marginalia text-code-marginalia text-[#64748B]">Nov 15 – 21</span>
+</button>
+<button class="px-space-sm py-space-xs rounded text-on-surface-variant hover:text-[#F9F8F6] hover:bg-[#131B2E] transition-colors font-body-sm text-body-sm flex items-center gap-space-xs" type="button">
+<span>Recovery Buffer</span>
+<span class="font-label-sm text-label-sm px-space-2xs py-0.5 rounded bg-[#2A2111] border border-[#E5C992]/40 text-[#E5C992] font-semibold">1 Auto-Routed</span>
+</button>
+</div>
+<div class="flex items-center gap-space-sm px-space-xs self-end sm:self-auto text-on-surface-variant font-code-marginalia text-code-marginalia">
+<span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-[#38BDF8] shadow-[0_0_6px_#38BDF8]"></span> Fluid Recalibration</span>
+<span>•</span>
+<span class="text-[#E5C992]">Target: 330m</span>
+</div>
+</div>
+</div>
+<!-- Main Responsive Grid Layout (8 cols Timeline : 4 cols Recovery Intelligence) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop items-start">
+<!-- LEFT 8 COLUMNS: Timeline Workstream -->
+<div class="lg:col-span-8 flex flex-col gap-space-md">
+<!-- Graceful Zero-Guilt Reassurance Banner -->
+<div class="bg-[#131B2E] border border-[#1E2B4A] p-space-md rounded shadow-[0_4px_20px_rgba(0,0,0,0.35)] flex items-start gap-space-md relative overflow-hidden">
+<div class="w-1.5 absolute left-0 top-0 bottom-0 bg-[#E5C992]"></div>
+<div class="p-space-xs rounded bg-[#2A2111] border border-[#E5C992]/40 flex items-center justify-center text-[#E5C992] flex-shrink-0 mt-0.5 shadow-[0_0_12px_rgba(229,201,146,0.15)]">
+<span class="material-symbols-outlined text-[22px]">auto_read_pause</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between gap-space-sm flex-wrap">
+<span class="font-label-md text-label-md uppercase tracking-wider text-[#E5C992] font-bold">Zero-Guilt Redistribution Notice</span>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8]">Yesterday // Ch. 11 Thermodynamics</span>
+</div>
+<p class="font-headline-sm text-headline-sm text-[#F9F8F6] mt-space-3xs text-[17px] leading-snug">
+            1 session missed yesterday <span class="text-[#94A3B8] font-normal">(Thermodynamics: Heat Engines, 45m)</span>.
+          </p>
+<div class="flex items-center justify-between gap-space-md mt-space-xs flex-wrap">
+<p class="font-body-sm text-body-sm text-[#94A3B8]">
+              System autonomously routed this block into Saturday morning’s open 90m buffer. Zero penalty recorded in velocity index.
+            </p>
+<div class="flex items-center gap-space-2xs">
+<button class="px-space-xs py-space-3xs rounded bg-[#17223B] border border-[#26334D] text-[#E5C992] hover:bg-[#1E2B4A] hover:border-[#E5C992]/50 text-label-sm font-label-sm font-semibold transition-colors" type="button">
+                View Buffer Slot
+              </button>
+<button aria-label="Acknowledge notification" class="p-space-3xs text-on-surface-variant hover:text-[#F9F8F6] rounded" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- High-Density Vertical Day Timeline -->
+<div class="flex flex-col gap-space-sm">
+<!-- TIME BLOCK 01 [Completed] -->
+<div class="bg-[#131B2E] border border-[#1E2B4A] rounded p-space-md shadow-[0_4px_16px_rgba(0,0,0,0.3)] transition-all hover:border-[#26334D]">
+<div class="flex flex-col md:flex-row md:items-start justify-between gap-space-sm">
+<div class="flex items-start gap-space-md">
+<div class="flex flex-col items-center justify-center p-space-xs bg-[#0C111C] border border-[#1E293B] rounded text-center w-20 flex-shrink-0">
+<span class="font-code-marginalia text-code-marginalia uppercase text-[#F9F8F6]">08:00</span>
+<span class="font-label-sm text-label-sm text-[#64748B] tracking-tight">to</span>
+<span class="font-code-marginalia text-code-marginalia uppercase text-[#F9F8F6]">09:30</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs flex-wrap mb-1">
+<span class="font-label-sm text-label-sm uppercase tracking-widest px-space-2xs py-0.5 rounded bg-[#07172C] border border-[#38BDF8]/40 text-[#38BDF8] font-semibold">Physics</span>
+<span class="font-code-marginalia text-code-marginalia text-on-surface-variant">Ch. 14 Electromagnetic Induction</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-[#F9F8F6]">Lenz’s Law &amp; Induced EMF Derivations</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-space-3xs">
+                  Rigorous calculation of circular loop flux changes with time-varying fields. Evaluated induced electric fields in non-conducting loops.
+                </p>
+</div>
+</div>
+<div class="flex flex-row md:flex-col items-end justify-between md:justify-start gap-space-2xs flex-shrink-0 pl-space-md md:pl-0">
+<span class="inline-flex items-center gap-space-2xs px-space-xs py-space-3xs rounded bg-[#064E3B]/70 border border-[#34D399]/40 text-[#34D399] font-label-md text-label-md font-semibold shadow-[0_0_8px_rgba(52,211,153,0.15)]">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span>Completed [09:28]</span>
+</span>
+<div class="flex items-center gap-space-xs text-on-surface-variant font-code-marginalia text-code-marginalia">
+<span>90m elapsed</span>
+<span>•</span>
+<span class="text-[#F87171] font-medium">2 errors logged</span>
+</div>
+</div>
+</div>
+<!-- Discrete Post-Session Notes Strip -->
+<div class="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant bg-[#0C111C] border border-[#1E293B] px-space-sm py-space-2xs rounded">
+<div class="flex items-center gap-space-xs font-code-marginalia text-code-marginalia truncate">
+<span class="material-symbols-outlined text-[16px] text-[#E5C992]">note_alt</span>
+<span class="text-[#CBD5E1]">Review self-inductance geometric approximations before next block.</span>
+</div>
+<button class="text-[#38BDF8] hover:text-[#7DD3FC] font-label-sm text-label-sm uppercase font-semibold flex-shrink-0" type="button">
+              Inspect Error Logs
+            </button>
+</div>
+</div>
+<!-- TIME BLOCK 02 [Completed] -->
+<div class="bg-[#131B2E] border border-[#1E2B4A] rounded p-space-md shadow-[0_4px_16px_rgba(0,0,0,0.3)] transition-all hover:border-[#26334D]">
+<div class="flex flex-col md:flex-row md:items-start justify-between gap-space-sm">
+<div class="flex items-start gap-space-md">
+<div class="flex flex-col items-center justify-center p-space-xs bg-[#0C111C] border border-[#1E293B] rounded text-center w-20 flex-shrink-0">
+<span class="font-code-marginalia text-code-marginalia uppercase text-[#F9F8F6]">10:00</span>
+<span class="font-label-sm text-label-sm text-[#64748B] tracking-tight">to</span>
+<span class="font-code-marginalia text-code-marginalia uppercase text-[#F9F8F6]">11:30</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs flex-wrap mb-1">
+<span class="font-label-sm text-label-sm uppercase tracking-widest px-space-2xs py-0.5 rounded bg-[#1E2B4A] border border-[#26334D] text-[#E5C992] font-semibold">Chemistry</span>
+<span class="font-code-marginalia text-code-marginalia text-on-surface-variant">Inorganic Ch. 09</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-[#F9F8F6]">Coordination Compounds &amp; Crystal Field Theory</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-space-3xs">
+                  Octahedral splitting energy (Δ₀), Jahn-Teller effect subtleties, and spectrochemical series retention drills.
+                </p>
+</div>
+</div>
+<div class="flex flex-row md:flex-col items-end justify-between md:justify-start gap-space-2xs flex-shrink-0 pl-space-md md:pl-0">
+<span class="inline-flex items-center gap-space-2xs px-space-xs py-space-3xs rounded bg-[#064E3B]/70 border border-[#34D399]/40 text-[#34D399] font-label-md text-label-md font-semibold shadow-[0_0_8px_rgba(52,211,153,0.15)]">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span>Completed [11:25]</span>
+</span>
+<div class="flex items-center gap-space-xs text-on-surface-variant font-code-marginalia text-code-marginalia">
+<span>85m recorded</span>
+<span>•</span>
+<span class="text-[#34D399]">Clean retention</span>
+</div>
+</div>
+</div>
+</div>
+<!-- BREAK BUFFER INDICATOR -->
+<div class="flex items-center justify-center gap-space-sm py-space-2xs text-[#94A3B8] font-code-marginalia text-code-marginalia uppercase tracking-widest opacity-80">
+<span class="h-px bg-[#1E293B] flex-1"></span>
+<span class="flex items-center gap-1.5 text-[#E5C992]/90"><span class="material-symbols-outlined text-[14px]">restaurant</span> Rest &amp; Digestion Buffer // 120m</span>
+<span class="h-px bg-[#1E293B] flex-1"></span>
+</div>
+<!-- TIME BLOCK 03 [In Progress / Current Block] -->
+<div class="bg-[#17223B] border-2 border-[#38BDF8] rounded p-space-md shadow-[0_8px_32px_rgba(56,189,248,0.15)] relative overflow-hidden">
+<div class="absolute -right-12 -top-12 w-48 h-48 bg-[#38BDF8]/15 rounded-full blur-3xl pointer-events-none"></div>
+<div class="flex flex-col md:flex-row md:items-start justify-between gap-space-md relative">
+<div class="flex items-start gap-space-md">
+<div class="flex flex-col items-center justify-center p-space-xs bg-[#090D16] border border-[#38BDF8]/60 text-[#38BDF8] rounded text-center w-20 flex-shrink-0 shadow-lg">
+<span class="font-code-marginalia text-code-marginalia uppercase tracking-tight font-bold">13:30</span>
+<span class="font-label-sm text-label-sm text-[#E5C992] tracking-tight font-bold">NOW</span>
+<span class="font-code-marginalia text-code-marginalia uppercase tracking-tight font-bold">15:00</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs flex-wrap mb-1">
+<span class="font-label-sm text-label-sm uppercase tracking-widest px-space-2xs py-0.5 rounded bg-[#0369A1]/60 border border-[#38BDF8] text-[#E0F2FE] font-bold">In Focus // Mathematics</span>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8]">Calculus Core Ch. 04</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-[#F9F8F6] tracking-tight">Definite Integrals: Leibniz Rule Applications</h2>
+<p class="font-body-md text-body-md text-[#CBD5E1] mt-space-3xs">
+                  Differentiation under the integral sign with variable limit parameters. Target set: Advanced practice set #3 (25 analytical problems).
+                </p>
+<!-- Active Progress Tracker -->
+<div class="mt-space-md flex flex-col gap-space-2xs">
+<div class="flex items-center justify-between font-code-marginalia text-code-marginalia">
+<span class="text-[#38BDF8] font-semibold flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-[#38BDF8] animate-ping"></span>
+                      Active Timer: 42m elapsed of 90m
+                    </span>
+<span class="text-[#94A3B8]">11 of 25 items resolved</span>
+</div>
+<div class="w-full bg-[#090D16] border border-[#1E293B] h-2.5 rounded-full overflow-hidden">
+<div class="bg-gradient-to-r from-[#0284C7] to-[#38BDF8] h-full rounded-full transition-all duration-500 shadow-[0_0_10px_#38BDF8]" style="width: 46%;"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-row md:flex-col items-end justify-between md:justify-start gap-space-xs flex-shrink-0">
+<div class="flex items-center gap-space-2xs">
+<button class="px-space-sm py-space-xs rounded bg-[#0C111C] border border-[#1E293B] hover:bg-[#131B2E] text-[#F9F8F6] font-label-md text-label-md uppercase tracking-wider transition-colors flex items-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]">pause</span>
+<span>Pause</span>
+</button>
+<button class="px-space-sm py-space-xs rounded bg-[#38BDF8] text-[#07172C] font-bold hover:bg-[#7DD3FC] font-label-md text-label-md uppercase tracking-wider transition-colors flex items-center gap-1 shadow-[0_0_16px_rgba(56,189,248,0.3)]" type="button">
+<span class="material-symbols-outlined text-[16px]">done_all</span>
+<span>Conclude</span>
+</button>
+</div>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8]">Session started at 13:31</span>
+</div>
+</div>
+<div class="mt-space-md p-space-sm rounded bg-[#0C111C] border border-[#1E293B] flex items-center justify-between gap-space-md flex-wrap">
+<div class="flex items-center gap-space-sm text-body-sm font-body-sm text-[#F9F8F6]">
+<span class="material-symbols-outlined text-[#38BDF8] text-[20px]">psychology</span>
+<span>Cognitive state: <strong class="text-[#38BDF8]">Deep Analytical</strong>. Distraction dampening engaged.</span>
+</div>
+<button class="font-label-sm text-label-sm text-[#E5C992] hover:text-[#FCDFA6] uppercase tracking-wider font-semibold" type="button">
+              Log Mid-Session Blocker +
+            </button>
+</div>
+</div>
+<!-- TIME BLOCK 04 [Scheduled Next] -->
+<div class="bg-[#131B2E] border border-[#1E2B4A] rounded p-space-md shadow-[0_4px_16px_rgba(0,0,0,0.3)] transition-all hover:border-[#26334D]">
+<div class="flex flex-col md:flex-row md:items-start justify-between gap-space-sm">
+<div class="flex items-start gap-space-md">
+<div class="flex flex-col items-center justify-center p-space-xs bg-[#0C111C] border border-[#1E293B] rounded text-center w-20 flex-shrink-0">
+<span class="font-code-marginalia text-code-marginalia uppercase text-[#F9F8F6]">15:30</span>
+<span class="font-label-sm text-label-sm text-[#64748B] tracking-tight">to</span>
+<span class="font-code-marginalia text-code-marginalia uppercase text-[#F9F8F6]">16:30</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs flex-wrap mb-1">
+<span class="font-label-sm text-label-sm uppercase tracking-widest px-space-2xs py-0.5 rounded bg-[#2A2111] border border-[#E5C992]/40 text-[#E5C992] font-semibold">Spaced Loop Engine</span>
+<span class="font-code-marginalia text-code-marginalia text-on-surface-variant">Error Book Autopsy</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-[#F9F8F6]">Electrostatics &amp; Rotation Error Autopsy</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-space-3xs">
+                  Scheduled retrieval rehearsal for 2 overdue concept errors. High priority recall before Friday diagnostic session.
+                </p>
+<div class="flex items-center gap-space-xs mt-space-xs flex-wrap">
+<span class="px-space-xs py-space-3xs rounded bg-[#0C111C] border border-[#1E293B] font-code-marginalia text-code-marginalia text-[#CBD5E1]">#EB-0420 Potential Barrier Dipoles</span>
+<span class="px-space-xs py-space-3xs rounded bg-[#0C111C] border border-[#1E293B] font-code-marginalia text-code-marginalia text-[#CBD5E1]">#EB-0418 Pure Rolling Moment Instabilities</span>
+</div>
+</div>
+</div>
+<div class="flex flex-row md:flex-col items-end justify-between md:justify-start gap-space-2xs flex-shrink-0 pl-space-md md:pl-0">
+<span class="inline-flex items-center gap-space-2xs px-space-xs py-space-3xs rounded bg-[#17223B] border border-[#26334D] text-[#E5C992] font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px]">hourglass_empty</span>
+<span>Scheduled Next (60m)</span>
+</span>
+<button class="text-[#38BDF8] hover:text-[#7DD3FC] font-code-marginalia text-code-marginalia" type="button">
+                Adjust Window
+              </button>
+</div>
+</div>
+</div>
+<!-- TIME BLOCK 05 [Planned Diagnostic] -->
+<div class="bg-[#131B2E] border border-[#1E2B4A] rounded p-space-md shadow-[0_4px_16px_rgba(0,0,0,0.3)] transition-all hover:border-[#26334D]">
+<div class="flex flex-col md:flex-row md:items-start justify-between gap-space-sm">
+<div class="flex items-start gap-space-md">
+<div class="flex flex-col items-center justify-center p-space-xs bg-[#0C111C] border border-[#1E293B] rounded text-center w-20 flex-shrink-0">
+<span class="font-code-marginalia text-code-marginalia uppercase text-[#F9F8F6]">17:00</span>
+<span class="font-label-sm text-label-sm text-[#64748B] tracking-tight">to</span>
+<span class="font-code-marginalia text-code-marginalia uppercase text-[#F9F8F6]">18:30</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs flex-wrap mb-1">
+<span class="font-label-sm text-label-sm uppercase tracking-widest px-space-2xs py-0.5 rounded bg-[#1E2B4A] border border-[#26334D] text-[#94A3B8] font-semibold">Diagnostic Test</span>
+<span class="font-code-marginalia text-code-marginalia text-on-surface-variant">Timed Examination Condition</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-[#F9F8F6]">JEE Advanced Mock Probe 04: Full Section A</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-space-3xs">
+                  Full sprint test environment. Real-time timer adherence. Requires desktop workspace clearance.
+                </p>
+</div>
+</div>
+<div class="flex flex-row md:flex-col items-end justify-between md:justify-start gap-space-2xs flex-shrink-0 pl-space-md md:pl-0">
+<span class="inline-flex items-center gap-space-2xs px-space-xs py-space-3xs rounded bg-[#17223B] border border-[#26334D] text-on-surface-variant font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px]">event_upcoming</span>
+<span>Planned (90m)</span>
+</span>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8]">Target: &gt;78% Accuracy</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Session Log Insertion Foil -->
+<div class="flex items-center justify-between p-space-sm bg-[#0C111C] border border-[#1E293B] rounded">
+<div class="flex items-center gap-space-sm text-[#F9F8F6] font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[#E5C992] text-[20px]">add_task</span>
+<span>Finished an unscripted study sprint? Record ad-hoc work into today's ledger.</span>
+</div>
+<button class="px-space-sm py-space-xs rounded bg-[#131B2E] border border-[#1E2B4A] hover:bg-[#17223B] text-[#E5C992] font-label-md text-label-md uppercase tracking-wider font-semibold shadow-sm transition-colors" type="button">
+          + Log Quick Effort
+        </button>
+</div>
+</div>
+<!-- RIGHT 4 COLUMNS: Capacity & Adaptive Recovery Engine -->
+<div class="lg:col-span-4 flex flex-col gap-space-md">
+<!-- 01: CAPACITY ALLOCATION DOSSIER -->
+<div class="bg-[#131B2E] border border-[#1E2B4A] p-space-md rounded shadow-[0_4px_20px_rgba(0,0,0,0.35)] flex flex-col gap-space-md">
+<div class="flex items-center justify-between pb-space-xs border-b border-[#1E293B]">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[#38BDF8] text-[20px]">balance</span>
+<h3 class="font-title-lg text-title-lg text-[#F9F8F6]">Today’s Capacity</h3>
+</div>
+<span class="font-code-marginalia text-code-marginalia text-on-surface-variant">Max: 7.0h</span>
+</div>
+<!-- Metric Triplets -->
+<div class="grid grid-cols-3 gap-space-xs text-center">
+<div class="bg-[#0C111C] border border-[#1E293B] p-space-xs rounded flex flex-col items-center justify-center">
+<span class="font-code-marginalia text-code-marginalia uppercase text-[#94A3B8]">Planned</span>
+<span class="font-headline-sm text-headline-sm text-[#F9F8F6] font-bold mt-0.5">5.5h</span>
+<span class="font-label-sm text-label-sm text-[#64748B]">330 min</span>
+</div>
+<div class="bg-[#0C111C] border border-[#1E293B] p-space-xs rounded flex flex-col items-center justify-center">
+<span class="font-code-marginalia text-code-marginalia uppercase text-[#94A3B8]">Completed</span>
+<span class="font-headline-sm text-headline-sm text-[#38BDF8] font-bold mt-0.5">2.8h</span>
+<span class="font-label-sm text-label-sm text-[#64748B]">170 min</span>
+</div>
+<div class="bg-[#0C111C] border border-[#1E293B] p-space-xs rounded flex flex-col items-center justify-center">
+<span class="font-code-marginalia text-code-marginalia uppercase text-[#94A3B8]">Buffer</span>
+<span class="font-headline-sm text-headline-sm text-[#E5C992] font-bold mt-0.5">1.5h</span>
+<span class="font-label-sm text-label-sm text-[#64748B]">Slack space</span>
+</div>
+</div>
+<!-- Workload Pressure Gauge -->
+<div class="flex flex-col gap-space-2xs bg-[#0C111C] border border-[#1E293B] p-space-sm rounded">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md uppercase tracking-wider text-[#94A3B8]">Workload Pressure</span>
+<span class="font-label-sm text-label-sm px-space-2xs py-0.5 rounded bg-[#2A2111] border border-[#E5C992]/40 text-[#E5C992] font-semibold uppercase">
+              Balanced // Low Entropy
+            </span>
+</div>
+<!-- Linear Meter -->
+<div class="w-full bg-[#131B2E] border border-[#1E293B] h-2.5 rounded-full overflow-hidden flex mt-1">
+<div class="bg-[#38BDF8] h-full shadow-[0_0_8px_#38BDF8]" style="width: 51%;" title="Completed 51%"></div>
+<div class="bg-[#0369A1] h-full" style="width: 28%;" title="Remaining Planned 28%"></div>
+<div class="bg-[#E5C992] h-full shadow-[0_0_8px_#E5C992]" style="width: 21%;" title="Protective Buffer 21%"></div>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-code-marginalia text-code-marginalia mt-1">
+<span>Burnout Risk: 12% (Minimal)</span>
+<span class="text-[#34D399]">Sleep Protection: Verified</span>
+</div>
+</div>
+</div>
+<!-- 02: ZERO-GUILT BACKLOG RECOVERY CARD -->
+<div class="bg-[#131B2E] border border-[#1E2B4A] p-space-md rounded shadow-[0_4px_20px_rgba(0,0,0,0.35)] flex flex-col gap-space-sm relative overflow-hidden">
+<div class="flex items-center justify-between pb-space-xs border-b border-[#1E293B]">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[#E5C992] text-[20px]">all_inclusive</span>
+<h3 class="font-title-lg text-title-lg text-[#F9F8F6]">Zero-Guilt Buffer</h3>
+</div>
+<span class="font-label-sm text-label-sm px-space-2xs py-0.5 rounded bg-[#2A2111] border border-[#E5C992]/40 text-[#E5C992] font-medium">1 Task in Staging</span>
+</div>
+<!-- Dossier Detail -->
+<div class="bg-[#0C111C] border border-[#1E293B] p-space-sm rounded flex flex-col gap-space-2xs">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-[#E5C992] tracking-wider">Autonomous Reassignment</span>
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8]">45 min effort</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-[#F9F8F6] text-[18px]">Thermodynamics: Carnot Efficiency &amp; Clausius Inequality</h4>
+<div class="flex items-start gap-space-2xs font-body-sm text-body-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-[#94A3B8] flex-shrink-0 mt-1">info</span>
+<span>Unscheduled reason: College laboratory session ran 50m over schedule yesterday.</span>
+</div>
+</div>
+<div class="p-space-xs rounded bg-[#17223B] border border-[#26334D] flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-xs font-label-md text-label-md text-[#F9F8F6] font-semibold">
+<span class="material-symbols-outlined text-[18px] text-[#38BDF8]">recommend</span>
+<span>Recommendation: Saturday Morning Recovery</span>
+</div>
+<p class="font-body-sm text-body-sm text-[#94A3B8]">
+            Saturday between 08:30 – 09:15 contains an open recovery reservation. Adding this block will keep weekly load under 6.0 hours.
+          </p>
+<div class="flex items-center gap-space-xs mt-space-2xs">
+<button class="flex-1 bg-[#E5C992] text-[#090D16] font-bold py-space-xs px-space-sm rounded font-label-md text-label-md uppercase tracking-wider hover:bg-[#FCDFA6] transition-colors text-center shadow-[0_0_12px_rgba(229,201,146,0.2)]" type="button">
+              Confirm Reallocation
+            </button>
+<button class="px-space-sm py-space-xs rounded bg-[#0C111C] border border-[#1E293B] text-[#F9F8F6] hover:bg-[#131B2E] text-label-md font-label-md uppercase tracking-wider transition-colors" type="button">
+              Custom
+            </button>
+</div>
+</div>
+</div>
+<!-- 03: WEEKLY WORKLOAD DENSITY (HEATMAP / HISTOGRAM) -->
+<div class="bg-[#131B2E] border border-[#1E2B4A] p-space-md rounded shadow-[0_4px_20px_rgba(0,0,0,0.35)] flex flex-col gap-space-md">
+<div class="flex items-center justify-between pb-space-xs border-b border-[#1E293B]">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[#38BDF8] text-[20px]">bar_chart</span>
+<h3 class="font-title-lg text-title-lg text-[#F9F8F6]">Weekly Workload Density</h3>
+</div>
+<span class="font-code-marginalia text-code-marginalia text-on-surface-variant">Nov 11 – Nov 17</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          Empirical distribution balancing high cognitive load days against deliberate recovery zones.
+        </p>
+<!-- Inline Visual Bar Histogram -->
+<div class="flex items-end justify-between gap-space-2xs pt-space-md pb-space-xs h-40">
+<!-- Mon -->
+<div class="flex flex-col items-center gap-space-2xs flex-1 h-full justify-end group cursor-pointer">
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8] group-hover:text-[#38BDF8] transition-colors">5.0h</span>
+<div class="w-full bg-[#0284C7] rounded-t h-[75%] transition-all group-hover:bg-[#38BDF8] shadow-sm"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">M</span>
+</div>
+<!-- Tue -->
+<div class="flex flex-col items-center gap-space-2xs flex-1 h-full justify-end group cursor-pointer">
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8] group-hover:text-[#38BDF8] transition-colors">6.0h</span>
+<div class="w-full bg-[#0284C7] rounded-t h-[90%] transition-all group-hover:bg-[#38BDF8] shadow-sm"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">T</span>
+</div>
+<!-- Wed -->
+<div class="flex flex-col items-center gap-space-2xs flex-1 h-full justify-end group cursor-pointer">
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8] group-hover:text-[#38BDF8] transition-colors">4.5h</span>
+<div class="w-full bg-[#0284C7] rounded-t h-[68%] transition-all group-hover:bg-[#38BDF8] shadow-sm"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">W</span>
+</div>
+<!-- Thu (Missed 1) -->
+<div class="flex flex-col items-center gap-space-2xs flex-1 h-full justify-end group cursor-pointer">
+<div class="flex items-center gap-0.5">
+<span class="font-code-marginalia text-code-marginalia text-[#E5C992] font-bold">3.5h</span>
+</div>
+<div class="w-full bg-[#2A2111] border border-[#E5C992]/40 rounded-t h-[52%] transition-all relative">
+<!-- Ghost bar representing the 45m unstudied portion -->
+<div class="absolute -top-3 left-0 right-0 h-3 bg-[#E5C992]/40 border-t border-[#E5C992] rounded-t" title="45m missed and buffered"></div>
+</div>
+<span class="font-label-sm text-label-sm text-[#E5C992] font-bold">T</span>
+</div>
+<!-- Fri (Today) -->
+<div class="flex flex-col items-center gap-space-2xs flex-1 h-full justify-end group cursor-pointer">
+<span class="font-code-marginalia text-code-marginalia text-[#E5C992] font-bold">5.5h</span>
+<div class="w-full bg-[#E5C992] rounded-t h-[83%] shadow-[0_0_12px_rgba(229,201,146,0.3)] transition-all group-hover:bg-[#FCDFA6]"></div>
+<span class="font-label-sm text-label-sm text-[#E5C992] font-bold">F</span>
+</div>
+<!-- Sat (Planned Recovery) -->
+<div class="flex flex-col items-center gap-space-2xs flex-1 h-full justify-end group cursor-pointer">
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8] group-hover:text-[#F9F8F6] transition-colors">6.0h</span>
+<div class="w-full bg-[#1E2B4A] border border-[#26334D] rounded-t h-[90%] transition-all flex flex-col justify-between overflow-hidden">
+<div class="h-4 bg-[#E5C992]/70 w-full" title="Includes buffered 45m"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">S</span>
+</div>
+<!-- Sun (Review & Rest) -->
+<div class="flex flex-col items-center gap-space-2xs flex-1 h-full justify-end group cursor-pointer">
+<span class="font-code-marginalia text-code-marginalia text-[#94A3B8] group-hover:text-[#F9F8F6] transition-colors">4.0h</span>
+<div class="w-full bg-[#17223B] border border-[#26334D] rounded-t h-[60%] transition-all"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">S</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-code-marginalia text-code-marginalia pt-space-xs border-t border-[#1E293B]">
+<div class="flex items-center gap-1">
+<span class="w-2.5 h-2.5 rounded-sm bg-[#E5C992]"></span>
+<span class="text-[#CBD5E1]">Today Active</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2.5 h-2.5 rounded-sm bg-[#0284C7]"></span>
+<span class="text-[#CBD5E1]">Completed</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2.5 h-2.5 rounded-sm bg-[#E5C992]/40 border border-[#E5C992]/80"></span>
+<span class="text-[#CBD5E1]">Recovery Buffer</span>
+</div>
+</div>
+</div>
+<!-- 04: SCHOLAR'S MARGINALIA COGNITIVE PROMPT -->
+<div class="p-space-md rounded bg-[#131B2E] border border-[#E5C992]/30 flex flex-col gap-space-xs relative shadow-[0_4px_24px_rgba(0,0,0,0.4)]">
+<div class="flex items-center gap-space-xs text-[#E5C992] font-label-md text-label-md uppercase tracking-wider font-bold">
+<span class="material-symbols-outlined text-[18px]">lightbulb</span>
+<span>Cognitive Heuristic</span>
+</div>
+<p class="font-headline-sm text-headline-sm text-[#F9F8F6] italic text-[16px] leading-snug">
+          “Rigidity in scheduling is the primary catalyst of dropout rates. High-performance study requires hydraulic buffers, not mechanical perfection.”
+        </p>
+<span class="font-code-marginalia text-code-marginalia text-[#E5C992]/80">
+          — KRODEX Spaced Scheduling Canon // Axiom 04
+        </span>
+</div>
+</div>
+</div>
+<script>
+    // Micro-interactions for planner actions
+    document.addEventListener('DOMContentLoaded', () => {
+      const quickActionBtn = document.querySelector('button:has(.material-symbols-outlined)');
+      // Lightweight feedback hooks can be attached here
+    });
+  </script>
+</div></div></main></div></body></html>

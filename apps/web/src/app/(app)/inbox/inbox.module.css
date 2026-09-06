@@ -1,0 +1,11 @@
+.page { display: flex; flex-direction: column; gap: var(--kd-space-6); }
+.header { margin-bottom: var(--kd-space-2); }
+.title { font-family: var(--kd-font-display); font-size: 26px; font-weight: 500; color: var(--kd-text-primary); margin: 0 0 8px; }
+.subtitle { font-family: var(--kd-font-ui); font-size: 14px; color: var(--kd-text-muted); margin: 0; }
+.messages { display: flex; flex-direction: column; gap: var(--kd-space-3); }
+.message { display: flex; flex-direction: column; gap: var(--kd-space-2); cursor: pointer; }
+.messageHead { display: flex; align-items: center; justify-content: space-between; gap: var(--kd-space-3); }
+.messageMeta { display: flex; align-items: center; gap: var(--kd-space-2); }
+.messageFrom { font-family: var(--kd-font-ui); font-size: 12px; font-weight: 500; color: var(--kd-champagne); }
+.messageTime { font-family: var(--kd-font-mono); font-size: 11px; color: var(--kd-text-disabled); }
+.messageSubject { font-family: var(--kd-font-ui); font-size: 13px; color: var(--kd-text-primary); margin: 0; }

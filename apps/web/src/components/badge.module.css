@@ -1,45 +1,59 @@
-/**
- * KRODEX web — Badge primitive.
- *
- * Small inline label with semantic or accent tint. Pill-shaped.
- * Renders as <span> by default; can be a button via `as="button"`.
- *
- * Tone: neutral | info | success | warning | danger |
- *       lavender | sapphire | emerald | rose | amber | champagne
- * Size: sm | md
- */
-
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: var(--kd-space-2);
-  font-family: var(--kd-font-sans);
-  font-weight: 500;
-  letter-spacing: var(--kd-type-caption-tracking);
+  gap: 5px;
+  padding: 2px 8px;
   border-radius: var(--kd-radius-full);
-  border: 1px solid var(--_tint-border, var(--kd-color-border-default));
-  background: var(--_tint-bg, var(--kd-color-surface-sunken));
-  color: var(--_tint-fg, var(--kd-color-text-secondary));
-  white-space: nowrap;
-  line-height: 1;
-}
-
-.sizeSm {
-  font-size: var(--kd-type-caption-size);
-  padding: 0.25rem var(--kd-space-2);
-  min-height: 1.25rem;
-}
-
-.sizeMd {
-  font-size: var(--kd-type-body-s-size);
-  padding: 0.3rem var(--kd-space-3);
-  min-height: 1.5rem;
+  font-family: var(--kd-font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
 }
 
 .dot {
-  display: inline-block;
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: var(--kd-radius-full);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
   background: currentColor;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+/* Variants */
+.champagne {
+  background: rgba(230, 204, 160, 0.1);
+  color: var(--kd-champagne);
+  border-color: rgba(230, 204, 160, 0.2);
+}
+.sapphire {
+  background: rgba(56, 189, 248, 0.1);
+  color: var(--kd-sapphire);
+  border-color: rgba(56, 189, 248, 0.2);
+}
+.lavender {
+  background: rgba(162, 155, 254, 0.1);
+  color: var(--kd-lavender);
+  border-color: rgba(162, 155, 254, 0.2);
+}
+.emerald {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--kd-emerald);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+.amber {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--kd-amber);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+.crimson {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--kd-crimson);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+.slate {
+  background: rgba(100, 116, 139, 0.12);
+  color: var(--kd-slate-lt);
+  border-color: rgba(100, 116, 139, 0.2);
 }

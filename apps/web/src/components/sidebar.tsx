@@ -1,292 +1,286 @@
-/**
- * KRODEX web — Sidebar.
- *
- * Premium vertical sidebar for the authenticated app shell.
- * Replaces the horizontal AppNav as the primary navigation
- * surface on desktop; on mobile it collapses behind a
- * hamburger button and slides in as a drawer.
- *
- * Layout:
- *   ┌──────────┐
- *   │  KRODEX  │  <- brand + collapse toggle
- *   ├──────────┤
- *   │  ⌂ Dash  │  <- nav items
- *   │  ▤ Syll  │
- *   │  ✓ Test  │
- *   │  ...     │
- *   ├──────────┤
- *   │  ☾ Theme │  <- footer actions
- *   │  ⎋ Logout│
- *   │  v0.1.0  │  <- version
- *   └──────────┘
- *
- * Behavior:
- *   - Two widths: 64px collapsed (icon-only), 240px expanded.
- *   - State persisted in localStorage under `kd-sidebar-collapsed`.
- *   - Active route inferred via usePathname.
- *   - Theme toggle + logout wired through props (the (app)
- *     layout owns the auth handlers).
- *   - Mobile (<768px): drawer-style, hidden by default,
- *     toggled by a hamburger in the top bar.
- *
- * No fake data, no fabricated badges or counts.
- */
-
 'use client';
 
+import React, { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  useCallback,
-  useEffect,
-  useState,
-  type ReactNode,
-} from 'react';
-import { useTheme } from '../lib/theme';
-import { cls } from '../lib/classnames';
+import { motion, AnimatePresence } from 'framer-motion';
 import styles from './sidebar.module.css';
 
 interface NavItem {
-  href: string;
   label: string;
-  /** Short unicode glyph used as the icon. Keeps the bundle
-   *  small and avoids shipping an icon font for one surface. */
-  icon: string;
-  /** Optional accent for the active state dot. */
-  accent: 'lavender' | 'sapphire' | 'rose' | 'emerald' | 'amber' | 'champagne';
+  href: string;
+  icon: React.ReactNode;
+  badge?: string | number;
 }
 
-const NAV: readonly NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: '◇', accent: 'lavender' },
-  { href: '/syllabus', label: 'Syllabus', icon: '▦', accent: 'sapphire' },
-  { href: '/tests', label: 'Tests', icon: '✓', accent: 'rose' },
-  { href: '/errors', label: 'Errors', icon: '!', accent: 'amber' },
-  { href: '/reviews', label: 'Reviews', icon: '↻', accent: 'emerald' },
-  { href: '/planner', label: 'Planner', icon: '◫', accent: 'lavender' },
-  { href: '/backlog', label: 'Backlog', icon: '⊟', accent: 'rose' },
-  { href: '/insights', label: 'Insights', icon: '◐', accent: 'sapphire' },
-  { href: '/student-model', label: 'Model', icon: '◈', accent: 'emerald' },
-  { href: '/notifications', label: 'Inbox', icon: '✉', accent: 'champagne' },
-  { href: '/assistant', label: 'Assistant', icon: '✦', accent: 'lavender' },
-  { href: '/settings', label: 'Settings', icon: '⚙', accent: 'champagne' },
+interface NavGroup {
+  group: string;
+  items: NavItem[];
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    group: 'COMMAND',
+    items: [
+      {
+        label: 'Dashboard',
+        href: '/dashboard',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
+          </svg>
+        ),
+      },
+    ],
+  },
+  {
+    group: 'STUDY',
+    items: [
+      {
+        label: 'Syllabus',
+        href: '/syllabus',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+          </svg>
+        ),
+      },
+      {
+        label: 'Planner',
+        href: '/planner',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+          </svg>
+        ),
+      },
+      {
+        label: 'Tests',
+        href: '/tests',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+          </svg>
+        ),
+      },
+      {
+        label: 'Errors',
+        href: '/errors',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" />
+          </svg>
+        ),
+      },
+      {
+        label: 'Reviews',
+        href: '/reviews',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+          </svg>
+        ),
+      },
+    ],
+  },
+  {
+    group: 'ANALYZE',
+    items: [
+      {
+        label: 'Backlog',
+        href: '/backlog',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        ),
+      },
+      {
+        label: 'Insights',
+        href: '/insights',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+          </svg>
+        ),
+      },
+      {
+        label: 'Model',
+        href: '/model',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" />
+          </svg>
+        ),
+      },
+    ],
+  },
+  {
+    group: 'SYSTEM',
+    items: [
+      {
+        label: 'Inbox',
+        href: '/inbox',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" /><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+          </svg>
+        ),
+      },
+      {
+        label: 'Assistant',
+        href: '/assistant',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        ),
+      },
+      {
+        label: 'Settings',
+        href: '/settings',
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+        ),
+      },
+    ],
+  },
 ];
 
-const COLLAPSE_KEY = 'kd-sidebar-collapsed';
-const MOBILE_BREAKPOINT = 768;
+const STORAGE_KEY = 'kd-sidebar-expanded';
 
-export interface SidebarProps {
-  version?: string;
-  onLogout?: () => void;
-}
+function useSidebarState() {
+  const [expanded, setExpanded] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try { return localStorage.getItem(STORAGE_KEY) !== 'collapsed'; }
+    catch { return false; }
+  });
 
-function readCollapsedDefault(): boolean {
-  if (typeof window === 'undefined') return false;
-  try {
-    return window.localStorage.getItem(COLLAPSE_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
-
-export function Sidebar({ version, onLogout }: SidebarProps): JSX.Element {
-  const pathname = usePathname();
-  const theme = useTheme();
-
-  // SSR-safe: start expanded; hydrate from localStorage on mount.
-  const [collapsed, setCollapsed] = useState<boolean>(false);
-  const [mobileOpen, setMobileOpen] = useState<boolean>(false);
-  const [isMobile, setIsMobile] = useState<boolean>(false);
-
-  useEffect(() => {
-    setCollapsed(readCollapsedDefault());
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
-    const apply = (): void => {
-      setIsMobile(mq.matches);
-      if (!mq.matches) setMobileOpen(false);
-    };
-    apply();
-    mq.addEventListener('change', apply);
-    return (): void => mq.removeEventListener('change', apply);
-  }, []);
-
-  // Close the mobile drawer when the route changes.
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
-
-  const toggleCollapsed = useCallback((): void => {
-    setCollapsed((prev) => {
+  const toggle = useCallback(() => {
+    setExpanded((prev) => {
       const next = !prev;
-      try {
-        window.localStorage.setItem(COLLAPSE_KEY, next ? '1' : '0');
-      } catch {
-        // Ignore — localStorage may be unavailable (private mode, etc.)
-      }
+      try { localStorage.setItem(STORAGE_KEY, next ? 'expanded' : 'collapsed'); }
+      catch (_e) { /* storage unavailable */ }
       return next;
     });
   }, []);
 
-  const toggleMobile = useCallback((): void => {
-    setMobileOpen((prev) => !prev);
-  }, []);
-
-  const onThemeToggle = useCallback((): void => {
-    theme.toggle();
-  }, [theme]);
-
-  const widthClass = collapsed ? styles.collapsed : styles.expanded;
-  const isDrawer = isMobile;
-
-  return (
-    <>
-      {isDrawer ? (
-        <button
-          type="button"
-          className={styles.mobileToggle}
-          onClick={toggleMobile}
-          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={mobileOpen}
-          data-testid="sidebar-mobile-toggle"
-        >
-          <span aria-hidden="true">{mobileOpen ? '×' : '☰'}</span>
-        </button>
-      ) : null}
-
-      {isDrawer && mobileOpen ? (
-        <div
-          className={styles.scrim}
-          onClick={(): void => setMobileOpen(false)}
-          aria-hidden="true"
-        />
-      ) : null}
-
-      <aside
-        className={cls([
-          styles.sidebar,
-          widthClass,
-          isDrawer ? styles.drawer : styles.rail,
-          isDrawer && mobileOpen ? styles.drawerOpen : undefined,
-        ])}
-        aria-label="Primary navigation"
-        data-testid="sidebar"
-        data-collapsed={collapsed || undefined}
-        data-mobile={isDrawer || undefined}
-      >
-        <div className={styles.brand}>
-          <Link
-            href="/dashboard"
-            className={styles.brandLink}
-            aria-label="KRODEX — go to dashboard"
-          >
-            <span className={styles.brandMark} aria-hidden="true" />
-            {collapsed ? null : <span className={styles.brandText}>KRODEX</span>}
-          </Link>
-          {!isDrawer ? (
-            <button
-              type="button"
-              className={styles.collapseToggle}
-              onClick={toggleCollapsed}
-              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              data-testid="sidebar-collapse-toggle"
-            >
-              <span aria-hidden="true">{collapsed ? '›' : '‹'}</span>
-            </button>
-          ) : null}
-        </div>
-
-        <nav className={styles.nav} aria-label="Primary" data-testid="sidebar-nav">
-          <ul className={styles.navList}>
-            {NAV.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                (item.href !== '/dashboard' &&
-                  pathname?.startsWith(item.href + '/'));
-              return (
-                <li key={item.href} className={styles.navItem}>
-                  <Link
-                    href={item.href}
-                    data-testid={`sidebar-${item.href.replace(/^\//, '')}`}
-                    aria-label={item.label}
-                    aria-current={isActive ? 'page' : undefined}
-                    title={collapsed ? item.label : undefined}
-                    className={cls([
-                      styles.navLink,
-                      isActive ? styles.navLinkActive : undefined,
-                    ])}
-                    data-accent={item.accent}
-                  >
-                    <span className={styles.navIcon} aria-hidden="true">
-                      {item.icon}
-                    </span>
-                    {collapsed ? null : (
-                      <span className={styles.navLabel}>{item.label}</span>
-                    )}
-                    {isActive ? (
-                      <span className={styles.activeDot} aria-hidden="true" />
-                    ) : null}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-
-        <div className={styles.footer}>
-          <button
-            type="button"
-            className={styles.footerBtn}
-            onClick={onThemeToggle}
-            aria-label={`Switch to ${theme.resolved === 'dark' ? 'light' : 'dark'} theme`}
-            data-testid="sidebar-theme-toggle"
-          >
-            <span className={styles.navIcon} aria-hidden="true">
-              {theme.resolved === 'dark' ? '☀' : '☾'}
-            </span>
-            {collapsed ? null : (
-              <span className={styles.navLabel}>
-                {theme.resolved === 'dark' ? 'Light' : 'Dark'}
-              </span>
-            )}
-          </button>
-
-          {onLogout ? (
-            <button
-              type="button"
-              className={styles.footerBtn}
-              onClick={onLogout}
-              aria-label="Log out"
-              data-testid="sidebar-logout"
-            >
-              <span className={styles.navIcon} aria-hidden="true">
-                ⎋
-              </span>
-              {collapsed ? null : <span className={styles.navLabel}>Log out</span>}
-            </button>
-          ) : null}
-
-          {version ? (
-            <span
-              className={styles.version}
-              data-testid="sidebar-version"
-            >
-              v{version}
-            </span>
-          ) : null}
-        </div>
-      </aside>
-    </>
-  );
+  return { expanded, toggle };
 }
 
-export type { NavItem };
-export { NAV as SIDEBAR_NAV };
-export const SidebarTestIds: { readonly mobileToggle: string; readonly collapseToggle: string } = {
-  mobileToggle: 'sidebar-mobile-toggle',
-  collapseToggle: 'sidebar-collapse-toggle',
-} as const;
-// Re-export ReactNode so callers can use the same import site.
-export type { ReactNode };
+export function Sidebar() {
+  const pathname = usePathname();
+  const { expanded, toggle } = useSidebarState();
+
+  return (
+    <motion.aside
+      className={styles.sidebar}
+      data-expanded={expanded}
+      animate={{ width: expanded ? 240 : 64 }}
+      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+    >
+      {/* Header */}
+      <div className={styles.header}>
+        <Link href="/dashboard" className={styles.logo}>
+          <span className={styles.logoIcon}>
+            <motion.span
+              className={styles.logoDot}
+              animate={{ opacity: [0.5, 1, 0.5], scale: [0.9, 1.1, 0.9] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+          </span>
+          <AnimatePresence>
+            {expanded && (
+              <motion.span
+                className={styles.logoText}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -8 }}
+                transition={{ duration: 0.2 }}
+              >
+                KRODEX
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </Link>
+        <button className={styles.toggle} onClick={toggle} aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'}>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+            {expanded
+              ? <path d="M10 12L6 8l4-4" strokeLinecap="round" strokeLinejoin="round" />
+              : <path d="M6 12l4-4-4-4" strokeLinecap="round" strokeLinejoin="round" />}
+          </svg>
+        </button>
+      </div>
+
+      {/* Nav groups */}
+      <nav className={styles.nav}>
+        {NAV_GROUPS.map((group) => (
+          <div key={group.group} className={styles.group}>
+            <AnimatePresence>
+              {expanded && (
+                <motion.span
+                  className={styles.groupLabel}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  {group.group}
+                </motion.span>
+              )}
+            </AnimatePresence>
+            {group.items.map((item) => {
+              const active = pathname === item.href || pathname.startsWith(item.href + '/');
+              return (
+                <Link key={item.href} href={item.href} className={styles.item} data-active={active}>
+                  <span className={styles.itemIcon}>{item.icon}</span>
+                  <AnimatePresence>
+                    {expanded && (
+                      <motion.span
+                        className={styles.itemLabel}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -8 }}
+                        transition={{ duration: 0.18 }}
+                      >
+                        {item.label}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                  {item.badge && expanded && (
+                    <motion.span
+                      className={styles.badge}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                    >
+                      {item.badge}
+                    </motion.span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
+      </nav>
+
+      {/* Footer */}
+      <div className={styles.footer}>
+        <AnimatePresence>
+          {expanded && (
+            <motion.span
+              className={styles.version}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              System 01 — v1.0
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.aside>
+  );
+}

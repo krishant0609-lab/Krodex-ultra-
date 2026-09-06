@@ -1,0 +1,47 @@
+.surface {
+  background: var(--kd-surface);
+  border: 1px solid var(--kd-border);
+  border-radius: var(--kd-radius-xl);
+}
+
+/* ─── Variants ─────────────────────────────────────────────── */
+.glass {
+  background: var(--kd-surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--kd-border);
+}
+
+.ink {
+  background: var(--kd-midnight);
+  border: 1px solid var(--kd-border-md);
+}
+
+.frost {
+  background: rgba(56, 189, 248, 0.04);
+  border: 1px solid rgba(56, 189, 248, 0.12);
+}
+
+.champagne-glow {
+  background: rgba(230, 204, 160, 0.05);
+  border: 1px solid rgba(230, 204, 160, 0.18);
+  box-shadow: var(--kd-glow-champagne);
+}
+
+.lavender-glow {
+  background: rgba(162, 155, 254, 0.05);
+  border: 1px solid rgba(162, 155, 254, 0.18);
+  box-shadow: var(--kd-glow-lavender);
+}
+
+.sapphire-glow {
+  background: rgba(56, 189, 248, 0.04);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  box-shadow: var(--kd-glow-sapphire);
+}
+
+/* ─── Padding presets ──────────────────────────────────────── */
+.padded-sm  { padding: var(--kd-space-4); }
+.padded-md  { padding: var(--kd-space-6); }
+.padded-lg  { padding: var(--kd-space-8); }
+.padded-xl  { padding: var(--kd-space-10); }

@@ -1,70 +1,63 @@
 'use client';
 
-/**
- * KRODEX web — authenticated-app shell (client half).
- *
- * Phase 9: switched from the horizontal AppNav to a vertical
- * Sidebar as the primary navigation surface. The shell owns:
- *  - the auth-guard redirect to /login
- *  - the sidebar + main outlet + footer layout
- *  - the logout handler
- *
- * The version is passed in from the server wrapper so the
- * @krodex/shared import (which transitively pulls in node:crypto
- * via the events barrel) stays out of the client bundle.
- *
- * No fake data, no fabricated progress. The shell renders the
- * chrome only; each page composes its own data via TanStack
- * Query hooks.
- */
-
-import { useCallback, useEffect, type ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
-import { isAuthenticated, clearAuth } from '../../lib/auth-store';
+import React from 'react';
+import { motion } from 'framer-motion';
 import { Sidebar } from '../../components/sidebar';
-import { AppFooter } from '../../components/app-footer';
+import styles from './app-shell-client.module.css';
 
-export interface AppShellClientProps {
-  version?: string;
-  children: ReactNode;
+interface TopBarProps {
+  title?: string;
+  breadcrumb?: { label: string; href?: string }[];
+  action?: React.ReactNode;
 }
 
-export function AppShellClient({ version, children }: AppShellClientProps): JSX.Element {
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isAuthenticated()) {
-      router.replace('/login');
-    }
-  }, [router]);
-
-  const onLogout = useCallback((): void => {
-    clearAuth();
-    router.replace('/login');
-  }, [router]);
-
+function TopBar({ title, breadcrumb, action }: TopBarProps) {
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        background: 'var(--kd-color-surface-background)',
-      }}
-    >
-      <Sidebar version={version} onLogout={onLogout} />
-      <main
-        style={{
-          flex: 1,
-          padding: 'var(--kd-space-6)',
-          minWidth: 0,
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-        data-testid="app-main"
-      >
-        <div style={{ flex: 1 }}>{children}</div>
-        <AppFooter version={version} />
-      </main>
+    <header className={styles.topbar}>
+      <div className={styles.topbarLeft}>
+        {breadcrumb && breadcrumb.length > 0 && (
+          <nav className={styles.breadcrumb} aria-label="Breadcrumb">
+            {breadcrumb.map((crumb, i) => (
+              <React.Fragment key={crumb.label}>
+                {i > 0 && <span className={styles.breadcrumbSep}>/</span>}
+                {crumb.href ? (
+                  <a href={crumb.href} className={styles.breadcrumbLink}>{crumb.label}</a>
+                ) : (
+                  <span className={styles.breadcrumbCurrent}>{crumb.label}</span>
+                )}
+              </React.Fragment>
+            ))}
+          </nav>
+        )}
+        {title && <h1 className={styles.pageTitle}>{title}</h1>}
+      </div>
+      {action && <div className={styles.topbarRight}>{action}</div>}
+    </header>
+  );
+}
+
+interface AppShellClientProps {
+  title?: string;
+  breadcrumb?: { label: string; href?: string }[];
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}
+
+export function AppShellClient({ title, breadcrumb, action, children }: AppShellClientProps) {
+  return (
+    <div className={styles.shell}>
+      <Sidebar />
+      <div className={styles.main}>
+        <TopBar title={title} breadcrumb={breadcrumb} action={action} />
+        <motion.main
+          className={styles.content}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: 'easeOut' }}
+        >
+          {children}
+        </motion.main>
+      </div>
     </div>
   );
 }

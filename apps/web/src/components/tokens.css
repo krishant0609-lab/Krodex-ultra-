@@ -1,0 +1,135 @@
+/* ===================================================================
+   KRODEX — Global Design Tokens
+   KRODEX Living Learning System — dark editorial aesthetic.
+   Used via CSS Modules @value or direct CSS custom properties.
+   =================================================================== */
+
+/* ─── Color Palette ───────────────────────────────────────────── */
+:root {
+  /* Core backgrounds */
+  --kd-ink:          #07090e;
+  --kd-midnight:     #0b101b;
+  --kd-deep-navy:    #0f1b2d;
+  --kd-surface:      rgba(11, 16, 27, 0.72);
+  --kd-surface-md:   rgba(11, 16, 27, 0.85);
+  --kd-surface-lg:   rgba(7, 9, 14, 0.95);
+
+  /* Primary accent — Champagne / Gold */
+  --kd-champagne:    #e6cca0;
+  --kd-champagne-lt: #f4ebd0;
+  --kd-champagne-dk: #c4a870;
+  --kd-gold:         #d4a843;
+  --kd-gold-glow:    rgba(230, 204, 160, 0.2);
+
+  /* Secondary accent — Sapphire / Sky */
+  --kd-sapphire:     #38bdf8;
+  --kd-sapphire-lt:  #7dd3fc;
+  --kd-sapphire-dk:  #0ea5e9;
+  --kd-sapphire-glow: rgba(56, 189, 248, 0.2);
+
+  /* Tertiary — Lavender */
+  --kd-lavender:     #a29bfe;
+  --kd-lavender-lt:  #c4b5fd;
+  --kd-lavender-dk:  #818cf8;
+  --kd-lavender-glow: rgba(162, 155, 254, 0.2);
+
+  /* Success — Emerald */
+  --kd-emerald:      #10b981;
+  --kd-emerald-lt:   #34d399;
+  --kd-emerald-glow: rgba(16, 185, 129, 0.2);
+
+  /* Warning — Amber */
+  --kd-amber:        #f59e0b;
+  --kd-amber-lt:     #fcd34d;
+
+  /* Error — Crimson */
+  --kd-crimson:      #ef4444;
+  --kd-crimson-lt:   #f87171;
+
+  /* Neutral / Slate */
+  --kd-slate:        #64748b;
+  --kd-slate-lt:     #94a3b8;
+  --kd-slate-dk:     #475569;
+
+  /* Borders */
+  --kd-border:        rgba(230, 204, 160, 0.12);
+  --kd-border-md:     rgba(230, 204, 160, 0.2);
+  --kd-border-active: rgba(230, 204, 160, 0.35);
+  --kd-border-subtle: rgba(230, 204, 160, 0.07);
+
+  /* Text */
+  --kd-text-primary:  #f4ebd0;
+  --kd-text-secondary: rgba(244, 235, 208, 0.72);
+  --kd-text-muted:    rgba(244, 235, 208, 0.48);
+  --kd-text-disabled: rgba(244, 235, 208, 0.28);
+
+  /* Glows */
+  --kd-glow-champagne: 0 0 20px rgba(230, 204, 160, 0.15);
+  --kd-glow-sapphire:  0 0 20px rgba(56, 189, 248, 0.15);
+  --kd-glow-lavender:  0 0 20px rgba(162, 155, 254, 0.15);
+  --kd-glow-emerald:   0 0 20px rgba(16, 185, 129, 0.15);
+
+  /* ─── Typography ──────────────────────────────────────────────── */
+  --kd-font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --kd-font-ui:      'Hanken Grotesk', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --kd-font-mono:    'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  /* ─── Spacing scale ──────────────────────────────────────────── */
+  --kd-space-1:   4px;
+  --kd-space-2:   8px;
+  --kd-space-3:   12px;
+  --kd-space-4:   16px;
+  --kd-space-5:   20px;
+  --kd-space-6:   24px;
+  --kd-space-8:   32px;
+  --kd-space-10:  40px;
+  --kd-space-12:  48px;
+  --kd-space-16:  64px;
+  --kd-space-20:  80px;
+  --kd-space-24:  96px;
+
+  /* ─── Radius ────────────────────────────────────────────────── */
+  --kd-radius-sm:  4px;
+  --kd-radius-md:  8px;
+  --kd-radius-lg:  12px;
+  --kd-radius-xl:  16px;
+  --kd-radius-2xl: 24px;
+  --kd-radius-full: 9999px;
+
+  /* ─── Shadows ───────────────────────────────────────────────── */
+  --kd-shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.4);
+  --kd-shadow-md:  0 4px 12px rgba(0, 0, 0, 0.5);
+  --kd-shadow-lg:  0 8px 32px rgba(0, 0, 0, 0.6);
+  --kd-shadow-xl:  0 16px 64px rgba(0, 0, 0, 0.7);
+
+  /* ─── Sidebar ───────────────────────────────────────────────── */
+  --kd-sidebar-collapsed: 64px;
+  --kd-sidebar-expanded:  240px;
+  --kd-topbar-height:    56px;
+
+  /* ─── Transitions ───────────────────────────────────────────── */
+  --kd-ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --kd-ease-in:     cubic-bezier(0.4, 0, 1, 1);
+  --kd-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --kd-spring:      cubic-bezier(0.34, 1.56, 0.64, 1);
+  --kd-duration-fast:   150ms;
+  --kd-duration-base:   250ms;
+  --kd-duration-slow:   400ms;
+  --kd-duration-slower: 600ms;
+}
+
+/* ─── Light mode overrides (optional) ───────────────────────── */
+[data-theme="light"] {
+  --kd-ink:           #f9f8f5;
+  --kd-midnight:      #f0ede6;
+  --kd-deep-navy:     #e8e4d9;
+  --kd-surface:       rgba(249, 248, 245, 0.9);
+  --kd-surface-md:     rgba(249, 248, 245, 0.95);
+  --kd-surface-lg:     rgba(249, 248, 245, 0.98);
+  --kd-border:        rgba(30, 30, 30, 0.1);
+  --kd-border-md:     rgba(30, 30, 30, 0.18);
+  --kd-border-active: rgba(30, 30, 30, 0.28);
+  --kd-text-primary:  #1a1a2e;
+  --kd-text-secondary: rgba(26, 26, 46, 0.72);
+  --kd-text-muted:    rgba(26, 26, 46, 0.48);
+}

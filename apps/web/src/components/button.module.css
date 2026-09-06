@@ -1,153 +1,125 @@
-/**
- * KRODEX web — Button primitive.
- *
- * Editorial primary surface (lavender on light, slightly desaturated
- * on dark) with a calm secondary ghost and a destructive danger.
- * Sizes: sm / md / lg. Loading state replaces label with spinner
- * + label, keeps width stable.
- *
- * All values resolve to design tokens. No raw colors.
- */
-
 .button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--kd-space-2);
-  font-family: var(--kd-font-sans);
+  font-family: var(--kd-font-ui);
   font-weight: 500;
-  letter-spacing: 0;
-  border-radius: var(--kd-radius-md);
-  border: 1px solid transparent;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  user-select: none;
-  white-space: nowrap;
+  border: 1px solid transparent;
   transition:
-    background-color var(--kd-motion-duration-base) var(--kd-motion-ease-standard),
-    border-color var(--kd-motion-duration-base) var(--kd-motion-ease-standard),
-    color var(--kd-motion-duration-base) var(--kd-motion-ease-standard),
-    transform var(--kd-motion-duration-quick) var(--kd-motion-ease-standard);
+    background var(--kd-duration-fast) var(--kd-ease-out),
+    border-color var(--kd-duration-fast) var(--kd-ease-out),
+    color var(--kd-duration-fast) var(--kd-ease-out),
+    box-shadow var(--kd-duration-fast) var(--kd-ease-out),
+    transform var(--kd-duration-fast) var(--kd-ease-out);
+  white-space: nowrap;
+  text-decoration: none;
+  user-select: none;
 }
 
-.button:disabled,
-.button[aria-disabled='true'] {
-  cursor: not-allowed;
-  opacity: 0.55;
+.button:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
-.button:focus-visible {
-  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
-  outline-offset: var(--kd-focus-ring-offset);
+/* ─── Sizes ───────────────────────────────────────────────── */
+.sm {
+  height: 32px;
+  padding: 0 var(--kd-space-3);
+  font-size: 13px;
+  border-radius: var(--kd-radius-md);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .button {
-    transition: none;
-  }
+.md {
+  height: 40px;
+  padding: 0 var(--kd-space-4);
+  font-size: 14px;
+  border-radius: var(--kd-radius-lg);
 }
 
-/* -------- Sizes -------- */
-
-.sizeSm {
-  font-size: var(--kd-type-body-s-size);
-  line-height: var(--kd-type-body-s-leading);
-  padding: var(--kd-space-2) var(--kd-space-3);
-  min-height: 2rem;
+.lg {
+  height: 48px;
+  padding: 0 var(--kd-space-6);
+  font-size: 15px;
+  border-radius: var(--kd-radius-lg);
 }
 
-.sizeMd {
-  font-size: var(--kd-type-body-m-size);
-  line-height: var(--kd-type-body-m-leading);
-  padding: var(--kd-space-2) var(--kd-space-4);
-  min-height: 2.5rem;
+/* ─── Variants ─────────────────────────────────────────────── */
+
+/* Primary — Champagne fill */
+.primary {
+  background: var(--kd-champagne);
+  border-color: var(--kd-champagne);
+  color: var(--kd-ink);
+}
+.primary:hover:not(:disabled) {
+  background: var(--kd-champagne-lt);
+  border-color: var(--kd-champagne-lt);
+  box-shadow: var(--kd-glow-champagne);
 }
 
-.sizeLg {
-  font-size: var(--kd-type-body-l-size);
-  line-height: var(--kd-type-body-l-leading);
-  padding: var(--kd-space-3) var(--kd-space-5);
-  min-height: 3rem;
-}
-
-/* -------- Variants -------- */
-
-/* Primary: lavender fill, inverse text. Calm default. */
-.variantPrimary {
-  background: var(--kd-color-accent-lavender);
-  color: var(--kd-color-accent-lavender-text);
-  border-color: var(--kd-color-accent-lavender);
-}
-.variantPrimary:hover:not(:disabled) {
-  background: var(--kd-color-accent-lavender-strong);
-  border-color: var(--kd-color-accent-lavender-strong);
-}
-.variantPrimary:active:not(:disabled) {
-  transform: translateY(1px);
-}
-
-/* Secondary: surface fill, brand border, brand text. */
-.variantSecondary {
-  background: var(--kd-color-surface-raised);
-  color: var(--kd-color-accent-lavender-strong);
-  border-color: var(--kd-color-accent-lavender);
-}
-.variantSecondary:hover:not(:disabled) {
-  background: var(--kd-color-accent-lavender-subtle);
-  border-color: var(--kd-color-accent-lavender-strong);
-}
-
-/* Ghost: transparent fill, secondary text. */
-.variantGhost {
+/* Secondary — Transparent with champagne border */
+.secondary {
   background: transparent;
-  color: var(--kd-color-text-secondary);
+  border-color: var(--kd-border-md);
+  color: var(--kd-champagne);
+}
+.secondary:hover:not(:disabled) {
+  border-color: var(--kd-champagne);
+  background: rgba(230, 204, 160, 0.06);
+}
+
+/* Ghost — No border, subtle hover */
+.ghost {
+  background: transparent;
   border-color: transparent;
+  color: var(--kd-text-secondary);
 }
-.variantGhost:hover:not(:disabled) {
-  background: var(--kd-color-surface-sunken);
-  color: var(--kd-color-text-primary);
-}
-
-/* Danger: rose fill, inverse text. */
-.variantDanger {
-  background: var(--kd-color-state-error-fg);
-  color: var(--kd-color-accent-rose-text);
-  border-color: var(--kd-color-state-error-fg);
-}
-.variantDanger:hover:not(:disabled) {
-  background: var(--kd-color-accent-rose-strong);
-  border-color: var(--kd-color-accent-rose-strong);
+.ghost:hover:not(:disabled) {
+  background: rgba(230, 204, 160, 0.07);
+  color: var(--kd-text-primary);
 }
 
-/* -------- Block / width -------- */
-
-.block {
-  width: 100%;
+/* Danger — Crimson */
+.danger {
+  background: var(--kd-crimson);
+  border-color: var(--kd-crimson);
+  color: #fff;
+}
+.danger:hover:not(:disabled) {
+  background: var(--kd-crimson-lt);
+  border-color: var(--kd-crimson-lt);
 }
 
-/* -------- Loading -------- */
+/* ─── Disabled ─────────────────────────────────────────────── */
+.button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
+/* ─── Loading ─────────────────────────────────────────────── */
 .loading {
+  position: relative;
+  color: transparent !important;
   pointer-events: none;
 }
-
 .spinner {
-  display: inline-block;
-  width: 1em;
-  height: 1em;
-  border: 2px solid currentColor;
-  border-top-color: transparent;
-  border-radius: var(--kd-radius-full);
-  animation: spin var(--kd-motion-duration-slow) linear infinite;
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
 }
+
+.primary .spinner { border-color: rgba(0,0,0,0.2); border-top-color: var(--kd-ink); }
+.secondary .spinner,
+.ghost .spinner { border-color: rgba(230,204,160,0.2); border-top-color: var(--kd-champagne); }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .spinner {
-    animation: none;
-  }
+  to { transform: rotate(360deg); }
 }

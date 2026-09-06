@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container": "#17223b", "error-container": "#4a121c", "primary-fixed-dim": "#dfc38d", "surface-tint": "#e5c992", "on-primary-fixed": "#261a00", "surface-container-low": "#111827", "surface-bright": "#22314e", "surface-container-high": "#1e2b4a", "surface-dim": "#090d16", "primary-container": "#e5c992", "primary-fixed": "#fcdfa6", "on-background": "#dfe2ef", "on-secondary": "#002e6a", "on-tertiary-fixed": "#20133f", "on-primary-container": "#3e2e05", "on-error-container": "#ffb4ab", "surface-container-lowest": "#0c111c", "primary": "#e5c992", "outline-variant": "#26334d", "inverse-surface": "#dfe2ef", "on-primary-fixed-variant": "#574419", "surface": "#090d16", "on-tertiary-fixed-variant": "#4c3f6e", "surface-container-highest": "#28385d", "background": "#090d16", "on-secondary-container": "#e6ecff", "secondary-container": "#172554", "on-surface-variant": "#94a3b8", "outline": "#64748b", "surface-variant": "#17223b", "secondary-fixed-dim": "#adc6ff", "on-secondary-fixed": "#001a42", "secondary-fixed": "#d8e2ff", "inverse-on-surface": "#0f131c", "tertiary-fixed-dim": "#cfbef5", "tertiary-fixed": "#e9ddff", "secondary": "#38bdf8", "inverse-primary": "#705c2f", "tertiary": "#d4c4fb", "on-tertiary-container": "#5c4f7e", "on-tertiary": "#352956", "tertiary-container": "#312e81", "on-error": "#690005", "on-secondary-fixed-variant": "#004395", "on-primary": "#1e1603", "error": "#f43f5e", "on-surface": "#f9f8f6" }, "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, "spacing": { "space-4xl": "6rem", "gutter-mobile": "1rem", "space-md": "1rem", "gutter-tablet": "1.5rem", "margin-tablet": "2rem", "space-3xl": "4rem", "margin-mobile": "1.25rem", "space-2xs": "0.25rem", "space-3xs": "0.125rem", "gutter-desktop": "2rem", "margin-desktop": "3rem", "space-2xl": "3rem", "space-xl": "2rem", "space-sm": "0.75rem", "max-width-workbench": "1440px", "space-xs": "0.5rem", "space-lg": "1.5rem", "max-width-editorial": "68ch", "max-width-reading-container": "760px" }, "fontFamily": { "headline-md": [ "Newsreader" ], "headline-lg-mobile": [ "Newsreader" ], "headline-sm": [ "Newsreader" ], "title-lg": [ "Manrope" ], "body-md": [ "Manrope" ], "headline-lg": [ "Newsreader" ], "label-md": [ "Manrope" ], "code-marginalia": [ "Manrope" ], "display-hero": [ "Newsreader" ], "display-hero-mobile": [ "Newsreader" ], "body-sm": [ "Manrope" ], "body-lg": [ "Manrope" ], "label-sm": [ "Manrope" ] }, "fontSize": { "headline-md": [ "28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "500" } ], "headline-lg-mobile": [ "30px", { "lineHeight": "36px", "letterSpacing": "-0.015em", "fontWeight": "400" } ], "headline-sm": [ "22px", { "lineHeight": "28px", "letterSpacing": "0em", "fontWeight": "500" } ], "title-lg": [ "18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "body-md": [ "15px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" } ], "headline-lg": [ "40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "400" } ], "label-md": [ "12px", { "lineHeight": "16px", "letterSpacing": "0.06em", "fontWeight": "600" } ], "code-marginalia": [ "12px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "400" } ], "display-hero": [ "56px", { "lineHeight": "64px", "letterSpacing": "-0.03em", "fontWeight": "400" } ], "display-hero-mobile": [ "38px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "400" } ], "body-sm": [ "13px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "400" } ], "body-lg": [ "17px", { "lineHeight": "28px", "letterSpacing": "-0.005em", "fontWeight": "400" } ], "label-sm": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "500" } ] } } } };</script></head><body class="bg-surface font-body-md text-on-surface antialiased selection:bg-primary/20 selection:text-primary"><aside class="fixed left-0 top-0 h-screen w-[240px] bg-[#0c111c] border-r border-[#1e293b] shadow-2xl z-50 flex flex-col justify-between select-none"><div class="flex flex-col flex-1 overflow-y-auto"><div class="px-space-md py-space-lg flex items-center justify-between border-b border-[#1e293b]/60"><div class="flex flex-col"><span class="font-headline-sm text-headline-sm font-semibold tracking-tight text-[#f9f8f6] leading-none">KRODEX</span><span class="font-code-marginalia text-code-marginalia tracking-wider uppercase text-primary/80 mt-space-3xs font-medium">STUDY OS v2.4</span></div><div class="w-2 h-2 rounded-full bg-primary ring-2 ring-primary/30" title="Spaced Loop Engine Active"></div></div><div class="px-space-xs space-y-space-md mt-space-sm"><div class="space-y-space-3xs"><div class="px-space-sm font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant/70">Command</div><nav class="space-y-space-3xs"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#17223b] hover:text-[#f9f8f6] transition-colors font-body-sm text-body-sm" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[18px]">dashboard</span><span>Dashboard</span></a></nav></div><div class="space-y-space-3xs"><div class="px-space-sm font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant/70">Study</div><nav class="space-y-space-3xs"><a aria-current="page" class="flex items-center gap-space-sm px-space-sm py-space-xs rounded transition-colors bg-[#17223b] text-primary border border-primary/30 font-semibold shadow-inner" data-path="syllabus" href="#"><span class="material-symbols-outlined text-[18px] text-primary">menu_book</span><span>Syllabus</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#17223b] hover:text-[#f9f8f6] transition-colors font-body-sm text-body-sm" data-path="planner" href="#"><span class="material-symbols-outlined text-[18px]">calendar_today</span><span>Planner</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#17223b] hover:text-[#f9f8f6] transition-colors font-body-sm text-body-sm" data-path="tests" href="#"><span class="material-symbols-outlined text-[18px]">assignment</span><span>Tests</span></a></nav></div><div class="space-y-space-3xs"><div class="px-space-sm font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant/70">Learn</div><nav class="space-y-space-3xs"><a class="flex items-center justify-between px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#17223b] hover:text-[#f9f8f6] transition-colors font-body-sm text-body-sm" data-path="error-book" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">error_outline</span><span>Error Book</span></div><span class="font-label-sm text-label-sm px-space-2xs py-0.5 rounded bg-error-container text-error border border-error/30 font-semibold">4 Due</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#17223b] hover:text-[#f9f8f6] transition-colors font-body-sm text-body-sm" data-path="reviews" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">cycle</span><span>Reviews</span></div><span class="font-label-sm text-label-sm px-space-2xs py-0.5 rounded bg-[#1e2b4a] text-on-surface font-semibold">2 Due</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#17223b] hover:text-[#f9f8f6] transition-colors font-body-sm text-body-sm" data-path="backlog" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">history_edu</span><span>Backlog</span></div><span class="font-label-sm text-label-sm px-space-2xs py-0.5 rounded bg-[#1e2b4a] text-on-surface font-semibold">1 Missed</span></a></nav></div><div class="space-y-space-3xs"><div class="px-space-sm font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant/70">Analyze</div><nav class="space-y-space-3xs"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#17223b] hover:text-[#f9f8f6] transition-colors font-body-sm text-body-sm" data-path="insights" href="#"><span class="material-symbols-outlined text-[18px]">analytics</span><span>Insights</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#17223b] hover:text-[#f9f8f6] transition-colors font-body-sm text-body-sm" data-path="student-model" href="#"><span class="material-symbols-outlined text-[18px]">psychology</span><span>Student Model</span></a></nav></div><div class="space-y-space-3xs"><div class="px-space-sm font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant/70">System</div><nav class="space-y-space-3xs"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#17223b] hover:text-[#f9f8f6] transition-colors font-body-sm text-body-sm" data-path="inbox" href="#"><span class="material-symbols-outlined text-[18px]">inbox</span><span>Inbox</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#17223b] hover:text-[#f9f8f6] transition-colors font-body-sm text-body-sm" data-path="assistant" href="#"><span class="material-symbols-outlined text-[18px]">smart_toy</span><span>Assistant</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded text-on-surface-variant hover:bg-[#17223b] hover:text-[#f9f8f6] transition-colors font-body-sm text-body-sm" data-path="settings" href="#"><span class="material-symbols-outlined text-[18px]">tune</span><span>Settings</span></a></nav></div></div></div><div class="p-space-xs bg-[#0c111c] border-t border-[#1e293b]/60"><div class="p-space-sm rounded bg-[#111827] border border-[#1e293b] flex flex-col gap-space-xs"><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined text-primary text-[18px]">person</span></div><div class="flex flex-col min-w-0 flex-1"><span class="font-label-md text-label-md font-semibold text-[#f9f8f6] truncate">Marcus Vance</span><span class="font-code-marginalia text-code-marginalia text-primary/80 truncate">JEE Prep 2025</span></div></div><div class="flex items-center justify-between pt-space-xs"><button aria-label="Toggle theme" class="flex items-center justify-center p-space-2xs text-on-surface-variant hover:text-[#f9f8f6] hover:bg-[#17223b] rounded transition-colors" type="button"><span class="material-symbols-outlined text-[18px] text-primary">dark_mode</span></button><div class="flex items-center gap-space-3xs"><span class="font-code-marginalia text-code-marginalia text-on-surface-variant uppercase">Active</span><span class="w-1.5 h-1.5 rounded-full bg-primary"></span></div><button aria-label="Collapse sidebar" class="flex items-center justify-center p-space-2xs text-on-surface-variant hover:text-[#f9f8f6] hover:bg-[#17223b] rounded transition-colors" type="button"><span class="material-symbols-outlined text-[18px]">keyboard_double_arrow_left</span></button></div></div></div></aside><div class="pl-[240px]"><header class="fixed top-0 left-[240px] right-0 h-16 bg-[#0c111c]/90 backdrop-blur-xl border-b border-[#1e293b] z-40 flex items-center"><div class="w-full max-w-workbench mx-auto px-gutter-desktop flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md min-w-0"><div class="flex items-center gap-space-2xs font-code-marginalia text-code-marginalia text-on-surface-variant truncate"><span class="font-semibold text-[#f9f8f6]">KRODEX</span><span>/</span><span>Command</span><span>/</span><span class="text-primary font-medium">Dashboard</span></div><div class="hidden xl:flex items-center gap-space-xs px-space-xs py-space-3xs rounded bg-[#111827] border border-[#1e293b]"><span class="w-2 h-2 rounded-full bg-secondary"></span><span class="font-code-marginalia text-code-marginalia text-on-surface-variant uppercase tracking-wider">System Synced // 48h Spaced Loop Active</span></div></div><div class="flex items-center gap-space-sm"><div class="relative flex items-center"><div class="flex items-center gap-space-xs bg-[#111827] border border-[#1e293b] px-space-sm py-space-2xs rounded w-64 md:w-80 cursor-text"><span class="material-symbols-outlined text-outline text-[18px]">search</span><input class="w-full bg-transparent border-none outline-none font-body-sm text-body-sm text-[#f9f8f6] placeholder:text-outline/70" placeholder="Search topics, errors, tests, formulas..." readonly="" type="text"/><span class="font-code-marginalia text-code-marginalia text-on-surface-variant px-1 rounded bg-[#17223b] border border-[#26334d]">⌘K</span></div></div><button class="flex items-center gap-space-2xs bg-primary text-[#1e1603] px-space-sm py-space-xs rounded font-label-md text-label-md tracking-wider uppercase font-semibold hover:bg-[#fcdfa6] transition-colors shadow-sm" type="button"><span class="material-symbols-outlined text-[16px]">add</span><span>Quick Action</span></button><div class="relative flex items-center"><button aria-label="Notifications" class="p-space-xs text-on-surface-variant hover:text-[#f9f8f6] hover:bg-[#17223b] rounded-full transition-colors relative" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error ring-2 ring-[#0c111c]"></span></button></div><div class="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined text-primary text-[18px]">person</span></div></div></div></header><main class="relative pt-16 bg-[#090d16] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(23,37,84,0.25),rgba(9,13,22,1))] min-h-screen"><div class="max-w-workbench mx-auto px-gutter-desktop py-space-xl"><div class="flex flex-col w-full">
+<!-- Top Academic Dossier Header -->
+<header class="relative w-full pb-space-xl">
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-lg pb-space-lg">
+<div class="max-w-max-width-reading-container">
+<div class="flex items-center gap-space-xs font-code-marginalia text-code-marginalia uppercase text-on-surface-variant tracking-widest pb-space-2xs">
+<span>Corpus Curriculum</span>
+<span>//</span>
+<span class="text-primary font-semibold">Diagnostic Master Map</span>
+</div>
+<h1 class="font-display-hero text-display-hero tracking-tight text-[#f9f8f6] leading-tight font-serif">
+          Syllabus Knowledge Atlas
+        </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant pt-space-xs leading-relaxed">
+          Hierarchical prerequisite lattices across Physics, Chemistry, and Mathematics. Every node tracks empirical diagnostic mastery, decay curves, and active error vectors.
+        </p>
+</div>
+<!-- Tactical Controls -->
+<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-space-xs self-start lg:self-end">
+<div class="relative min-w-[260px]">
+<span class="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-outline text-[18px]">filter_list</span>
+<input class="w-full pl-9 pr-space-sm py-space-xs bg-[#111827] border border-[#1e293b] text-[#f9f8f6] font-body-sm text-body-sm rounded shadow-sm focus:outline-none focus:border-primary/50 placeholder:text-outline" id="atlasSearch" placeholder="Search concepts, error codes (#EB), prerequisites..." type="text"/>
+</div>
+<div class="flex items-center bg-[#111827] border border-[#1e293b] p-space-3xs rounded">
+<button class="filter-btn active px-space-sm py-space-2xs rounded bg-[#17223b] text-primary border border-primary/30 font-label-md text-label-md uppercase tracking-wider transition-all shadow-sm" data-filter="all" type="button">All Disciplines</button>
+<button class="filter-btn px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-[#f9f8f6] font-label-md text-label-md uppercase tracking-wider transition-all" data-filter="physics" type="button">Physics (Adv)</button>
+<button class="filter-btn px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-[#f9f8f6] font-label-md text-label-md uppercase tracking-wider transition-all" data-filter="chemistry" type="button">Chemistry</button>
+<button class="filter-btn px-space-sm py-space-2xs rounded text-on-surface-variant hover:text-[#f9f8f6] font-label-md text-label-md uppercase tracking-wider transition-all" data-filter="math" type="button">Math</button>
+</div>
+</div>
+</div>
+<!-- Diagnostic Metrics Ribbon -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-space-xs bg-[#0c111c] border border-[#1e293b] p-space-xs rounded">
+<div class="bg-[#131b2e] border border-[#1e2b4a] p-space-md rounded flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Total Syllabus Scope</span>
+<span class="material-symbols-outlined text-[18px] text-primary">account_tree</span>
+</div>
+<div class="pt-space-sm">
+<span class="font-headline-md text-headline-md font-semibold text-[#f9f8f6]">208</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant ml-space-2xs">Topics / 3 Stems</span>
+</div>
+</div>
+<div class="bg-[#131b2e] border border-[#1e2b4a] p-space-md rounded flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Verified Mastery</span>
+<span class="material-symbols-outlined text-[18px] text-primary">verified</span>
+</div>
+<div class="pt-space-sm flex items-baseline justify-between">
+<div>
+<span class="font-headline-md text-headline-md font-semibold text-[#f9f8f6]">142</span>
+<span class="font-code-marginalia text-code-marginalia text-primary ml-space-2xs font-semibold">68.4%</span>
+</div>
+<div class="w-16 h-1.5 bg-[#17223b] rounded-full overflow-hidden border border-[#26334d]">
+<div class="bg-primary h-full rounded-full" style="width: 68.4%"></div>
+</div>
+</div>
+</div>
+<div class="bg-[#131b2e] border border-[#1e2b4a] p-space-md rounded flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Active Spaced Probes</span>
+<span class="material-symbols-outlined text-[18px] text-secondary">cycle</span>
+</div>
+<div class="pt-space-sm">
+<span class="font-headline-md text-headline-md font-semibold text-secondary">38</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant ml-space-2xs">In Decay Envelope</span>
+</div>
+</div>
+<div class="bg-[#131b2e] border border-[#1e2b4a] p-space-md rounded flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Active Error Faults</span>
+<span class="material-symbols-outlined text-[18px] text-error">warning</span>
+</div>
+<div class="pt-space-sm">
+<span class="font-headline-md text-headline-md font-semibold text-error">28</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant ml-space-2xs">Pending Error Book</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Interactive Dual-Corridor Workspace -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start">
+<!-- LEFT PANE: Expandable Subject Tree Architecture (5 cols) -->
+<aside class="lg:col-span-5 flex flex-col gap-space-md">
+<div class="flex items-center justify-between px-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-md text-label-md uppercase tracking-widest text-on-surface-variant">Discipline Lattice</span>
+<span class="px-space-2xs py-0.5 rounded bg-[#17223b] border border-primary/30 font-code-marginalia text-code-marginalia font-semibold text-primary">JEE ADVANCED</span>
+</div>
+<button class="font-code-marginalia text-code-marginalia uppercase text-secondary hover:text-primary transition-colors" id="toggleAllChapters" type="button">
+          Expand All Nodes
+        </button>
+</div>
+<!-- Physics Core Tree Container -->
+<div class="bg-[#0c111c] border border-[#1e293b] rounded p-space-sm space-y-space-xs shadow-lg">
+<div class="flex items-center justify-between px-space-xs py-space-2xs bg-[#111827] border border-[#1e293b] rounded">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-secondary">electric_bolt</span>
+<span class="font-title-lg text-title-lg font-semibold text-[#f9f8f6]">Physics: Field &amp; Particle Dynamics</span>
+</div>
+<span class="font-code-marginalia text-code-marginalia text-primary font-medium">32 / 44 Nodes</span>
+</div>
+<!-- Chapter 12: Rotational Mechanics -->
+<div class="chapter-node rounded transition-colors overflow-hidden bg-[#131b2e] border border-[#1e2b4a]">
+<button class="w-full flex items-center justify-between p-space-sm text-left hover:bg-[#17223b] transition-colors chapter-toggle" type="button">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant transition-transform transform rotate-0">chevron_right</span>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm font-medium text-[#f9f8f6] truncate font-serif">Ch. 12: Rotational Mechanics</span>
+<span class="font-code-marginalia text-code-marginalia text-on-surface-variant">Moment of Inertia, Torque Equilibria, Gyroscopic Motion</span>
+</div>
+</div>
+<div class="flex items-center gap-space-2xs flex-shrink-0">
+<span class="px-space-xs py-0.5 rounded bg-[#17223b] border border-[#26334d] text-primary font-label-sm text-label-sm font-semibold">8/8 Full</span>
+<span class="w-2 h-2 rounded-full bg-primary" title="Verified Complete"></span>
+</div>
+</button>
+<div class="chapter-content hidden px-space-md pb-space-sm pt-space-2xs space-y-space-2xs bg-[#0c111c] border-t border-[#1e2b4a]">
+<div class="flex items-center justify-between py-space-2xs pl-space-md text-on-surface-variant font-body-sm text-body-sm">
+<span>12.1 Parallel &amp; Perpendicular Axes Theorems</span>
+<span class="material-symbols-outlined text-primary text-[16px]">check_circle</span>
+</div>
+<div class="flex items-center justify-between py-space-2xs pl-space-md text-on-surface-variant font-body-sm text-body-sm">
+<span>12.2 Angular Momentum &amp; Fixed Axis Precession</span>
+<span class="material-symbols-outlined text-primary text-[16px]">check_circle</span>
+</div>
+<div class="flex items-center justify-between py-space-2xs pl-space-md text-on-surface-variant font-body-sm text-body-sm">
+<span>12.3 Pure Rolling on Stepped Inclines</span>
+<span class="material-symbols-outlined text-primary text-[16px]">check_circle</span>
+</div>
+</div>
+</div>
+<!-- Chapter 13: Gravitation & Orbital Motion -->
+<div class="chapter-node rounded transition-colors overflow-hidden bg-[#131b2e] border border-[#1e2b4a]">
+<button class="w-full flex items-center justify-between p-space-sm text-left hover:bg-[#17223b] transition-colors chapter-toggle" type="button">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant transition-transform transform rotate-0">chevron_right</span>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm font-medium text-[#f9f8f6] truncate font-serif">Ch. 13: Gravitation &amp; Orbital Motion</span>
+<span class="font-code-marginalia text-code-marginalia text-on-surface-variant">Central Forces, Keplerian Orbits, Escape Velocities</span>
+</div>
+</div>
+<div class="flex items-center gap-space-2xs flex-shrink-0">
+<span class="px-space-xs py-0.5 rounded bg-[#17223b] border border-[#26334d] text-primary font-label-sm text-label-sm font-semibold">6/6 Full</span>
+<span class="w-2 h-2 rounded-full bg-primary" title="Verified Complete"></span>
+</div>
+</button>
+<div class="chapter-content hidden px-space-md pb-space-sm pt-space-2xs space-y-space-2xs bg-[#0c111c] border-t border-[#1e2b4a]">
+<div class="flex items-center justify-between py-space-2xs pl-space-md text-on-surface-variant font-body-sm text-body-sm">
+<span>13.1 Gravitational Potential of Extended Shells</span>
+<span class="material-symbols-outlined text-primary text-[16px]">check_circle</span>
+</div>
+<div class="flex items-center justify-between py-space-2xs pl-space-md text-on-surface-variant font-body-sm text-body-sm">
+<span>13.2 Elliptical Orbit Energetics &amp; Eccentricity</span>
+<span class="material-symbols-outlined text-primary text-[16px]">check_circle</span>
+</div>
+</div>
+</div>
+<!-- Chapter 14: Electromagnetic Induction & AC (ACTIVE SELECTION) -->
+<div class="chapter-node rounded bg-[#131b2e] border-2 border-primary/40 shadow-xl overflow-hidden">
+<div class="w-full flex items-center justify-between p-space-sm bg-[#17223b] cursor-pointer chapter-toggle border-b border-[#1e2b4a]">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="material-symbols-outlined text-[18px] text-primary transition-transform transform rotate-90">arrow_drop_down</span>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm font-semibold text-[#f9f8f6] truncate font-serif">Ch. 14: Electromagnetic Induction &amp; AC</span>
+<span class="font-code-marginalia text-code-marginalia text-on-surface-variant">Time-varying fields, eddy fields, mutual coupling</span>
+</div>
+</div>
+<div class="flex items-center gap-space-2xs flex-shrink-0">
+<span class="px-space-xs py-0.5 rounded bg-error-container text-error border border-error/30 font-label-sm text-label-sm font-semibold">2 Faults</span>
+<span class="px-space-xs py-0.5 rounded bg-[#1e2b4a] text-primary font-code-marginalia text-code-marginalia font-medium">6/10</span>
+</div>
+</div>
+<!-- Sub-Topics Active Lattice -->
+<div class="chapter-content p-space-xs space-y-space-2xs bg-[#0c111c]/60">
+<!-- Topic 14.1 -->
+<div class="topic-item p-space-sm rounded hover:bg-[#17223b] border border-[#1e293b] transition-all cursor-pointer flex items-center justify-between bg-[#111827]" data-topic-id="14.1">
+<div class="flex items-start gap-space-xs min-w-0">
+<span class="material-symbols-outlined text-primary text-[18px] mt-0.5">check_circle</span>
+<div class="flex flex-col min-w-0">
+<span class="font-title-lg text-title-lg font-medium text-[#f9f8f6] leading-tight">14.1 Magnetic Flux &amp; Faraday's Law</span>
+<span class="font-code-marginalia text-code-marginalia text-on-surface-variant">Diagnostic Score: 96% · Spaced Retention: Normal</span>
+</div>
+</div>
+<span class="px-space-2xs py-0.5 rounded bg-[#17223b] text-primary border border-primary/30 font-label-sm text-label-sm">Verified</span>
+</div>
+<!-- Topic 14.2 (CRITICAL ERROR NODE) -->
+<div class="topic-item p-space-sm rounded bg-[#17223b] border border-error/50 shadow-[0_0_15px_rgba(244,63,94,0.15)] transition-all cursor-pointer flex items-center justify-between" data-topic-id="14.2">
+<div class="flex items-start gap-space-xs min-w-0">
+<span class="material-symbols-outlined text-error text-[18px] mt-0.5">error_outline</span>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-2xs">
+<span class="font-title-lg text-title-lg font-semibold text-[#f9f8f6] leading-tight">14.2 Lenz's Law &amp; Energy Balance</span>
+<span class="px-space-2xs py-0.5 rounded bg-error-container text-error border border-error/40 font-code-marginalia text-code-marginalia font-bold uppercase">Active Vector</span>
+</div>
+<span class="font-code-marginalia text-code-marginalia text-error font-medium">Requires Retest · Anchored in Error #EB-0421</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px]">chevron_right</span>
+</div>
+<!-- Topic 14.3 -->
+<div class="topic-item p-space-sm rounded hover:bg-[#17223b] border border-[#1e293b] transition-all cursor-pointer flex items-center justify-between bg-[#111827]" data-topic-id="14.3">
+<div class="flex items-start gap-space-xs min-w-0">
+<span class="material-symbols-outlined text-secondary text-[18px] mt-0.5">pending</span>
+<div class="flex flex-col min-w-0">
+<span class="font-title-lg text-title-lg font-medium text-[#f9f8f6] leading-tight">14.3 Motional EMF &amp; Eddy Dissipation</span>
+<span class="font-code-marginalia text-code-marginalia text-on-surface-variant">In Diagnostic Cycle · 2 Probes Attempted</span>
+</div>
+</div>
+<span class="px-space-2xs py-0.5 rounded bg-[#1e2b4a] text-secondary font-label-sm text-label-sm">In Progress</span>
+</div>
+<!-- Topic 14.4 -->
+<div class="topic-item p-space-sm rounded hover:bg-[#17223b] border border-[#1e293b] transition-all cursor-pointer flex items-center justify-between bg-[#111827]" data-topic-id="14.4">
+<div class="flex items-start gap-space-xs min-w-0">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px] mt-0.5">schedule</span>
+<div class="flex flex-col min-w-0">
+<span class="font-title-lg text-title-lg font-medium text-[#f9f8f6] leading-tight">14.4 Self &amp; Mutual Inductance Matrix</span>
+<span class="font-code-marginalia text-code-marginalia text-on-surface-variant">Scheduled for Diagnostic Review Tomorrow</span>
+</div>
+</div>
+<span class="px-space-2xs py-0.5 rounded bg-[#1e2b4a] text-on-surface-variant font-label-sm text-label-sm">Queued</span>
+</div>
+<!-- Topic 14.5 (LOCKED) -->
+<div class="topic-item p-space-sm rounded opacity-50 bg-[#0c111c] border border-[#1e293b]/60 flex items-center justify-between" data-topic-id="14.5">
+<div class="flex items-start gap-space-xs min-w-0">
+<span class="material-symbols-outlined text-outline text-[18px] mt-0.5">lock</span>
+<div class="flex flex-col min-w-0">
+<span class="font-title-lg text-title-lg font-medium text-on-surface-variant leading-tight">14.5 AC Circuits: LCR Resonance &amp; Q-Factor</span>
+<span class="font-code-marginalia text-code-marginalia text-outline">Locked: Gated on Mastery of Node 14.4</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[16px]">lock_clock</span>
+</div>
+</div>
+</div>
+<!-- Chapter 15 Preview -->
+<div class="chapter-node rounded transition-colors overflow-hidden bg-[#131b2e] border border-[#1e2b4a]">
+<button class="w-full flex items-center justify-between p-space-sm text-left hover:bg-[#17223b] transition-colors chapter-toggle" type="button">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant transition-transform transform rotate-0">chevron_right</span>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm font-medium text-[#f9f8f6] truncate font-serif">Ch. 15: Wave Optics &amp; Interference</span>
+<span class="font-code-marginalia text-code-marginalia text-on-surface-variant">Wavefront Coherence, Fresnel Diffraction</span>
+</div>
+</div>
+<div class="flex items-center gap-space-2xs flex-shrink-0">
+<span class="px-space-xs py-0.5 rounded bg-[#17223b] border border-[#26334d] text-on-surface-variant font-label-sm text-label-sm font-semibold">1/7 Started</span>
+</div>
+</button>
+</div>
+</div>
+<!-- Compact Additional Disciplines Ribbon -->
+<div class="p-space-sm bg-[#111827] border border-[#1e293b] rounded flex items-center justify-between text-on-surface-variant">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-[20px] text-secondary">science</span>
+<span class="font-title-lg text-title-lg font-semibold text-[#f9f8f6]">Physical Chemistry</span>
+</div>
+<span class="font-code-marginalia text-code-marginalia text-primary font-medium">54 / 72 Verified</span>
+</div>
+<div class="p-space-sm bg-[#111827] border border-[#1e293b] rounded flex items-center justify-between text-on-surface-variant">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-[20px] text-secondary">calculate</span>
+<span class="font-title-lg text-title-lg font-semibold text-[#f9f8f6]">Mathematics: Advanced Calculus</span>
+</div>
+<span class="font-code-marginalia text-code-marginalia text-primary font-medium">56 / 92 Verified</span>
+</div>
+</aside>
+<!-- RIGHT WORKSPACE: Focused Chapter Workbench (7 cols) -->
+<main class="lg:col-span-7 flex flex-col gap-space-md">
+<!-- Chapter Context Canvas -->
+<section class="bg-[#131b2e] border border-[#1e2b4a] p-space-xl rounded shadow-2xl relative overflow-hidden">
+<!-- Subtle Academic Substrate Watermark -->
+<div class="absolute right-0 top-0 translate-x-8 -translate-y-8 w-64 h-64 bg-gradient-to-bl from-primary/10 via-secondary/5 to-transparent rounded-full pointer-events-none opacity-40"></div>
+<div class="relative z-10">
+<div class="flex flex-wrap items-center justify-between gap-space-xs pb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="px-space-xs py-0.5 rounded bg-primary text-[#1e1603] font-code-marginalia text-code-marginalia uppercase font-bold">CORE CORPUS</span>
+<span class="font-code-marginalia text-code-marginalia text-primary/90 font-medium">CH-14 // REVISION TIER 2</span>
+</div>
+<span class="font-code-marginalia text-code-marginalia text-on-surface-variant">Weight: 8-12% in JEE Paper I/II</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-[#f9f8f6] font-serif tracking-tight leading-tight">
+            Electromagnetic Induction &amp; Alternating Currents
+          </h2>
+<div class="pt-space-sm pb-space-md max-w-max-width-editorial">
+<p class="font-body-lg text-body-lg text-on-surface-variant italic font-serif">
+              "The dynamic generation of circulatory electromotive forces through non-conservative electric field curls, regulated by non-zero flux derivatives across open and closed topological boundaries."
+            </p>
+</div>
+<!-- Tactical Quick Actions -->
+<div class="flex flex-wrap items-center gap-space-xs pt-space-xs">
+<button class="flex items-center gap-space-2xs bg-primary text-[#1e1603] px-space-md py-space-xs rounded font-label-md text-label-md uppercase tracking-wider font-semibold hover:bg-[#fcdfa6] transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[16px]">add_task</span>
+<span>Plan Study Session</span>
+</button>
+<button class="flex items-center gap-space-2xs bg-[#17223b] border border-[#26334d] text-[#f9f8f6] px-space-md py-space-xs rounded font-label-md text-label-md uppercase tracking-wider hover:bg-[#1e2b4a] transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px] text-primary">quiz</span>
+<span>Generate Diagnostic Test</span>
+</button>
+<button class="flex items-center gap-space-2xs bg-error-container border border-error/40 text-error px-space-md py-space-xs rounded font-label-md text-label-md uppercase tracking-wider hover:bg-error-container/80 transition-opacity" type="button">
+<span class="material-symbols-outlined text-[16px]">bug_report</span>
+<span>View 2 Mistakes in Error Book</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Knowledge Lattice Dependency Visualizer -->
+<section class="bg-[#131b2e] border border-[#1e2b4a] p-space-lg rounded shadow-xl flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-md text-label-md uppercase tracking-wider text-primary">Prerequisite &amp; Succession Topology</span>
+<span class="material-symbols-outlined text-[16px] text-outline">help_outline</span>
+</div>
+<span class="font-code-marginalia text-code-marginalia text-on-surface-variant">Strict Axiomatic Ordering</span>
+</div>
+<!-- Architectural Dependency Graph (CSS & SVG integrated) -->
+<div class="p-space-md bg-[#0c111c] border border-[#1e293b] rounded flex flex-col gap-space-md">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-sm relative items-center">
+<!-- Inward Prereq 1 -->
+<div class="p-space-sm rounded bg-[#17223b] border border-[#26334d] shadow-sm flex flex-col justify-between h-full">
+<div class="flex items-center justify-between text-on-surface-variant pb-space-2xs">
+<span class="font-code-marginalia text-code-marginalia uppercase text-secondary font-semibold">Prerequisite 01</span>
+<span class="material-symbols-outlined text-secondary text-[16px]">verified</span>
+</div>
+<div>
+<span class="font-title-lg text-title-lg font-semibold text-[#f9f8f6]">Vector Calculus &amp; Curl</span>
+<p class="font-code-marginalia text-code-marginalia text-on-surface-variant pt-space-3xs">Math Ch. 02 · Stokes' Circulation</p>
+</div>
+<div class="pt-space-xs flex items-center gap-space-3xs text-secondary font-label-sm text-label-sm font-semibold">
+<span>VERIFIED (98%)</span>
+</div>
+</div>
+<!-- Current Node -->
+<div class="p-space-sm rounded bg-gradient-to-b from-[#1e2b4a] to-[#17223b] text-[#f9f8f6] border-2 border-primary/60 shadow-xl flex flex-col justify-between h-full relative z-10">
+<div class="flex items-center justify-between pb-space-2xs text-primary">
+<span class="font-code-marginalia text-code-marginalia uppercase font-semibold text-primary">Current Study Pivot</span>
+<span class="w-2 h-2 rounded-full bg-error animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.8)]"></span>
+</div>
+<div>
+<span class="font-headline-sm text-headline-sm font-serif leading-snug text-[#f9f8f6]">Ch. 14: Induction &amp; AC</span>
+<p class="font-code-marginalia text-code-marginalia text-on-surface-variant pt-space-3xs">Faraday, Lenz, Maxwell-Ampere Bridge</p>
+</div>
+<div class="pt-space-xs flex items-center gap-space-3xs text-error bg-error-container border border-error/40 px-space-xs py-0.5 rounded self-start font-label-sm text-label-sm font-bold">
+<span>REQUIRES FOCUS</span>
+</div>
+</div>
+<!-- Outward Target -->
+<div class="p-space-sm rounded bg-[#111827] border border-[#1e293b] flex flex-col justify-between h-full opacity-70">
+<div class="flex items-center justify-between text-on-surface-variant pb-space-2xs">
+<span class="font-code-marginalia text-code-marginalia uppercase text-outline font-semibold">Unlocks Future</span>
+<span class="material-symbols-outlined text-outline text-[16px]">lock</span>
+</div>
+<div>
+<span class="font-title-lg text-title-lg font-semibold text-[#f9f8f6]">Maxwell's Wave Equations</span>
+<p class="font-code-marginalia text-code-marginalia text-on-surface-variant pt-space-3xs">Physics Ch. 16 · Displacement Current</p>
+</div>
+<div class="pt-space-xs flex items-center gap-space-3xs text-outline font-label-sm text-label-sm">
+<span>LOCKED UNTIL CH.14 COMPLETE</span>
+</div>
+</div>
+</div>
+<!-- Secondary Prerequisite Wire Link -->
+<div class="flex items-center justify-between px-space-sm py-space-xs bg-[#111827] border border-[#1e293b] rounded text-on-surface-variant font-code-marginalia text-code-marginalia">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[16px]">link</span>
+<span>Secondary Lateral Link: <strong class="text-[#f9f8f6]">Ampère’s Circuital Theorem (Ch. 11)</strong></span>
+</div>
+<span class="text-primary font-semibold">Connected &amp; Audited ✓</span>
+</div>
+</div>
+</section>
+<!-- Multi-Vector Diagnostic Evidence Deck -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Error Vectors & Fault Analysis -->
+<section class="bg-[#131b2e] border border-[#1e2b4a] p-space-lg rounded shadow-xl flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-error text-[20px]">warning_amber</span>
+<h3 class="font-title-lg text-title-lg font-semibold text-[#f9f8f6]">Active Error Vectors</h3>
+</div>
+<span class="px-space-xs py-0.5 rounded bg-error-container text-error border border-error/40 font-code-marginalia text-code-marginalia font-bold">2 CRITICAL</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant pb-space-md">
+              Targeted anomalies registered from recent simulated diagnostics. Resolving these unlocks subsequent calculus pathways.
+            </p>
+<div class="space-y-space-xs">
+<!-- Error Item 1 -->
+<div class="p-space-sm rounded bg-[#111827] border border-[#1e293b] flex flex-col gap-space-2xs">
+<div class="flex items-center justify-between">
+<span class="font-code-marginalia text-code-marginalia font-bold text-error">#EB-0421 · CONCEPTUAL SLIP</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Test JEE-M-04</span>
+</div>
+<span class="font-title-lg text-title-lg font-medium text-[#f9f8f6]">Incorrect sign inversion during Motional EMF closed loop integration</span>
+<span class="font-code-marginalia text-code-marginalia text-outline">Lenz's law direction failure with perpendicular field shift</span>
+</div>
+<!-- Error Item 2 -->
+<div class="p-space-sm rounded bg-[#111827] border border-[#1e293b] flex flex-col gap-space-2xs">
+<div class="flex items-center justify-between">
+<span class="font-code-marginalia text-code-marginalia font-bold text-on-surface-variant">#EB-0419 · CALCULATION DRIFT</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Spaced Probe #3</span>
+</div>
+<span class="font-title-lg text-title-lg font-medium text-[#f9f8f6]">Mutual Inductance coefficient factor of 1/2 omitted</span>
+<span class="font-code-marginalia text-code-marginalia text-outline">Concentric coplanar circular rings mutual flux calculation</span>
+</div>
+</div>
+</div>
+<div class="pt-space-md">
+<a class="inline-flex items-center gap-space-2xs text-secondary font-label-md text-label-md uppercase tracking-wider hover:text-primary transition-colors font-semibold" href="#">
+<span>Open Error Book Diagnostic Ledger</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</section>
+<!-- Empirical Performance & Retention Curve -->
+<section class="bg-[#131b2e] border border-[#1e2b4a] p-space-lg rounded shadow-xl flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[20px]">ssid_chart</span>
+<h3 class="font-title-lg text-title-lg font-semibold text-[#f9f8f6]">Diagnostic History</h3>
+</div>
+<span class="font-code-marginalia text-code-marginalia text-primary font-medium">3 Probes Recorded</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant pb-space-sm">
+              Current chapter performance index is at <strong class="text-primary">74.0%</strong>. Next scheduled Ebbinghaus consolidation cycle: in 28 hours.
+            </p>
+<!-- Inline Metric Visualization -->
+<div class="p-space-sm bg-[#0c111c] border border-[#1e293b] rounded space-y-space-sm">
+<div>
+<div class="flex items-center justify-between font-code-marginalia text-code-marginalia text-on-surface-variant pb-space-3xs">
+<span>Diagnostic Battery 01 (Foundational)</span>
+<span class="font-semibold text-[#f9f8f6]">88%</span>
+</div>
+<div class="w-full h-1.5 bg-[#17223b] rounded-full overflow-hidden border border-[#26334d]">
+<div class="bg-primary h-full rounded-full" style="width: 88%"></div>
+</div>
+</div>
+<div>
+<div class="flex items-center justify-between font-code-marginalia text-code-marginalia text-on-surface-variant pb-space-3xs">
+<span>Diagnostic Battery 02 (Calculus &amp; Fluctuation)</span>
+<span class="font-semibold text-error">64%</span>
+</div>
+<div class="w-full h-1.5 bg-[#17223b] rounded-full overflow-hidden border border-[#26334d]">
+<div class="bg-error h-full rounded-full" style="width: 64%"></div>
+</div>
+</div>
+<div>
+<div class="flex items-center justify-between font-code-marginalia text-code-marginalia text-on-surface-variant pb-space-3xs">
+<span>Timed Comprehensive Drill 03</span>
+<span class="font-semibold text-[#f9f8f6]">70%</span>
+</div>
+<div class="w-full h-1.5 bg-[#17223b] rounded-full overflow-hidden border border-[#26334d]">
+<div class="bg-primary h-full rounded-full" style="width: 70%"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-space-md flex items-center justify-between">
+<div class="flex items-center gap-space-2xs text-on-surface-variant font-code-marginalia text-code-marginalia">
+<span class="material-symbols-outlined text-[16px] text-primary">history</span>
+<span>Last Evaluated: 12 Nov, 18:30</span>
+</div>
+<span class="px-space-xs py-0.5 rounded bg-[#17223b] text-primary border border-primary/30 font-label-sm text-label-sm font-semibold">4 Probes Due</span>
+</div>
+</section>
+</div>
+<!-- Scholarly Bibliographic & Formula Compendium Section -->
+<section class="bg-[#131b2e] border border-[#1e2b4a] p-space-lg rounded shadow-xl">
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-primary">menu_book</span>
+<h3 class="font-title-lg text-title-lg font-semibold text-[#f9f8f6]">Standard Formulation Footnotes</h3>
+</div>
+<span class="font-code-marginalia text-code-marginalia text-primary/80 font-medium">Canonical Standard</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-sm pt-space-xs font-code-marginalia text-code-marginalia">
+<div class="p-space-sm bg-[#111827] border border-[#1e293b] rounded space-y-space-3xs">
+<div class="text-primary font-semibold uppercase tracking-wider">Maxwell-Faraday Formulation</div>
+<div class="font-serif text-headline-sm text-headline-sm text-[#f9f8f6] italic py-space-2xs tracking-wide">∮ E · dl = - dΦ_B / dt</div>
+<div class="text-on-surface-variant">Induced electric field has non-zero circulation; conservative potential undefined.</div>
+</div>
+<div class="p-space-sm bg-[#111827] border border-[#1e293b] rounded space-y-space-3xs">
+<div class="text-primary font-semibold uppercase tracking-wider">LCR Quality Factor Factorization</div>
+<div class="font-serif text-headline-sm text-headline-sm text-[#f9f8f6] italic py-space-2xs tracking-wide">Q = (1 / R) · √(L / C)</div>
+<div class="text-on-surface-variant">Sharpness of current resonance curve inversely proportional to resistive damping.</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+</div>
+<script>
+  // Simple interactive accordion and topic switching logic
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggles = document.querySelectorAll('.chapter-toggle');
+    toggles.forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        const parent = toggle.closest('.chapter-node');
+        const content = parent.querySelector('.chapter-content');
+        const icon = toggle.querySelector('.material-symbols-outlined');
+        
+        if (content) {
+          const isHidden = content.classList.contains('hidden');
+          if (isHidden) {
+            content.classList.remove('hidden');
+            if (icon) icon.classList.add('rotate-90');
+          } else {
+            content.classList.add('hidden');
+            if (icon) icon.classList.remove('rotate-90');
+          }
+        }
+      });
+    });
+
+    // Expand all nodes button toggle
+    const toggleAllBtn = document.getElementById('toggleAllChapters');
+    let allExpanded = false;
+    if (toggleAllBtn) {
+      toggleAllBtn.addEventListener('click', () => {
+        const contents = document.querySelectorAll('.chapter-content');
+        const icons = document.querySelectorAll('.chapter-toggle .material-symbols-outlined');
+        allExpanded = !allExpanded;
+
+        contents.forEach(content => {
+          if (allExpanded) {
+            content.classList.remove('hidden');
+          } else {
+            content.classList.add('hidden');
+          }
+        });
+
+        icons.forEach(icon => {
+          if (allExpanded) {
+            icon.classList.add('rotate-90');
+          } else {
+            icon.classList.remove('rotate-90');
+          }
+        });
+
+        toggleAllBtn.textContent = allExpanded ? 'Collapse All Nodes' : 'Expand All Nodes';
+      });
+    }
+
+    // Filter toggle visuals
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => {
+          b.classList.remove('bg-[#17223b]', 'text-primary', 'border', 'border-primary/30', 'shadow-sm');
+          b.classList.add('text-on-surface-variant');
+        });
+        btn.classList.add('bg-[#17223b]', 'text-primary', 'border', 'border-primary/30', 'shadow-sm');
+        btn.classList.remove('text-on-surface-variant');
+      });
+    });
+
+    // Topic selection micro-interaction
+    const topicItems = document.querySelectorAll('.topic-item');
+    topicItems.forEach(topic => {
+      topic.addEventListener('click', () => {
+        topicItems.forEach(t => t.classList.remove('ring-2', 'ring-primary'));
+        topic.classList.add('ring-2', 'ring-primary');
+      });
+    });
+  });
+</script></div></main></div></body></html>

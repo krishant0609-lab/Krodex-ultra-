@@ -1,171 +1,26 @@
-/**
- * KRODEX web — Settings editorial styles.
- *
- * Phase 7.10 visual layer. The settings page is a
- * two-card form: account on the left, study profile on
- * the right. Inputs use the same design tokens as the
- * rest of the app. Save buttons are disabled while a
- * request is in flight.
- *
- * All cosmetic values resolve to design tokens. No raw
- * colors, no hardcoded spacing.
- */
-
-.formGrid {
-  display: grid;
-  /* `min(20rem, 100%)` lets the floor track shrink on narrow
-   * viewports (e.g. 360px) where the formGrid's content box is
-   * smaller than 20rem (320px). Without it, `minmax(20rem, 1fr)`
-   * forces the track to ≥ 320px and the card overflows the
-   * viewport. At any viewport ≥ 320px the inner `100%` resolves
-   * ≥ 320px so the layout is unchanged. */
-  grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
-  gap: var(--kd-space-4);
-}
-
-.card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--kd-space-4);
-  padding: var(--kd-space-5);
-  background: var(--kd-color-surface-raised);
-  border: 1px solid var(--kd-color-border-subtle);
-  border-radius: var(--kd-radius-lg);
-}
-
-.cardHeader {
-  display: flex;
-  flex-direction: column;
-  gap: var(--kd-space-1);
-  padding-bottom: var(--kd-space-3);
-  border-bottom: 1px solid var(--kd-color-border-subtle);
-}
-
-.cardEyebrow {
-  font-size: var(--kd-type-caption-size);
-  line-height: var(--kd-type-caption-leading);
-  font-weight: var(--kd-type-caption-weight);
-  letter-spacing: var(--kd-type-caption-tracking);
-  text-transform: uppercase;
-  color: var(--kd-color-text-tertiary);
-  margin: 0;
-}
-
-.cardHeading {
-  font-size: var(--kd-type-heading-s-size);
-  line-height: var(--kd-type-heading-s-leading);
-  font-weight: var(--kd-type-heading-s-weight);
-  color: var(--kd-color-text-primary);
-  margin: 0;
-}
-
-.cardDescription {
-  font-size: var(--kd-type-body-s-size);
-  line-height: var(--kd-type-body-s-leading);
-  color: var(--kd-color-text-tertiary);
-  margin: 0;
-  max-width: 56ch;
-}
-
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--kd-space-3);
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--kd-space-1);
-}
-
-.fieldLabel {
-  font-size: var(--kd-type-caption-size);
-  line-height: var(--kd-type-caption-leading);
-  font-weight: var(--kd-type-caption-weight);
-  letter-spacing: var(--kd-type-caption-tracking);
-  text-transform: uppercase;
-  color: var(--kd-color-text-tertiary);
-}
-
-.input {
-  font-family: inherit;
-  font-size: var(--kd-type-body-m-size);
-  line-height: var(--kd-type-body-m-leading);
-  color: var(--kd-color-text-primary);
-  background: var(--kd-color-surface-background);
-  border: 1px solid var(--kd-color-border-default);
-  border-radius: var(--kd-radius-md);
-  padding: var(--kd-space-2) var(--kd-space-3);
-  transition: border-color var(--kd-motion-duration-base)
-    var(--kd-motion-ease-standard);
-}
-
-.input:focus-visible {
-  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
-  outline-offset: var(--kd-focus-ring-offset);
-  border-color: var(--kd-color-accent);
-}
-
-.actions {
-  display: flex;
-  align-items: center;
-  gap: var(--kd-space-3);
-  flex-wrap: wrap;
-  margin-top: var(--kd-space-1);
-}
-
-.primaryAction {
-  font-family: inherit;
-  font-size: var(--kd-type-caption-size);
-  line-height: var(--kd-type-caption-leading);
-  font-weight: var(--kd-type-caption-weight);
-  letter-spacing: var(--kd-type-caption-tracking);
-  text-transform: uppercase;
-  color: var(--kd-color-text-inverse);
-  background: var(--kd-color-accent);
-  border: 1px solid var(--kd-color-accent);
-  padding: var(--kd-space-2) var(--kd-space-4);
-  border-radius: var(--kd-radius-md);
-  cursor: pointer;
-  transition: background var(--kd-motion-duration-base)
-    var(--kd-motion-ease-standard);
-}
-
-.primaryAction:hover:not(:disabled) {
-  background: var(--kd-color-accent-strong);
-}
-
-.primaryAction:focus-visible {
-  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
-  outline-offset: var(--kd-focus-ring-offset);
-}
-
-.primaryAction:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.errorMeta {
-  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
-  font-size: var(--kd-type-caption-size);
-  color: var(--kd-color-state-error-fg);
-  margin: 0;
-}
-
-.successMeta {
-  font-size: var(--kd-type-caption-size);
-  line-height: var(--kd-type-caption-leading);
-  font-weight: var(--kd-type-caption-weight);
-  letter-spacing: var(--kd-type-caption-tracking);
-  text-transform: uppercase;
-  color: var(--kd-color-state-success-fg);
-  margin: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .input,
-  .primaryAction {
-    transition: none;
-  }
-}
+.page { display: flex; flex-direction: column; gap: var(--kd-space-6); }
+.header { margin-bottom: var(--kd-space-2); }
+.title { font-family: var(--kd-font-display); font-size: 26px; font-weight: 500; color: var(--kd-text-primary); margin: 0 0 8px; }
+.subtitle { font-family: var(--kd-font-ui); font-size: 14px; color: var(--kd-text-muted); margin: 0; }
+.sections { display: flex; flex-direction: column; gap: var(--kd-space-4); max-width: 640px; }
+.section { display: flex; flex-direction: column; gap: var(--kd-space-4); }
+.sectionTitle { font-family: var(--kd-font-ui); font-size: 13px; font-weight: 500; color: var(--kd-text-secondary); margin: 0; text-transform: uppercase; letter-spacing: 0.06em; }
+.field { display: flex; align-items: center; justify-content: space-between; gap: var(--kd-space-4); }
+.fieldMeta { display: flex; flex-direction: column; gap: 2px; }
+.fieldLabel { font-family: var(--kd-font-ui); font-size: 14px; color: var(--kd-text-primary); }
+.fieldDesc { font-family: var(--kd-font-ui); font-size: 12px; color: var(--kd-text-muted); }
+.toggleGroup { display: flex; gap: 2px; background: var(--kd-ink-3); border-radius: var(--kd-radius-md); padding: 2px; }
+.toggle { padding: var(--kd-space-2) var(--kd-space-3); border-radius: calc(var(--kd-radius-md) - 2px); font-family: var(--kd-font-ui); font-size: 12px; color: var(--kd-text-muted); background: none; border: none; cursor: pointer; transition: all var(--kd-transition-fast); }
+.toggleActive { background: var(--kd-ink-4); color: var(--kd-text-primary); }
+.switch { width: 44px; height: 24px; border-radius: 12px; background: var(--kd-ink-4); border: none; cursor: pointer; position: relative; transition: background var(--kd-transition-fast); flex-shrink: 0; }
+.switchOn { background: var(--kd-sapphire); }
+.switchThumb { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--kd-text-disabled); transition: all var(--kd-transition-fast); }
+.switchOn .switchThumb { left: 23px; background: white; }
+.accountInfo { display: flex; align-items: center; gap: var(--kd-space-3); }
+.avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--kd-sapphire); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.avatarInitial { font-family: var(--kd-font-display); font-size: 18px; font-weight: 500; color: white; }
+.accountName { font-family: var(--kd-font-ui); font-size: 14px; color: var(--kd-text-primary); margin: 0; }
+.accountMeta { font-family: var(--kd-font-mono); font-size: 11px; color: var(--kd-text-disabled); margin: 2px 0 0; }
+.actions { display: flex; gap: var(--kd-space-3); }
+.dangerBtn { padding: var(--kd-space-2) var(--kd-space-4); background: none; border: 1px solid var(--kd-crimson); border-radius: var(--kd-radius-md); font-family: var(--kd-font-ui); font-size: 13px; color: var(--kd-crimson); cursor: pointer; transition: all var(--kd-transition-fast); }
+.dangerBtn:hover { background: var(--kd-crimson); color: white; }

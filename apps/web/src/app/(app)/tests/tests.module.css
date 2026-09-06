@@ -1,84 +1,10 @@
-/**
- * KRODEX web — tests editorial styles.
- *
- * Phase 7.6 visual layer. The tests page is a quiet list of test
- * definition cards. Each card is a deep link to the test detail view.
- *
- * All cosmetic values resolve to design tokens. No raw colors, no
- * hardcoded spacing.
- */
-
-.testList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.testItem {
-  border-bottom: 1px solid var(--kd-color-border-subtle);
-}
-
-.testItem:last-child {
-  border-bottom: 0;
-}
-
-.testRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--kd-space-3);
-  align-items: center;
-  padding: var(--kd-space-4) 0;
-  text-decoration: none;
-  color: inherit;
-  transition: color var(--kd-motion-duration-base)
-    var(--kd-motion-ease-standard);
-}
-
-.testRow:hover {
-  color: var(--kd-color-text-link);
-}
-
-.testRow:focus-visible {
-  outline: var(--kd-border-width-thick) solid var(--kd-color-border-focus);
-  outline-offset: var(--kd-focus-ring-offset);
-  border-radius: var(--kd-radius-sm);
-}
-
-.testTitle {
-  font-size: var(--kd-type-body-l-size);
-  line-height: var(--kd-type-body-l-leading);
-  font-weight: var(--kd-type-body-m-weight);
-  color: var(--kd-color-text-primary);
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.testMeta {
-  display: flex;
-  align-items: center;
-  gap: var(--kd-space-2);
-  flex-shrink: 0;
-  flex-wrap: wrap;
-}
-
-.testCount {
-  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
-  font-size: var(--kd-type-caption-size);
-  color: var(--kd-color-text-tertiary);
-}
-
-.testErrorMeta {
-  font-family: var(--kd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
-  font-size: var(--kd-type-caption-size);
-  color: var(--kd-color-state-error-fg);
-  margin: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .testRow {
-    transition: none;
-  }
-}
+.page { display: flex; flex-direction: column; gap: var(--kd-space-6); }
+.header { margin-bottom: var(--kd-space-2); }
+.title { font-family: var(--kd-font-display); font-size: 26px; font-weight: 500; color: var(--kd-text-primary); margin: 0 0 8px; }
+.subtitle { font-family: var(--kd-font-ui); font-size: 14px; color: var(--kd-text-muted); margin: 0; }
+.probes { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--kd-space-4); }
+.probe { display: flex; flex-direction: column; gap: var(--kd-space-3); }
+.probeHead { display: flex; align-items: center; gap: var(--kd-space-3); }
+.probeId { font-family: var(--kd-font-mono); font-size: 12px; color: var(--kd-champagne); }
+.probeFocus { font-family: var(--kd-font-ui); font-size: 14px; font-weight: 500; color: var(--kd-text-primary); }
+.probeMeta { font-family: var(--kd-font-mono); font-size: 11px; color: var(--kd-text-muted); }

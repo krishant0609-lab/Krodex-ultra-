@@ -1,42 +1,20 @@
-/**
- * KRODEX web — Spinner primitive.
- *
- * Border-based circular spinner. Inherits color from the
- * surrounding text. Honors prefers-reduced-motion.
- */
-
 .spinner {
   display: inline-block;
-  border: 2px solid currentColor;
-  border-top-color: transparent;
-  border-radius: var(--kd-radius-full);
-  animation: spin var(--kd-motion-duration-slow) linear infinite;
-  color: var(--kd-color-text-secondary);
+  border-radius: 50%;
+  animation: kd-spin 0.75s linear infinite;
 }
 
-.sizeSm {
-  width: 0.875rem;
-  height: 0.875rem;
-  border-width: 1.5px;
-}
-.sizeMd {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-.sizeLg {
-  width: 2rem;
-  height: 2rem;
-  border-width: 3px;
-}
+/* Sizes */
+.sm  { width: 14px; height: 14px; border-width: 2px; }
+.md  { width: 20px; height: 20px; border-width: 2.5px; }
+.lg  { width: 32px; height: 32px; border-width: 3px; }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+/* Colors */
+.champagne { border-color: rgba(230,204,160,0.2); border-top-color: var(--kd-champagne); }
+.sapphire  { border-color: rgba(56,189,248,0.2);  border-top-color: var(--kd-sapphire); }
+.lavender  { border-color: rgba(162,155,254,0.2); border-top-color: var(--kd-lavender); }
+.white     { border-color: rgba(255,255,255,0.2); border-top-color: #fff; }
 
-@media (prefers-reduced-motion: reduce) {
-  .spinner {
-    animation: none;
-  }
+@keyframes kd-spin {
+  to { transform: rotate(360deg); }
 }

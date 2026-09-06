@@ -1,0 +1,29 @@
+.page { display: flex; flex-direction: column; gap: var(--kd-space-6); }
+.header { margin-bottom: var(--kd-space-2); }
+.title { font-family: var(--kd-font-display); font-size: 26px; font-weight: 500; color: var(--kd-text-primary); margin: 0 0 8px; }
+.subtitle { font-family: var(--kd-font-ui); font-size: 14px; color: var(--kd-text-muted); margin: 0; }
+.sections { display: flex; flex-direction: column; gap: var(--kd-space-4); max-width: 640px; }
+.section { display: flex; flex-direction: column; gap: var(--kd-space-4); }
+.sectionTitle { font-family: var(--kd-font-ui); font-size: 13px; font-weight: 500; color: var(--kd-text-secondary); margin: 0; text-transform: uppercase; letter-spacing: 0.06em; }
+.modelPicker { display: flex; flex-direction: column; gap: var(--kd-space-2); }
+.modelOption { display: flex; align-items: center; gap: var(--kd-space-3); padding: var(--kd-space-3) var(--kd-space-4); background: var(--kd-ink-2); border: 1px solid var(--kd-ink-3); border-radius: var(--kd-radius-md); cursor: pointer; text-align: left; transition: all var(--kd-transition-fast); }
+.modelSelected { border-color: var(--kd-sapphire); background: var(--kd-ink-3); }
+.modelRadio { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--kd-text-disabled); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.modelSelected .modelRadio { border-color: var(--kd-sapphire); }
+.modelRadioDot { width: 8px; height: 8px; border-radius: 50%; background: var(--kd-sapphire); }
+.modelName { font-family: var(--kd-font-ui); font-size: 13px; font-weight: 500; color: var(--kd-text-primary); margin: 0; }
+.modelDesc { font-family: var(--kd-font-ui); font-size: 12px; color: var(--kd-text-muted); margin: 2px 0 0; }
+.fields { display: flex; flex-direction: column; gap: var(--kd-space-5); }
+.field { display: flex; flex-direction: column; gap: var(--kd-space-2); }
+.fieldMeta { display: flex; align-items: center; justify-content: space-between; }
+.fieldLabel { font-family: var(--kd-font-ui); font-size: 14px; color: var(--kd-text-primary); }
+.fieldValue { font-family: var(--kd-font-mono); font-size: 13px; color: var(--kd-sapphire); }
+.fieldDesc { font-family: var(--kd-font-ui); font-size: 12px; color: var(--kd-text-disabled); margin: 0; }
+.slider { width: 100%; height: 4px; appearance: none; background: var(--kd-ink-4); border-radius: 2px; outline: none; cursor: pointer; }
+.slider::-webkit-slider-thumb { appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--kd-sapphire); cursor: pointer; }
+.textarea { width: 100%; background: var(--kd-ink-2); border: 1px solid var(--kd-ink-4); border-radius: var(--kd-radius-md); padding: var(--kd-space-3); font-family: var(--kd-font-mono); font-size: 12px; color: var(--kd-text-primary); resize: vertical; outline: none; box-sizing: border-box; line-height: 1.6; }
+.textarea:focus { border-color: var(--kd-sapphire); }
+.charCount { font-family: var(--kd-font-mono); font-size: 11px; color: var(--kd-text-disabled); text-align: right; margin: 0; }
+.actions { display: flex; justify-content: flex-end; }
+.saveBtn { padding: var(--kd-space-3) var(--kd-space-6); background: var(--kd-sapphire); border: none; border-radius: var(--kd-radius-md); font-family: var(--kd-font-ui); font-size: 14px; font-weight: 500; color: white; cursor: pointer; transition: opacity var(--kd-transition-fast); }
+.saveBtn:hover { opacity: 0.85; }

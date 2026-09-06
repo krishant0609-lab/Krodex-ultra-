@@ -1,85 +1,58 @@
 'use client';
-
-/**
- * KRODEX web — syllabus index.
- *
- * Phase 7.5 editorial layout. Subjects are surfaced as a single
- * column of cards; each card resolves its own topic list via
- * `useTopics({ subject_id })`. We do not pre-fetch all topics
- * upfront — the per-subject query is cached by queryKeys.topics()
- * so navigating into a subject is instant.
- *
- * No fake data. Empty subjects render a calm dashed band, not a
- * spinner or a fabricated "0 topics" populated state.
- */
-
-import { useMemo } from 'react';
-import { PageShell } from '../../../components/page-shell';
-import { useSubjects } from '../../../hooks/use-syllabus';
-import { SubjectGroup } from './syllabus-tree';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Surface } from '../../../components/surface';
+import { Badge } from '../../../components/badge';
 import styles from './syllabus.module.css';
 
-export default function SyllabusPage(): JSX.Element {
-  const subjects = useSubjects();
-  const items = subjects.data ?? [];
+const TOPICS = [
+  { id: 'T-01', name: 'Classical Mechanics', progress: 78, prerequisites: [], status: 'active' },
+  { id: 'T-02', name: 'Electromagnetism', progress: 54, prerequisites: ['T-01'], status: 'active' },
+  { id: 'T-03', name: 'Thermodynamics', progress: 91, prerequisites: ['T-01'], status: 'mastered' },
+  { id: 'T-04', name: 'Wave Mechanics', progress: 32, prerequisites: ['T-02'], status: 'gapped' },
+  { id: 'T-05', name: 'Quantum Foundations', progress: 18, prerequisites: ['T-02', 'T-03'], status: 'locked' },
+];
 
-  const sorted = useMemo(
-    () =>
-      [...items].sort((a, b) => {
-        const ao = a.display_order;
-        const bo = b.display_order;
-        if (ao !== bo) return ao - bo;
-        return a.name.localeCompare(b.name);
-      }),
-    [items],
-  );
-
-  const totalSubjects = sorted.length;
-  const activeSubjects = sorted.filter((s) => s.is_active).length;
-  const subtitle = useMemo(() => {
-    if (totalSubjects === 0) {
-      return 'The syllabus is empty. Subjects appear here once they are published.';
-    }
-    if (totalSubjects === 1) {
-      return 'One subject is available. Open it to see its topics.';
-    }
-    return `${totalSubjects} subjects available${
-      activeSubjects !== totalSubjects ? ` · ${activeSubjects} active` : ''
-    }. Open a subject to see its topics.`;
-  }, [totalSubjects, activeSubjects]);
-
+export default function SyllabusPage() {
   return (
-    <PageShell
-      title="Syllabus"
-      eyebrow="Curriculum"
-      isLoading={subjects.isLoading}
-      isError={subjects.isError}
-      error={subjects.error}
-      isEmpty={!subjects.isLoading && totalSubjects === 0}
-      emptyTitle="No subjects published"
-      emptyMessage="The curriculum has not been published yet. Check back after the next syllabus update."
-    >
-      <div className={styles.page}>
-        <header className={styles.heroStrip}>
-          <div className={styles.heroDate}>
-            <p className={styles.heroEyebrow}>Syllabus</p>
-            <h1 className={styles.heroTitle}>Subjects &amp; topics</h1>
-            <p className={styles.heroSubtitle}>{subtitle}</p>
-          </div>
-        </header>
-
-        <div data-testid="syllabus-tree" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--kd-space-10)' }}>
-          {sorted.map((subject) => (
-            <SubjectGroup
-              key={subject.id}
-              subjectId={subject.id}
-              subjectCode={subject.code}
-              subjectName={subject.name}
-              isActive={subject.is_active}
-            />
-          ))}
-        </div>
+    <div className={styles.page}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Syllabus Architecture</h1>
+        <p className={styles.subtitle}>Living topic hierarchy — mastery depth mapped in real-time</p>
       </div>
-    </PageShell>
+      <div className={styles.topics}>
+        {/* eslint-disable-next-line react-hooks/exhaustive-deps */}
+        {TOPICS.map((t) => (
+          <Surface key={t.id} variant="ink" className={styles.topic} padding="md">
+            <div className={styles.topicHead}>
+              <span className={styles.topicId}>{t.id}</span>
+              <span className={styles.topicName}>{t.name}</span>
+              <Badge variant={t.status === 'mastered' ? 'emerald' : t.status === 'gapped' ? 'amber' : t.status === 'locked' ? 'slate' : 'sapphire'}>
+                {t.status}
+              </Badge>
+            </div>
+            <div className={styles.progress}>
+              <div className={styles.progressBar}>
+                <motion.div
+                  className={styles.progressFill}
+                  initial={{ width: 0 }}
+                  animate={{ width: t.progress + '%' }}
+                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                />
+              </div>
+              <span className={styles.progressLabel}>{t.progress}%</span>
+            </div>
+            {t.prerequisites.length > 0 && (
+              <div className={styles.prereqs}>
+                <span className={styles.prereqLabel}>Requires:</span>
+                {t.prerequisites.map((p) => (
+                  <Badge key={p} variant="slate">{p}</Badge>
+                ))}
+              </div>
+            )}
+          </Surface>
+        ))}
+      </div>
+    </div>
   );
 }

@@ -1,82 +1,73 @@
-/**
- * KRODEX web — root error boundary.
- *
- * Next.js 14 App Router error boundary. Catches unhandled
- * exceptions in any descendant route segment and renders a
- * branded recovery page instead of a blank screen.
- *
- * The boundary is intentionally minimal: a clear title, a
- * one-line description, the error message (when safe to
- * show), and a "Try again" button that calls reset(). The
- * recovery path is the same as a hard refresh from the
- * user's perspective.
- *
- * No fake content. No fabricated recovery. If the user
- * cannot recover with reset, the link back to /login is
- * the honest fallback.
- */
-
 'use client';
+import React from 'react';
 
-import { useEffect } from 'react';
-import Link from 'next/link';
-import styles from './error.module.css';
-
-export interface ErrorProps {
+export default function ErrorPage({
+  error,
+  reset,
+}: {
   error: Error & { digest?: string };
   reset: () => void;
-}
-
-export default function GlobalError({ error, reset }: ErrorProps): JSX.Element {
-  useEffect(() => {
-    // Server-side: log the full error to the structured logger.
-    // Client-side: this surfaces in the browser console.
-    if (typeof console !== 'undefined') {
-      console.error('[krodex.error_boundary]', {
-        message: error.message,
-        digest: error.digest,
-        stack: error.stack,
-      });
-    }
-  }, [error]);
-
+}) {
   return (
-    <main className={styles.root} data-testid="error-boundary">
-      <section className={styles.card} role="alert">
-        <span className={styles.accent} aria-hidden="true" />
-        <p className={styles.eyebrow}>Something went wrong</p>
-        <h1 className={styles.title}>We hit an unexpected error</h1>
-        <p className={styles.description}>
-          KRODEX caught an unhandled exception while rendering this page.
-          Your work is safe — this is a render-time error, not a data error.
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        gap: '24px',
+        fontFamily: 'var(--kd-font-ui)',
+        color: 'var(--kd-text-primary)',
+        background: 'var(--kd-ink-1)',
+        padding: '40px',
+        textAlign: 'center',
+      }}
+    >
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" stroke="var(--kd-crimson)" strokeWidth="1.5" />
+        <path d="M24 14v12M24 32v2" stroke="var(--kd-crimson)" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+      <div>
+        <h1 style={{ fontFamily: 'var(--kd-font-display)', fontSize: '22px', fontWeight: 500, margin: '0 0 8px', color: 'var(--kd-text-primary)' }}>
+          Something went wrong
+        </h1>
+        <p style={{ fontSize: '14px', color: 'var(--kd-text-muted)', margin: 0 }}>
+          {error?.message ?? 'An unexpected error occurred'}
         </p>
-        {error.message ? (
-          <pre className={styles.message} data-testid="error-message">
-            {error.message}
-          </pre>
-        ) : null}
-        {error.digest ? (
-          <p className={styles.digest}>
-            <span className={styles.digestLabel}>Reference</span>
-            <code>{error.digest}</code>
-          </p>
-        ) : null}
-        <div className={styles.actions}>
-          <button
-            type="button"
-            className={styles.primary}
-            onClick={(): void => {
-              reset();
-            }}
-            data-testid="error-reset"
-          >
-            Try again
-          </button>
-          <Link href="/login" className={styles.secondary} data-testid="error-signin">
-            Back to sign in
-          </Link>
-        </div>
-      </section>
-    </main>
+      </div>
+      <div style={{ display: 'flex', gap: '12px' }}>
+        <button
+          onClick={reset}
+          style={{
+            padding: '10px 20px',
+            background: 'var(--kd-sapphire)',
+            border: 'none',
+            borderRadius: 'var(--kd-radius-md)',
+            color: 'white',
+            fontFamily: 'var(--kd-font-ui)',
+            fontSize: '14px',
+            cursor: 'pointer',
+          }}
+        >
+          Try again
+        </button>
+        <a
+          href="/login"
+          style={{
+            padding: '10px 20px',
+            background: 'none',
+            border: '1px solid var(--kd-ink-4)',
+            borderRadius: 'var(--kd-radius-md)',
+            color: 'var(--kd-text-secondary)',
+            fontFamily: 'var(--kd-font-ui)',
+            fontSize: '14px',
+            textDecoration: 'none',
+          }}
+        >
+          Back to login
+        </a>
+      </div>
+    </div>
   );
 }

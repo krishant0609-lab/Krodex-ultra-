@@ -35,8 +35,8 @@ import {
 export type ThemeMode = 'light' | 'dark';
 type ThemePreference = ThemeMode | 'system';
 
-const STORAGE_KEY = 'kd-theme';
-const PREF_KEY = 'kd-theme-pref';
+const _STORAGE_KEY = 'kd-theme';
+const _PREF_KEY = 'kd-theme-pref';
 
 interface ThemeContextValue {
   /** What the user has chosen ("system" means follow OS pref). */
@@ -51,7 +51,7 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function readStoredPreference(): ThemePreference {
   if (typeof window === 'undefined') return 'system';
-  const v = window.localStorage.getItem(PREF_KEY);
+  const v = window.localStorage.getItem(_PREF_KEY);
   if (v === 'light' || v === 'dark' || v === 'system') return v;
   return 'system';
 }
@@ -85,7 +85,7 @@ export function ThemeProvider({ children }: { children: ReactNode }): JSX.Elemen
   const setPreference = useCallback((next: ThemePreference) => {
     setPreferenceState(next);
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem(PREF_KEY, next);
+      window.localStorage.setItem(_PREF_KEY, next);
     }
     const mode = next === 'system' ? resolveSystemMode() : next;
     setResolved(mode);

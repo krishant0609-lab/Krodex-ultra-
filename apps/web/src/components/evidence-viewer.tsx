@@ -82,6 +82,7 @@ export function EvidenceViewer({
   if (snapshot && !imageFailed) {
     return (
       <div className={cls([styles.viewer, className])} data-testid="evidence-viewer-image">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={snapshot.url}
           alt="Evidence snapshot"

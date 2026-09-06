@@ -172,7 +172,7 @@ function LoginPageInner(): JSX.Element {
   ] as const;
 
   const config = lampStates[stage] ?? lampStates[0]!;
-  const lampIsOn = stage >= 2;
+  const _lampIsOn = stage >= 2;
   const formVisible = stage >= 2;
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {

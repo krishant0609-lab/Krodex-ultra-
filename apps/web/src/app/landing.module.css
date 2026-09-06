@@ -1,9 +1,8 @@
 /**
  * KRODEX web — landing page styles.
  *
- * Premium animated marketing page: sticky nav, hero, feature grid,
- * connected-diagram, principles, CTA, footer.
- * All values resolve to --kd-* design tokens.
+ * Design tokens + static layout only. All animations are handled by
+ * Motion Framer in page.tsx. No CSS keyframes, no animation classes.
  */
 
 /* ─── Page root ─────────────────────────────────────────── */
@@ -108,7 +107,6 @@
   padding: 8rem 2rem 6rem;
   overflow: hidden;
 }
-
 .heroBg {
   position: absolute;
   inset: 0;
@@ -123,7 +121,6 @@
   background: radial-gradient(circle, rgba(110, 95, 179, 0.18) 0%, transparent 70%);
   top: -100px;
   left: -200px;
-  animation: orbFloat1 12s ease-in-out infinite;
 }
 .heroBgOrb2 {
   position: absolute;
@@ -133,7 +130,6 @@
   background: radial-gradient(circle, rgba(212, 137, 10, 0.12) 0%, transparent 70%);
   bottom: -50px;
   right: -100px;
-  animation: orbFloat2 16s ease-in-out infinite;
 }
 .heroBgGrid {
   position: absolute;
@@ -144,44 +140,12 @@
   background-size: 60px 60px;
   mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
 }
-
-@keyframes orbFloat1 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(40px, 30px) scale(1.05); }
-  66% { transform: translate(-20px, 50px) scale(0.97); }
-}
-@keyframes orbFloat2 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  40% { transform: translate(-50px, -30px) scale(1.08); }
-  70% { transform: translate(30px, -40px) scale(0.95); }
-}
-
 .heroContent {
   position: relative;
   z-index: 1;
   text-align: center;
   max-width: 780px;
 }
-
-/* Staggered entrance animation */
-.heroBadge,
-.heroTitle,
-.heroSubtitle,
-.heroCtas,
-.heroMeta {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 600ms ease, transform 600ms ease;
-}
-.heroBadge[data-inview='true'],
-.heroTitle[data-inview='true'],
-.heroSubtitle[data-inview='true'],
-.heroCtas[data-inview='true'],
-.heroMeta[data-inview='true'] {
-  opacity: 1;
-  transform: translateY(0);
-}
-
 .heroBadge {
   display: inline-flex;
   align-items: center;
@@ -201,13 +165,7 @@
   height: 6px;
   border-radius: 50%;
   background: var(--kd-color-accent-lavender, #6e5fb3);
-  animation: pulse 2s ease-in-out infinite;
 }
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.8); }
-}
-
 .heroTitle {
   font-size: clamp(2.8rem, 7vw, 5.5rem);
   font-weight: 700;
@@ -222,7 +180,6 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-
 .heroSubtitle {
   font-size: clamp(1rem, 2vw, 1.2rem);
   line-height: 1.75;
@@ -232,7 +189,6 @@
   margin-left: auto;
   margin-right: auto;
 }
-
 .heroCtas {
   display: flex;
   flex-wrap: wrap;
@@ -240,7 +196,6 @@
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
-
 .heroMeta {
   font-size: 0.8rem;
   color: rgba(240, 237, 232, 0.3);
@@ -252,7 +207,6 @@
   max-width: 1200px;
   margin: 0 auto;
 }
-
 .featureGrid {
   list-style: none;
   margin: 0;
@@ -267,7 +221,6 @@
 @media (max-width: 580px) {
   .featureGrid { grid-template-columns: 1fr; }
 }
-
 .featureCard {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.06);
@@ -277,16 +230,14 @@
   flex-direction: column;
   gap: 0.75rem;
   cursor: default;
-  /* Scroll-in animation */
-  opacity: 0;
-  transform: translateY(32px);
-  transition: opacity 500ms ease, transform 500ms ease, background 200ms ease, border-color 200ms ease;
+  position: relative;
+  overflow: hidden;
+  transition: background 200ms ease, border-color 200ms ease;
 }
-.featureCard[data-inview='true'] {
-  opacity: 1;
-  transform: translateY(0);
+.featureCard:hover {
+  background: rgba(255,255,255,0.055);
+  border-color: rgba(255,255,255,0.1);
 }
-/* Left accent bar */
 .featureCard::before {
   content: '';
   position: absolute;
@@ -294,19 +245,7 @@
   width: 3px;
   border-radius: 3px 0 0 3px;
   background: var(--node-color, #6e5fb3);
-  opacity: 0;
-  transition: opacity 300ms ease;
 }
-.featureCard {
-  position: relative;
-  overflow: hidden;
-}
-.featureCard:hover {
-  background: rgba(255,255,255,0.055);
-  border-color: rgba(255,255,255,0.1);
-}
-.featureCard:hover::before { opacity: 1; }
-
 .featureIcon {
   width: 52px;
   height: 52px;
@@ -322,7 +261,6 @@
 .featureIcon[data-accent='lavender']{ background: rgba(110, 95, 179, 0.15); color: #a891ff; }
 .featureIcon[data-accent='rose']    { background: rgba(192, 82, 106, 0.15); color: #c0526a; }
 .featureIcon[data-accent='champagne']{ background: rgba(184, 150, 13, 0.15); color: #d4b832; }
-
 .featureTitle {
   font-size: 1.05rem;
   font-weight: 600;
@@ -344,7 +282,6 @@
   border-bottom: 1px solid rgba(255,255,255,0.04);
 }
 .diagram .sectionHeader { margin-bottom: 4rem; }
-
 .diagramCanvas {
   max-width: 900px;
   margin: 0 auto;
@@ -354,27 +291,9 @@
   align-items: center;
   justify-content: center;
 }
-
 .busNode {
   position: absolute;
-  opacity: 0;
-  transform: scale(0.7);
-  transition: opacity 500ms ease, transform 500ms ease;
 }
-.busNode[data-inview='true'] {
-  opacity: 1;
-  transform: scale(1);
-}
-/* Clock positions: 0=top, 1=upper-right, 2=lower-right, 3=bottom, 4=lower-left, 5=upper-left */
-.busNode:nth-child(1) { top: 0; left: 50%; transform: translateX(-50%) scale(0.7); }
-.busNode:nth-child(1)[data-inview='true'] { transform: translateX(-50%) scale(1); }
-.busNode:nth-child(2) { top: 22%; right: 5%; }
-.busNode:nth-child(3) { bottom: 22%; right: 5%; }
-.busNode:nth-child(4) { bottom: 0; left: 50%; transform: translateX(-50%) scale(0.7); }
-.busNode:nth-child(4)[data-inview='true'] { transform: translateX(-50%) scale(1); }
-.busNode:nth-child(5) { bottom: 22%; left: 5%; }
-.busNode:nth-child(6) { top: 22%; left: 5%; }
-
 .busNodeInner {
   background: rgba(255,255,255,0.04);
   border: 1.5px solid var(--node-color, rgba(255,255,255,0.1));
@@ -382,12 +301,10 @@
   padding: 1rem 1.25rem;
   text-align: center;
   min-width: 120px;
-  transition: background 200ms ease, box-shadow 200ms ease;
-  box-shadow: 0 0 0 0 var(--node-color, transparent);
+  transition: background 200ms ease;
 }
 .busNodeInner:hover {
   background: rgba(255,255,255,0.07);
-  box-shadow: 0 0 24px rgba(var(--node-color, 255,255,255), 0.2);
 }
 .busNodeLabel {
   display: block;
@@ -402,7 +319,6 @@
   color: rgba(240,237,232,0.4);
   font-weight: 400;
 }
-
 .busCenter {
   position: absolute;
   top: 50%;
@@ -417,37 +333,25 @@
   font-weight: 600;
   line-height: 1.3;
   text-align: center;
-  opacity: 0;
-  transition: opacity 600ms ease 400ms;
 }
-.busCenter[data-inview='true'] { opacity: 1; }
-
-/* Lines from center to each node */
 .busLine {
   position: absolute;
   top: 50%;
   left: 50%;
   width: 1px;
-  height: 0;
   background: linear-gradient(to, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
   transform-origin: top center;
-  opacity: 0;
-  transition: opacity 600ms ease, height 600ms ease;
 }
-.busLine[data-inview='true'] { opacity: 1; }
 .busLine0 { transform: translate(-50%, 0) rotate(0deg); }
 .busLine1 { transform: translate(-50%, 0) rotate(60deg); }
 .busLine2 { transform: translate(-50%, 0) rotate(120deg); }
 .busLine3 { transform: translate(-50%, 0) rotate(180deg); }
 .busLine4 { transform: translate(-50%, 0) rotate(240deg); }
 .busLine5 { transform: translate(-50%, 0) rotate(300deg); }
-.busLine[data-inview='true'] { height: 160px; }
-
 @media (max-width: 640px) {
   .diagramCanvas { height: auto; flex-wrap: wrap; gap: 1rem; }
   .busLine, .busCenter { display: none; }
   .busNode { position: relative !important; transform: scale(0.9) !important; }
-  .busNode[data-inview='true'] { transform: scale(1) !important; }
 }
 
 /* ─── Principles ────────────────────────────────────────── */
@@ -467,7 +371,6 @@
 @media (max-width: 640px) {
   .principlesGrid { grid-template-columns: 1fr; }
 }
-
 .principleCard {
   display: flex;
   gap: 1.25rem;
@@ -476,13 +379,9 @@
   border: 1px solid rgba(255,255,255,0.05);
   border-radius: 16px;
   padding: 1.5rem;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 500ms ease, transform 500ms ease, background 200ms ease;
+  transition: background 200ms ease;
 }
-.principleCard[data-inview='true'] { opacity: 1; transform: translateY(0); }
 .principleCard:hover { background: rgba(255,255,255,0.04); }
-
 .principleIcon {
   width: 44px;
   height: 44px;
@@ -524,11 +423,7 @@
   padding: 4rem 3rem;
   position: relative;
   overflow: hidden;
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 600ms ease, transform 600ms ease;
 }
-.ctaCard[data-inview='true'] { opacity: 1; transform: translateY(0); }
 .ctaCard::before {
   content: '';
   position: absolute;

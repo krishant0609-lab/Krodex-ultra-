@@ -4,22 +4,53 @@
  * Premium animated marketing page for unauthenticated visitors.
  * Authenticated users are redirected to /dashboard.
  *
- * Design rules:
- *  - No fake metrics, no fabricated progress.
- *  - All values shown are derived from real hooks (none on this
- *    surface — it is the unauthenticated entry point).
- *  - All visual values use --kd-* design tokens.
+ * All animations use Motion Framer — no CSS keyframes.
  */
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { motion, Variants } from 'framer-motion';
 import { isAuthenticated } from '../lib/auth-store';
 import { PageShell } from '../components/page-shell';
 import { Button } from '../components/button';
 import styles from './landing.module.css';
+
+/* ─── Reusable variants ─────────────────────────────────── */
+const FADE_UP: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0 },
+};
+
+const STAGGER_CONTAINER: Variants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.08 },
+  },
+};
+
+const FADE_SCALE: Variants = {
+  hidden: { opacity: 0, scale: 0.92 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] } },
+};
+
+/* ─── Orb float variants (driven by custom props) ─────────── */
+const ORB_FLOAT = (delay: number, dx: number, dy: number, ds: number): Variants => ({
+  hidden: { x: 0, y: 0, scale: 1 },
+  visible: {
+    x: [0, dx * 0.6, -dx * 0.4, dx * 0.3, 0],
+    y: [0, dy * 0.5, dy * 0.8, dy * 0.3, 0],
+    scale: [1, 1 + ds * 0.05, 1 - ds * 0.03, 1],
+    transition: {
+      duration: 14 + delay,
+      delay,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    },
+  },
+});
 
 /* ─── Feature data ─────────────────────────────────────────── */
 const FEATURES = [
@@ -34,7 +65,6 @@ const FEATURES = [
     title: 'Syllabus tree',
     description: 'A hierarchical map of every unit, chapter, and topic. The single source of truth for what comes next in your study plan.',
     accent: 'sapphire',
-    stat: null,
   },
   {
     icon: (
@@ -47,7 +77,6 @@ const FEATURES = [
     title: 'Error book',
     description: 'Every wrong attempt becomes a durable record. Categorize the mistake, not just the question — so patterns become visible.',
     accent: 'amber',
-    stat: null,
   },
   {
     icon: (
@@ -59,7 +88,6 @@ const FEATURES = [
     title: 'Spaced reviews',
     description: 'A scheduler that surfaces the right item at the right time. Honest estimates — no fabricated streaks or gamified counts.',
     accent: 'emerald',
-    stat: null,
   },
   {
     icon: (
@@ -72,7 +100,6 @@ const FEATURES = [
     title: 'Planner',
     description: 'Plan templates, task automation, and missed-task detection — all driven by the same event bus that powers every other surface.',
     accent: 'lavender',
-    stat: null,
   },
   {
     icon: (
@@ -84,7 +111,6 @@ const FEATURES = [
     title: 'Tests & attempts',
     description: 'Take tests, submit attempts, and get immediate per-question analysis — all publishing events into the same bus that drives everything else.',
     accent: 'rose',
-    stat: null,
   },
   {
     icon: (
@@ -97,42 +123,10 @@ const FEATURES = [
     title: 'Progress & insights',
     description: 'Rollups computed from real persisted state. One student model, one source of truth — so every insight is earned, not estimated.',
     accent: 'champagne',
-    stat: null,
   },
 ];
 
-/* ─── UseInView hook (tiny, no library needed) ──────────── */
-function useInView(ref: React.RefObject<Element | null>, threshold = 0.15): boolean {
-  const [inView, setInView] = useState(false);
-  useEffect(() => {
-    if (!ref.current) return;
-    const obs = new IntersectionObserver((entries) => { if (entries[0]?.isIntersecting) setInView(true); }, { threshold });
-    obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, [ref, threshold]);
-  return inView;
-}
-
-/* ─── Feature card ────────────────────────────────────────── */
-function FeatureCard({ f, delay }: { f: typeof FEATURES[0]; delay: number }): JSX.Element {
-  const ref = useRef<HTMLLIElement>(null);
-  const inView = useInView(ref as React.RefObject<Element>);
-  return (
-    <li
-      ref={ref}
-      className={styles.featureCard}
-      data-accent={f.accent}
-      style={{ transitionDelay: `${delay}ms` }}
-      data-inview={inView}
-    >
-      <span className={styles.featureIcon} data-accent={f.accent}>{f.icon}</span>
-      <h3 className={styles.featureTitle}>{f.title}</h3>
-      <p className={styles.featureDesc}>{f.description}</p>
-    </li>
-  );
-}
-
-/* ─── Sticky nav ──────────────────────────────────────────── */
+/* ─── Sticky nav ─────────────────────────────────────────── */
 function LandingNav(): JSX.Element {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
@@ -167,44 +161,89 @@ function LandingNav(): JSX.Element {
   );
 }
 
+/* ─── Floating orbs ─────────────────────────────────────── */
+const ORBS = [
+  { top: '-100px', left: '-200px', size: 700, color: 'rgba(110, 95, 179, 0.18)', delay: 0, dx: 60, dy: 80, ds: 1 },
+  { bottom: '-50px', right: '-100px', size: 500, color: 'rgba(212, 137, 10, 0.12)', delay: 4, dx: -70, dy: -60, ds: 0.8 },
+];
+
+function Orb({ top, left, bottom, right, size, color, delay, dx, dy, ds }: typeof ORBS[0]): JSX.Element {
+  return (
+    <motion.div
+      style={{
+        position: 'absolute',
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
+        top,
+        left,
+        bottom,
+        right,
+      }}
+      variants={ORB_FLOAT(delay, dx, dy, ds)}
+      initial="hidden"
+      animate="visible"
+      aria-hidden="true"
+    />
+  );
+}
+
 /* ─── Animated hero ────────────────────────────────────────── */
 function HeroSection(): JSX.Element {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref as React.RefObject<Element>, 0.1);
+  const containerVariants: Variants = {
+    hidden: {},
+    visible: { transition: { staggerChildren: 0.1, delayChildren: 0.2 } },
+  };
+
   return (
-    <section className={styles.hero} ref={ref} data-inview={inView}>
+    <section className={styles.hero}>
       <div className={styles.heroBg} aria-hidden="true">
-        <div className={styles.heroBgOrb1} />
-        <div className={styles.heroBgOrb2} />
+        {ORBS.map((orb, i) => <Orb key={i} {...orb} />)}
         <div className={styles.heroBgGrid} />
       </div>
-      <div className={styles.heroContent}>
-        <div className={styles.heroBadge} data-inview={inView}>
-          <span className={styles.heroBadgeDot} />
+
+      <motion.div
+        className={styles.heroContent}
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+      >
+        <motion.div className={styles.heroBadge} variants={FADE_UP} transition={{ duration: 0.6 }}>
+          <motion.span
+            className={styles.heroBadgeDot}
+            animate={{ opacity: [1, 0.5, 1], scale: [1, 0.8, 1] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          />
           One interconnected study system
-        </div>
-        <h1 className={styles.heroTitle} data-inview={inView} style={{ transitionDelay: '100ms' }}>
+        </motion.div>
+
+        <motion.h1 className={styles.heroTitle} variants={FADE_UP} transition={{ duration: 0.6, delay: 0.1 }}>
           Your syllabus,<br />
           <span className={styles.heroTitleAccent}>your errors,</span><br />
           one model.
-        </h1>
-        <p className={styles.heroSubtitle} data-inview={inView} style={{ transitionDelay: '200ms' }}>
+        </motion.h1>
+
+        <motion.p className={styles.heroSubtitle} variants={FADE_UP} transition={{ duration: 0.6, delay: 0.2 }}>
           KRODEX connects a syllabus tree, tests, an error book, a review queue, and a planner
           into one editorial workspace. Every surface reads from the same event bus
           and the same student model — so nothing is fabricated and nothing is siloed.
-        </p>
-        <div className={styles.heroCtas} data-inview={inView} style={{ transitionDelay: '300ms' }}>
+        </motion.p>
+
+        <motion.div className={styles.heroCtas} variants={FADE_UP} transition={{ duration: 0.6, delay: 0.3 }}>
           <Link href="/login?mode=signup">
             <Button variant="primary" size="lg">Start for free</Button>
           </Link>
           <Link href="/login">
             <Button variant="secondary" size="lg">I have an account</Button>
           </Link>
-        </div>
-        <p className={styles.heroMeta} data-inview={inView} style={{ transitionDelay: '400ms' }}>
+        </motion.div>
+
+        <motion.p className={styles.heroMeta} variants={FADE_UP} transition={{ duration: 0.6, delay: 0.4 }}>
           No credit card · No fabricated metrics · Real data, always
-        </p>
-      </div>
+        </motion.p>
+      </motion.div>
     </section>
   );
 }
@@ -219,11 +258,19 @@ const BUS_NODES = [
   { label: 'Insights', sub: 'student model', color: '#b8960d' },
 ];
 
+// Clock positions: 0=top, 1=upper-right, 2=lower-right, 3=bottom, 4=lower-left, 5=upper-left
+const NODE_POSITIONS = [
+  { top: 0, left: '50%', transform: 'translateX(-50%)' },
+  { top: '22%', right: '5%', transform: 'none' },
+  { bottom: '22%', right: '5%', transform: 'none' },
+  { bottom: 0, left: '50%', transform: 'translateX(-50%)' },
+  { bottom: '22%', left: '5%', transform: 'none' },
+  { top: '22%', left: '5%', transform: 'none' },
+];
+
 function DiagramSection(): JSX.Element {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref as React.RefObject<Element>, 0.1);
   return (
-    <section className={styles.diagram} id="how-it-works" ref={ref}>
+    <section className={styles.diagram} id="how-it-works">
       <div className={styles.sectionHeader}>
         <p className={styles.sectionEyebrow}>Architecture</p>
         <h2 className={styles.sectionTitle}>Six surfaces, one event bus</h2>
@@ -232,37 +279,97 @@ function DiagramSection(): JSX.Element {
           are all driven by the same queue — no polling, no duplication, no gaps.
         </p>
       </div>
-      <div className={styles.diagramCanvas} data-inview={inView}>
-        {BUS_NODES.map((node, i) => (
-          <div key={node.label} className={styles.busNode} style={{ transitionDelay: `${i * 80}ms` }} data-inview={inView}>
-            <div className={styles.busNodeInner} style={{ '--node-color': node.color } as React.CSSProperties}>
-              <span className={styles.busNodeLabel}>{node.label}</span>
-              <span className={styles.busNodeSub}>{node.sub}</span>
-            </div>
-          </div>
-        ))}
-        <div className={styles.busCenter} data-inview={inView}>
+
+      <div className={styles.diagramCanvas}>
+        {/* Event bus center */}
+        <motion.div
+          className={styles.busCenter}
+          initial={{ opacity: 0, scale: 0.5 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          viewport={{ once: true }}
+        >
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="4" fill="currentColor" opacity="0.9"/>
             <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" opacity="0.4"/>
             <circle cx="12" cy="12" r="12" stroke="currentColor" strokeWidth="1" opacity="0.2"/>
           </svg>
           <span>Event<br/>bus</span>
-        </div>
+        </motion.div>
+
+        {/* Nodes */}
+        <motion.div
+          variants={STAGGER_CONTAINER}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          style={{ position: 'absolute', inset: 0 }}
+        >
+          {BUS_NODES.map((node, i) => (
+            <motion.div
+              key={node.label}
+              className={styles.busNode}
+              style={NODE_POSITIONS[i]}
+              variants={FADE_SCALE}
+            >
+              <div className={styles.busNodeInner} style={{ '--node-color': node.color } as React.CSSProperties}>
+                <span className={styles.busNodeLabel}>{node.label}</span>
+                <span className={styles.busNodeSub}>{node.sub}</span>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Connecting lines */}
         {BUS_NODES.map((_, i) => (
-          <div key={`line-${i}`} className={`${styles.busLine} ${styles[`busLine${i}`]}`} data-inview={inView} />
+          <motion.div
+            key={`line-${i}`}
+            className={`${styles.busLine} ${styles[`busLine${i}`]}`}
+            initial={{ scaleY: 0, opacity: 0 }}
+            whileInView={{ scaleY: 1, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.3 + i * 0.06, ease: [0.25, 0.46, 0.45, 0.94] }}
+            viewport={{ once: true }}
+            style={{ originY: '0px' }}
+          />
         ))}
       </div>
     </section>
   );
 }
 
+/* ─── Feature card ────────────────────────────────────────── */
+function FeatureCard({ f, delay }: { f: typeof FEATURES[0]; delay: number }): JSX.Element {
+  return (
+    <motion.li
+      className={styles.featureCard}
+      data-accent={f.accent}
+      variants={FADE_UP}
+      whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+      style={{ ['--node-color' as string]: {
+        sapphire: '#6fa5c8', amber: '#d4a00a', emerald: '#2e9e6e',
+        lavender: '#a891ff', rose: '#c0526a', champagne: '#d4b832',
+      }[f.accent] }}
+    >
+      <motion.span
+        className={styles.featureIcon}
+        data-accent={f.accent}
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ delay: delay * 0.08 + 0.2 }}
+      >
+        {f.icon}
+      </motion.span>
+      <h3 className={styles.featureTitle}>{f.title}</h3>
+      <p className={styles.featureDesc}>{f.description}</p>
+    </motion.li>
+  );
+}
+
 /* ─── Feature grid ───────────────────────────────────────── */
 function FeaturesSection(): JSX.Element {
-  const ref = useRef<HTMLDivElement>(null);
-  useInView(ref as React.RefObject<Element>, 0.05);
   return (
-    <section className={styles.features} id="features" ref={ref}>
+    <section className={styles.features} id="features">
       <div className={styles.sectionHeader}>
         <p className={styles.sectionEyebrow}>Everything you need</p>
         <h2 className={styles.sectionTitle}>Six connected surfaces</h2>
@@ -271,11 +378,17 @@ function FeaturesSection(): JSX.Element {
           not a collection of disconnected tools.
         </p>
       </div>
-      <ul className={styles.featureGrid}>
+      <motion.ul
+        className={styles.featureGrid}
+        variants={STAGGER_CONTAINER}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.1 }}
+      >
         {FEATURES.map((f, i) => (
-          <FeatureCard key={f.title} f={f} delay={i * 80} />
+          <FeatureCard key={f.title} f={f} delay={i} />
         ))}
-      </ul>
+      </motion.ul>
     </section>
   );
 }
@@ -324,36 +437,51 @@ const PRINCIPLES = [
 ];
 
 function PrinciplesSection(): JSX.Element {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref as React.RefObject<Element>, 0.1);
   return (
-    <section className={styles.principles} id="principles" ref={ref}>
+    <section className={styles.principles} id="principles">
       <div className={styles.sectionHeader}>
         <p className={styles.sectionEyebrow}>How we build</p>
         <h2 className={styles.sectionTitle}>Four commitments</h2>
       </div>
-      <ul className={styles.principlesGrid}>
+      <motion.ul
+        className={styles.principlesGrid}
+        variants={STAGGER_CONTAINER}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+      >
         {PRINCIPLES.map((p, i) => (
-          <li key={p.title} className={styles.principleCard} data-inview={inView} style={{ transitionDelay: `${i * 100}ms` }}>
+          <motion.li
+            key={p.title}
+            className={styles.principleCard}
+            variants={FADE_UP}
+            transition={{ delay: i * 0.1 }}
+            whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
+          >
             <span className={styles.principleIcon}>{p.icon}</span>
             <div>
               <h3 className={styles.principleTitle}>{p.title}</h3>
               <p className={styles.principleBody}>{p.body}</p>
             </div>
-          </li>
+          </motion.li>
         ))}
-      </ul>
+      </motion.ul>
     </section>
   );
 }
 
 /* ─── Final CTA ───────────────────────────────────────────── */
 function CtaSection(): JSX.Element {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref as React.RefObject<Element>, 0.2);
   return (
-    <section className={styles.cta} ref={ref} data-inview={inView}>
-      <div className={styles.ctaCard} data-inview={inView} style={{ transitionDelay: '0ms' }}>
+    <section className={styles.cta}>
+      <motion.div
+        className={styles.ctaCard}
+        initial={{ opacity: 0, y: 32, scale: 0.95 }}
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+        whileHover={{ scale: 1.01 }}
+        viewport={{ once: true, amount: 0.3 }}
+      >
         <h2 className={styles.ctaTitle}>Ready to study with clarity?</h2>
         <p className={styles.ctaSubtitle}>
           Join learners who use KRODEX to connect their syllabus, errors, reviews,
@@ -367,7 +495,7 @@ function CtaSection(): JSX.Element {
             <Button variant="ghost" size="lg">Sign in instead</Button>
           </Link>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }
@@ -375,7 +503,13 @@ function CtaSection(): JSX.Element {
 /* ─── Footer ─────────────────────────────────────────────── */
 function LandingFooter(): JSX.Element {
   return (
-    <footer className={styles.footer}>
+    <motion.footer
+      className={styles.footer}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      transition={{ duration: 0.8 }}
+      viewport={{ once: true }}
+    >
       <div className={styles.footerInner}>
         <span className={styles.footerLogo}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -386,7 +520,7 @@ function LandingFooter(): JSX.Element {
         <p className={styles.footerTagline}>One source of truth · One student model · One event bus</p>
         <p className={styles.footerCopy}>© {new Date().getFullYear()} KRODEX. Built with real data.</p>
       </div>
-    </footer>
+    </motion.footer>
   );
 }
 

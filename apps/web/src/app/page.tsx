@@ -1,9 +1,9 @@
 /**
  * KRODEX web — public landing page.
  *
- * The unauthenticated root entry point. Renders a marketing /
- * explainer page that describes what KRODEX is and offers two
- * CTAs: sign in (returning user) and get started (new user).
+ * Handles BOTH anonymous visitors (renders the marketing page) and
+ * authenticated users (redirects to /dashboard). This is the sole
+ * owner of the "/" URL; there is no competing "(app)/page.tsx".
  *
  * Design rules:
  *  - No fake metrics, no fabricated progress.
@@ -11,21 +11,18 @@
  *    (none here — this is the unauthenticated surface).
  *  - All visual values come from --kd-* design tokens.
  *  - The CTA links route to /login which owns auth.
- *
- * The (app) route group retains the auto-redirect-to-dashboard
- * behaviour; this root page is for anonymous visitors.
  */
 
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { isAuthenticated } from '../lib/auth-store';
+import { PageShell } from '../components/page-shell';
 import { Hero } from '../components/hero';
 import { Button } from '../components/button';
 import styles from './landing.module.css';
-
-export const metadata = {
-  title: 'KRODEX — One interconnected study system',
-  description:
-    'Syllabus tree, tests, error book, review queue, and planner, wired to one event bus and one student model.',
-};
 
 interface Pillar {
   title: string;
@@ -66,7 +63,7 @@ const PILLARS: readonly Pillar[] = [
   },
 ];
 
-export default function LandingPage(): JSX.Element {
+function LandingContent(): JSX.Element {
   return (
     <main className={styles.root} data-testid="landing-root">
       <Hero
@@ -145,4 +142,29 @@ export default function LandingPage(): JSX.Element {
       </footer>
     </main>
   );
+}
+
+export default function LandingPage(): JSX.Element {
+  const router = useRouter();
+  const [authed, setAuthed] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (isAuthenticated()) {
+      router.replace('/dashboard');
+      return;
+    }
+    setAuthed(false);
+  }, [router]);
+
+  if (authed === null) {
+    return (
+      <PageShell isLoading title="Loading KRODEX" description="Preparing your workspace…">
+        <p>Preparing your workspace…</p>
+      </PageShell>
+    );
+  }
+
+  // authed === false — anonymous visitor, show the landing page
+  return <LandingContent />;
 }

@@ -37,6 +37,7 @@
     "axe-core": "^4.13.0",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.15",
+    "eslint-config-prettier": "^9.1.0",
     "jsdom": "^25.0.0",
     "rimraf": "^5.0.10",
     "typescript": "^5.4.5",
